@@ -84,7 +84,7 @@
   <div class="grid">
     <div class="card">
       <h2>1. Oturum, Kürsü Dili ve 3'lü Yapay Zeka Motoru (Claude + Gemini + Deepgram)</h2>
-      <label for="sessionSelect">Aktif Forum Oturumu (15-17 Kasım Programı)</label>
+      <label for="sessionSelect">Aktif Forum Oturumu (15-16-17 Kasım 2026 Güncel Programı — 17 Oturum)</label>
       <select id="sessionSelect"></select>
 
       <label>Şu An Kürsüdeki Konuşmacı Hangi Dilde Konuşuyor?</label>
@@ -184,6 +184,15 @@
     let isListening = false;
     let demoIdx = 0;
 
+    function escHtml(str) {
+      return String(str || '')
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#39;');
+    }
+
     function getPin() {
       return document.getElementById('opPin').value.trim();
     }
@@ -191,7 +200,9 @@
     function onPinChange() {
       const val = getPin();
       localStorage.setItem('cop31_pin', val);
-      init();
+      if (val.length >= 4 || val.length === 0) {
+        init();
+      }
     }
 
     function highlightLangButton(code) {
@@ -218,7 +229,8 @@
     }
 
     async function init() {
-      const res = await fetch(`${BASE}/api/info?pin=` + encodeURIComponent(getPin()));
+      const pinParam = getPin().length >= 4 ? ('?pin=' + encodeURIComponent(getPin())) : '';
+      const res = await fetch(`${BASE}/api/info${pinParam}`);
       const info = await res.json();
       isAuthorized = !!info.authorized;
       deepgramApiKey = info.deepgram_api_key || '';
@@ -239,7 +251,7 @@
       updateBadges(isAuthorized, info.has_claude_key, info.claude_model, info.has_gemini_key, info.has_deepgram_key);
       const isLocal = location.hostname === 'localhost' || location.hostname === '127.0.0.1';
       document.getElementById('lanInfo').textContent = `Salon Kulaklık Bağlantısı: ${isLocal ? info.listen_url : (location.origin + BASE + '/dinle')}`;
-      document.getElementById('glossaryStats').textContent = `✓ ${info.glossary_count} Dört Dilli (TR/EN/FR/DE) İklim & Hukuk Terimi + PIN Koruması Aktif`;
+      document.getElementById('glossaryStats').textContent = `✓ ${info.glossary_count} Dört Dilli (TR/EN/FR/DE) İklim & Hukuk Terimi + Brute-Force & XSS Güvenlik Kalkanı Aktif`;
 
       sel.onchange = () => {
         const found = info.sessions.find(x => x.id === sel.value);
@@ -278,7 +290,7 @@
     }
 
     function saveConfig() {
-      if (!ws || ws.readyState !== 1) return;
+      if (!isAuthorized || !ws || ws.readyState !== 1) return;
       const dgVal = document.getElementById('deepgramKey').value.trim();
       if (dgVal) deepgramApiKey = dgVal;
       const btn = document.getElementById('saveBtn');
@@ -318,18 +330,18 @@
     }
 
     function clearScreen() {
-      if (ws && ws.readyState === 1) ws.send(JSON.stringify({ type: 'clear', pin: getPin() }));
+      if (isAuthorized && ws && ws.readyState === 1) ws.send(JSON.stringify({ type: 'clear', pin: getPin() }));
     }
 
     function renderSubtitle(item) {
       const feed = document.getElementById('feed');
       let existing = document.getElementById('sub-interim');
       const html = `
-        <div class="tr">🇹🇷 ${item.tr || ''}</div>
-        <div class="en">🇬🇧 ${item.en || ''}</div>
-        <div class="fr">🇫🇷 ${item.fr || ''}</div>
-        <div class="de">🇩🇪 ${item.de || ''}</div>
-        <div class="meta">${item.timestamp} • Kaynak: ${item.source_lang || ''} • ${item.latency_ms} ms</div>
+        <div class="tr">🇹🇷 ${escHtml(item.tr)}</div>
+        <div class="en">🇬🇧 ${escHtml(item.en)}</div>
+        <div class="fr">🇫🇷 ${escHtml(item.fr)}</div>
+        <div class="de">🇩🇪 ${escHtml(item.de)}</div>
+        <div class="meta">${escHtml(item.timestamp)} • Kaynak: ${escHtml(item.source_lang)} • ${escHtml(item.latency_ms)} ms</div>
       `;
       if (!item.is_final) {
         if (!existing) {

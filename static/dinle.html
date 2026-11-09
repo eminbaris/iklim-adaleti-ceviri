@@ -138,8 +138,14 @@
       allHistory.forEach(item => {
         const div = document.createElement('div');
         div.className = 'card';
-        const targetText = item[currentChannel] || item.tr || '';
-        div.innerHTML = `<div class="src">${item.source}</div><div class="target">${targetText}</div>`;
+        const srcDiv = document.createElement('div');
+        srcDiv.className = 'src';
+        srcDiv.textContent = item.source || '';
+        const tgtDiv = document.createElement('div');
+        tgtDiv.className = 'target';
+        tgtDiv.textContent = item[currentChannel] || item.tr || '';
+        div.appendChild(srcDiv);
+        div.appendChild(tgtDiv);
         stream.prepend(div);
       });
     }

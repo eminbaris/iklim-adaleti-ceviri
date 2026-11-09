@@ -1,18 +1,19 @@
 # -*- coding: utf-8 -*-
 import asyncio
 import hashlib
+import hmac
 import io
 import json
 import os
 import re
 import socket
 import time
-from typing import Dict, List, Optional
+from typing import Dict, List, Optional, Set
 
 import edge_tts
 import httpx
 from dotenv import load_dotenv
-from fastapi import APIRouter, FastAPI, Query, WebSocket, WebSocketDisconnect
+from fastapi import APIRouter, FastAPI, Query, Request, WebSocket, WebSocketDisconnect
 from fastapi.responses import HTMLResponse, JSONResponse, Response
 
 from glossary import (
@@ -26,7 +27,13 @@ from glossary import (
 ENV_PATH = os.path.join(os.path.dirname(__file__), ".env")
 load_dotenv(ENV_PATH)
 
-app = FastAPI(title="COP31 İklim Adaleti Forumu - 4 Dilli (TR/EN/FR/DE) Simultane Sistemi")
+# Disable public Swagger/OpenAPI endpoints (/docs, /redoc, /openapi.json) against scanners
+app = FastAPI(
+    title="COP31 İklim Adaleti Forumu - 4 Dilli Simultane Sistemi",
+    docs_url=None,
+    redoc_url=None,
+    openapi_url=None,
+)
 router = APIRouter()
 
 VOICES = {
@@ -52,8 +59,54 @@ STATE = {
     "history": [],
 }
 
+# Security: Brute-force lockout & TTS whitelist
+FAILED_PIN_BY_IP: Dict[str, List[float]] = {}
+ALLOWED_TTS_TEXTS: Set[str] = {
+    "Türkçe simultane ses kanalı aktif.",
+    "English simultaneous audio channel active.",
+    "Canal audio simultané français actif.",
+    "Deutscher Simultanaudiokanal aktiv.",
+}
+for _demo in DEMO_SPEECHES:
+    for _k in ("tr", "en", "fr", "de"):
+        ALLOWED_TTS_TEXTS.add(_demo[_k])
+
 TTS_CACHE: Dict[str, bytes] = {}
 HTTP_CLIENT = httpx.AsyncClient(timeout=8.0)
+
+
+@app.middleware("http")
+async def security_headers_middleware(request: Request, call_next):
+    response = await call_next(request)
+    response.headers["X-Content-Type-Options"] = "nosniff"
+    response.headers["X-Frame-Options"] = "SAMEORIGIN"
+    response.headers["Referrer-Policy"] = "strict-origin-when-cross-origin"
+    return response
+
+
+def get_client_ip(headers, client_host: str = "") -> str:
+    fwd = headers.get("x-forwarded-for") or headers.get("x-real-ip")
+    if fwd:
+        return fwd.split(",")[0].strip()
+    return client_host or "unknown"
+
+
+def verify_operator_pin(pin: Optional[str], ip: str) -> bool:
+    now = time.time()
+    attempts = [t for t in FAILED_PIN_BY_IP.get(ip, []) if now - t < 600]
+    FAILED_PIN_BY_IP[ip] = attempts
+    if len(attempts) >= 5:
+        return False
+    candidate = (pin or "").strip()
+    if not candidate:
+        return False
+    ok = hmac.compare_digest(candidate.encode("utf-8"), STATE["operator_pin"].encode("utf-8"))
+    if not ok:
+        attempts.append(now)
+        FAILED_PIN_BY_IP[ip] = attempts
+    else:
+        FAILED_PIN_BY_IP.pop(ip, None)
+    return ok
 
 
 def save_env_key(key_name: str, value: str) -> None:
@@ -180,7 +233,7 @@ async def call_gemini_json(clean: str, sys_prompt: str) -> Optional[str]:
 
 
 async def translate_quadrilingual(text: str, source_lang: str, is_final: bool = True) -> Dict[str, str]:
-    clean = text.strip()
+    clean = text.strip()[:600]
     if not clean:
         return {"tr": "", "en": "", "fr": "", "de": ""}
 
@@ -269,11 +322,12 @@ manager = ConnectionManager()
 
 
 @router.get("/api/info")
-async def api_info(pin: Optional[str] = Query(None)):
+async def api_info(request: Request, pin: Optional[str] = Query(None)):
     lan_ip = get_lan_ip()
     if STATE["claude_api_key"] and not STATE["claude_model"]:
         await resolve_claude_model(STATE["claude_api_key"])
-    authorized = (pin == STATE["operator_pin"])
+    client_ip = get_client_ip(request.headers, request.client.host if request.client else "")
+    authorized = verify_operator_pin(pin, client_ip) if pin else False
     return JSONResponse(
         {
             "lan_ip": lan_ip,
@@ -297,15 +351,20 @@ async def api_info(pin: Optional[str] = Query(None)):
 
 
 @router.get("/api/tts")
-async def api_tts(text: str = Query(..., min_length=1), lang: str = Query("tr")):
+async def api_tts(text: str = Query(..., min_length=1, max_length=600), lang: str = Query("tr")):
+    clean_text = text.strip()
+    if clean_text not in ALLOWED_TTS_TEXTS:
+        return Response(status_code=403, content=b"Forbidden")
     lang_short = lang.split("-")[0].lower()
-    audio_bytes = await synthesize_tts_bytes(text, lang_short)
+    audio_bytes = await synthesize_tts_bytes(clean_text, lang_short)
     return Response(content=audio_bytes, media_type="audio/mpeg")
 
 
 @router.websocket("/ws")
 async def websocket_endpoint(websocket: WebSocket):
     await manager.connect(websocket)
+    client_ip = get_client_ip(websocket.headers, websocket.client.host if websocket.client else "")
+    unauthorized_Attempts = 0
     await websocket.send_json(
         {
             "type": "init",
@@ -316,11 +375,18 @@ async def websocket_endpoint(websocket: WebSocket):
     )
     try:
         while True:
-            data = await websocket.receive_json()
+            raw_msg = await websocket.receive_text()
+            if len(raw_msg) > 4096:
+                continue
+            data = json.loads(raw_msg)
             msg_type = data.get("type")
 
             if msg_type in ("config", "speech", "demo", "clear"):
-                if data.get("pin", "") != STATE["operator_pin"]:
+                if not verify_operator_pin(data.get("pin", ""), client_ip):
+                    unauthorized_Attempts += 1
+                    if unauthorized_Attempts >= 5:
+                        await websocket.close(code=1008)
+                        break
                     continue
 
             if msg_type == "config":
@@ -334,15 +400,15 @@ async def websocket_endpoint(websocket: WebSocket):
                 if "preferred_llm" in data:
                     STATE["preferred_llm"] = data["preferred_llm"]
                     save_env_key("PREFERRED_LLM", STATE["preferred_llm"])
-                if "claude_api_key" in data and data["claude_api_key"].strip():
+                if not os.environ.get("ANTHROPIC_API_KEY") and "claude_api_key" in data and data["claude_api_key"].strip():
                     STATE["claude_api_key"] = data["claude_api_key"].strip()
                     STATE["claude_model"] = ""
                     save_env_key("ANTHROPIC_API_KEY", STATE["claude_api_key"])
                     await resolve_claude_model(STATE["claude_api_key"])
-                if "gemini_api_key" in data and data["gemini_api_key"].strip():
+                if not os.environ.get("GEMINI_API_KEY") and "gemini_api_key" in data and data["gemini_api_key"].strip():
                     STATE["gemini_api_key"] = data["gemini_api_key"].strip()
                     save_env_key("GEMINI_API_KEY", STATE["gemini_api_key"])
-                if "deepgram_api_key" in data and data["deepgram_api_key"].strip():
+                if not os.environ.get("DEEPGRAM_API_KEY") and "deepgram_api_key" in data and data["deepgram_api_key"].strip():
                     STATE["deepgram_api_key"] = data["deepgram_api_key"].strip()
                     save_env_key("DEEPGRAM_API_KEY", STATE["deepgram_api_key"])
 
@@ -360,7 +426,7 @@ async def websocket_endpoint(websocket: WebSocket):
                 )
 
             elif msg_type == "speech":
-                src_text = data.get("text", "").strip()
+                src_text = data.get("text", "").strip()[:600]
                 is_final = bool(data.get("is_final", False))
                 src_lang = data.get("source_lang") or STATE["source_lang"]
                 if not src_text:
@@ -383,6 +449,11 @@ async def websocket_endpoint(websocket: WebSocket):
                     "timestamp": time.strftime("%H:%M:%S"),
                 }
                 if is_final:
+                    for _k in ("tr", "en", "fr", "de"):
+                        if quad.get(_k):
+                            ALLOWED_TTS_TEXTS.add(quad[_k].strip())
+                    if len(ALLOWED_TTS_TEXTS) > 600:
+                        ALLOWED_TTS_TEXTS.clear()
                     STATE["history"].append(payload)
                     if len(STATE["history"]) > 50:
                         STATE["history"] = STATE["history"][-50:]
@@ -392,6 +463,8 @@ async def websocket_endpoint(websocket: WebSocket):
             elif msg_type == "demo":
                 idx = int(data.get("index", 0)) % len(DEMO_SPEECHES)
                 sample = DEMO_SPEECHES[idx]
+                for _k in ("tr", "en", "fr", "de"):
+                    ALLOWED_TTS_TEXTS.add(sample[_k].strip())
                 payload = {
                     "type": "subtitle",
                     "id": int(time.time() * 1000),
@@ -413,6 +486,8 @@ async def websocket_endpoint(websocket: WebSocket):
                 await manager.broadcast({"type": "clear"})
 
     except WebSocketDisconnect:
+        manager.disconnect(websocket)
+    except Exception:
         manager.disconnect(websocket)
 
 
