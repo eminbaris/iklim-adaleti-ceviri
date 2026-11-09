@@ -5,9 +5,9 @@ WORKDIR /app
 COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
-COPY glossary.py app.py ./
+COPY glossary.py app.py run.py ./
 COPY static ./static
 
-EXPOSE 8000
+EXPOSE 80 3000 8000
 
-CMD ["uvicorn", "app:app", "--host", "0.0.0.0", "--port", "8000"]
+CMD ["python", "run.py"]
