@@ -99,19 +99,19 @@
       <div style="display:grid; grid-template-columns:1fr 1fr 1fr 1fr; gap:8px; margin-top:4px;">
         <div>
           <label for="opPin">Operatör PIN</label>
-          <input type="password" id="opPin" value="cop31" onchange="init()" />
+          <input type="password" id="opPin" placeholder="PIN girin" oninput="onPinChange()" />
         </div>
         <div>
           <label for="claudeKey">1. Claude Sonnet 5.5</label>
-          <input type="password" id="claudeKey" placeholder="✓ .env kayıtlı" />
+          <input type="password" id="claudeKey" placeholder="✓ Sunucuda kayıtlı" />
         </div>
         <div>
           <label for="geminiKey">2. Gemini 2.5 Flash</label>
-          <input type="password" id="geminiKey" placeholder="AIzaSy..." />
+          <input type="password" id="geminiKey" placeholder="✓ Sunucuda kayıtlı" />
         </div>
         <div>
           <label for="deepgramKey">3. Deepgram Nova</label>
-          <input type="password" id="deepgramKey" placeholder="✓ .env kayıtlı" />
+          <input type="password" id="deepgramKey" placeholder="✓ Sunucuda kayıtlı" />
         </div>
       </div>
 
@@ -123,6 +123,7 @@
         </select>
       </div>
       <div class="controls" style="margin-top:8px;">
+        <span id="pinBadge" class="key-status">🔒 PIN Bekleniyor</span>
         <span id="modelBadge" class="key-status">Claude...</span>
         <span id="gemBadge" class="key-status">Gemini...</span>
         <span id="dgBadge" class="key-status">Deepgram...</span>
@@ -133,7 +134,7 @@
     <div class="card">
       <h2>2. Canlı Ses Yakalama (Deepgram Nova) veya 4 Dilli Test</h2>
       <p style="font-size:13px; color:#cbd5e1; line-height:1.4;">
-        <b>Önemli:</b> Türkçe konuşurken soldaki <b>🇹🇷 TÜRKÇE</b> butonunun sarı olduğundan emin olun.
+        <b>Önemli:</b> Yayın başlatmak için soldaki <b>Operatör PIN</b> kutusuna şifrenizi girin.
       </p>
       <div class="controls">
         <button id="micBtn" class="btn btn-primary" onclick="toggleMic()">🎙️ Canlı Çeviriyi Başlat (Deepgram + Mikrofon)</button>
@@ -168,17 +169,29 @@
     document.getElementById('screenLink').href = `${BASE}/ekran`;
     document.getElementById('listenLink').href = `${BASE}/dinle`;
 
+    const savedPin = localStorage.getItem('cop31_pin') || '';
+    if (savedPin) {
+      document.getElementById('opPin').value = savedPin;
+    }
+
     let ws;
     let dgSocket = null;
     let dgKeepAlive = null;
     let mediaRecorder = null;
     let mediaStream = null;
     let deepgramApiKey = '';
+    let isAuthorized = false;
     let isListening = false;
     let demoIdx = 0;
 
     function getPin() {
-      return document.getElementById('opPin').value.trim() || 'cop31';
+      return document.getElementById('opPin').value.trim();
+    }
+
+    function onPinChange() {
+      const val = getPin();
+      localStorage.setItem('cop31_pin', val);
+      init();
     }
 
     function highlightLangButton(code) {
@@ -188,7 +201,12 @@
       });
     }
 
-    function updateBadges(hasClaude, claudeModel, hasGem, hasDg) {
+    function updateBadges(auth, hasClaude, claudeModel, hasGem, hasDg) {
+      const pb = document.getElementById('pinBadge');
+      pb.textContent = auth ? '🔓 Operatör PIN Aktif' : '🔒 Operatör PIN Girin';
+      pb.style.borderColor = auth ? '#22c55e' : '#ef4444';
+      pb.style.color = auth ? '#4ade80' : '#fca5a5';
+
       const mb = document.getElementById('modelBadge');
       mb.textContent = hasClaude ? `🟢 Claude: ${claudeModel || 'claude-sonnet-5-5'}` : '⚪ Claude Yok';
       const gb = document.getElementById('gemBadge');
@@ -202,6 +220,7 @@
     async function init() {
       const res = await fetch(`${BASE}/api/info?pin=` + encodeURIComponent(getPin()));
       const info = await res.json();
+      isAuthorized = !!info.authorized;
       deepgramApiKey = info.deepgram_api_key || '';
       const sel = document.getElementById('sessionSelect');
       sel.innerHTML = '';
@@ -217,7 +236,7 @@
         document.getElementById('prefLlm').value = info.preferred_llm;
       }
       highlightLangButton(info.source_lang);
-      updateBadges(info.has_claude_key, info.claude_model, info.has_gemini_key, info.has_deepgram_key);
+      updateBadges(isAuthorized, info.has_claude_key, info.claude_model, info.has_gemini_key, info.has_deepgram_key);
       const isLocal = location.hostname === 'localhost' || location.hostname === '127.0.0.1';
       document.getElementById('lanInfo').textContent = `Salon Kulaklık Bağlantısı: ${isLocal ? info.listen_url : (location.origin + BASE + '/dinle')}`;
       document.getElementById('glossaryStats').textContent = `✓ ${info.glossary_count} Dört Dilli (TR/EN/FR/DE) İklim & Hukuk Terimi + PIN Koruması Aktif`;
@@ -248,7 +267,7 @@
         if (data.type === 'init') {
           (data.history || []).forEach(renderSubtitle);
         } else if (data.type === 'session_update') {
-          updateBadges(data.has_claude_key, data.claude_model, data.has_gemini_key, data.has_deepgram_key);
+          updateBadges(isAuthorized, data.has_claude_key, data.claude_model, data.has_gemini_key, data.has_deepgram_key);
         } else if (data.type === 'subtitle') {
           renderSubtitle(data);
         } else if (data.type === 'clear') {
@@ -278,11 +297,13 @@
     }
 
     function sendDemo() {
+      if (!isAuthorized) { alert('Önce Operatör PIN kutusuna şifrenizi girin.'); return; }
       if (!ws || ws.readyState !== 1) return;
       ws.send(JSON.stringify({ type: 'demo', pin: getPin(), index: demoIdx++ }));
     }
 
     function sendManual() {
+      if (!isAuthorized) { alert('Önce Operatör PIN kutusuna şifrenizi girin.'); return; }
       const inp = document.getElementById('manualInput');
       const val = inp.value.trim();
       if (!val || !ws || ws.readyState !== 1) return;
@@ -341,6 +362,10 @@
     }
 
     async function startMic() {
+      if (!isAuthorized || !deepgramApiKey) {
+        alert('Canlı mikrofon yayını için önce soldaki Operatör PIN kutusuna şifrenizi girin.');
+        return;
+      }
       const langFull = document.getElementById('langSelect').value;
       const langShort = langFull.split('-')[0];
       try {

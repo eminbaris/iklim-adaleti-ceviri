@@ -36,10 +36,14 @@ VOICES = {
     "de": "de-DE-KatjaNeural",
 }
 
+_raw_pin = os.environ.get("OPERATOR_PIN", "1092")
+if _raw_pin in ("", "cop31"):
+    _raw_pin = "1092"
+
 STATE = {
     "session": SESSIONS[0],
     "source_lang": "tr-TR",
-    "operator_pin": os.environ.get("OPERATOR_PIN", "cop31"),
+    "operator_pin": _raw_pin,
     "preferred_llm": os.environ.get("PREFERRED_LLM", "auto"),
     "claude_api_key": os.environ.get("ANTHROPIC_API_KEY", ""),
     "claude_model": os.environ.get("ANTHROPIC_MODEL", ""),
@@ -275,6 +279,7 @@ async def api_info(pin: Optional[str] = Query(None)):
             "lan_ip": lan_ip,
             "listen_url": f"http://{lan_ip}:8000/dinle",
             "screen_url": f"http://{lan_ip}:8000/ekran",
+            "authorized": authorized,
             "sessions": SESSIONS,
             "current_session": STATE["session"],
             "source_lang": STATE["source_lang"],
@@ -315,7 +320,7 @@ async def websocket_endpoint(websocket: WebSocket):
             msg_type = data.get("type")
 
             if msg_type in ("config", "speech", "demo", "clear"):
-                if data.get("pin", "cop31") != STATE["operator_pin"]:
+                if data.get("pin", "") != STATE["operator_pin"]:
                     continue
 
             if msg_type == "config":
