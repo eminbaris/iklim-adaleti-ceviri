@@ -1,0 +1,426 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Operatör Paneli | 4 Dilli (TR ↔ EN ↔ FR ↔ DE) Simultane</title>
+  <style>
+    :root {
+      --bg: #0b1310;
+      --card: #13221c;
+      --border: #234235;
+      --accent: #22c55e;
+      --warn: #eab308;
+      --danger: #ef4444;
+      --text: #f0fdf4;
+      --muted: #86efac;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: system-ui, -apple-system, sans-serif; }
+    body { background: var(--bg); color: var(--text); padding: 20px; max-width: 1260px; margin: 0 auto; }
+    header { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border); padding-bottom: 14px; margin-bottom: 18px; flex-wrap: wrap; gap: 12px; }
+    .badge { background: #15803d; color: #fff; padding: 4px 10px; border-radius: 6px; font-size: 13px; font-weight: 600; }
+    .links { display: flex; gap: 10px; }
+    .btn { cursor: pointer; border: none; border-radius: 8px; padding: 10px 14px; font-weight: 600; font-size: 14px; text-decoration: none; display: inline-flex; align-items: center; gap: 6px; transition: opacity 0.15s; }
+    .btn:hover { opacity: 0.9; }
+    .btn-primary { background: var(--accent); color: #052e16; }
+    .btn-warn { background: var(--warn); color: #1c1917; }
+    .btn-danger { background: var(--danger); color: #fff; }
+    .btn-outline { background: var(--card); color: var(--text); border: 1px solid var(--border); }
+    .btn-lang.active { background: var(--warn); color: #1c1917; border-color: var(--warn); }
+    .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 16px; }
+    @media (max-width: 800px) { .grid { grid-template-columns: 1fr; } }
+    .card { background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 16px; }
+    .card h2 { font-size: 16px; color: var(--muted); margin-bottom: 12px; }
+    label { display: block; font-size: 12px; color: #a7f3d0; margin-bottom: 4px; margin-top: 8px; }
+    select, input[type="text"], input[type="password"] {
+      width: 100%; padding: 8px 10px; border-radius: 8px; border: 1px solid var(--border);
+      background: #09100d; color: var(--text); font-size: 13px;
+    }
+    .controls { display: flex; gap: 8px; margin-top: 12px; flex-wrap: wrap; align-items: center; }
+    .status-bar { display: flex; align-items: center; gap: 10px; margin-top: 12px; font-size: 14px; }
+    .dot { width: 12px; height: 12px; border-radius: 50%; background: #64748b; flex-shrink: 0; }
+    .dot.live { background: var(--danger); box-shadow: 0 0 10px var(--danger); animation: pulse 1s infinite; }
+    @keyframes pulse { 50% { opacity: 0.4; } }
+    .heard-box {
+      margin-top: 10px;
+      padding: 8px 12px;
+      background: #09100d;
+      border: 1px dashed #22c55e;
+      border-radius: 8px;
+      font-size: 14px;
+      color: #fde047;
+      min-height: 36px;
+    }
+    .feed { height: 340px; overflow-y: auto; display: flex; flex-direction: column; gap: 10px; padding-right: 6px; }
+    .msg { background: #09100d; border-left: 4px solid var(--accent); padding: 10px 14px; border-radius: 6px; display: grid; gap: 4px; }
+    .msg .tr { font-size: 15px; font-weight: 700; color: #fef08a; }
+    .msg .en { font-size: 14px; font-weight: 600; color: #38bdf8; }
+    .msg .fr { font-size: 14px; font-weight: 600; color: #c084fc; }
+    .msg .de { font-size: 14px; font-weight: 600; color: #4ade80; }
+    .msg .meta { font-size: 11px; color: #64748b; margin-top: 2px; }
+    .key-status {
+      background: #052e16;
+      border: 1px solid #22c55e;
+      color: #4ade80;
+      padding: 4px 8px;
+      border-radius: 6px;
+      font-size: 11px;
+      font-weight: 700;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div>
+      <span class="badge">COP31 • ÇİFT YÖNLÜ 4 KANAL SİMULTANE (TÜRKÇE ↔ İNGİLİZCE ↔ FRANSIZCA ↔ ALMANCA)</span>
+      <h1 style="font-size:20px; margin-top:6px;">Uluslararası İklim Adaleti Forumu — Operatör Kontrol Paneli</h1>
+    </div>
+    <div class="links">
+      <a id="screenLink" href="/ekran" target="_blank" class="btn btn-warn">🖥️ Sahne Projeksiyon Ekranı (/ekran)</a>
+      <a id="listenLink" href="/dinle" target="_blank" class="btn btn-outline">🎧 4 Kanallı Telefon Kulaklık Ekranı (/dinle)</a>
+    </div>
+  </header>
+
+  <div class="grid">
+    <div class="card">
+      <h2>1. Oturum, Kürsü Dili ve 3'lü Yapay Zeka Motoru (Claude + Gemini + Deepgram)</h2>
+      <label for="sessionSelect">Aktif Forum Oturumu (15-17 Kasım Programı)</label>
+      <select id="sessionSelect"></select>
+
+      <label>Şu An Kürsüdeki Konuşmacı Hangi Dilde Konuşuyor?</label>
+      <div style="display:grid; grid-template-columns:1fr 1fr 1fr 1fr; gap:6px; margin-top:4px;">
+        <button type="button" id="btn-tr-TR" class="btn btn-outline btn-lang active" style="justify-content:center; text-align:center;" onclick="setFastLang('tr-TR')">🇹🇷 TÜRKÇE<br><small>→ EN/FR/DE</small></button>
+        <button type="button" id="btn-en-US" class="btn btn-outline btn-lang" style="justify-content:center; text-align:center;" onclick="setFastLang('en-US')">🇬🇧 İNGİLİZCE<br><small>→ TR/FR/DE</small></button>
+        <button type="button" id="btn-fr-FR" class="btn btn-outline btn-lang" style="justify-content:center; text-align:center;" onclick="setFastLang('fr-FR')">🇫🇷 FRANSIZCA<br><small>→ TR/EN/DE</small></button>
+        <button type="button" id="btn-de-DE" class="btn btn-outline btn-lang" style="justify-content:center; text-align:center;" onclick="setFastLang('de-DE')">🇩🇪 ALMANCA<br><small>→ TR/EN/FR</small></button>
+      </div>
+      <input type="hidden" id="langSelect" value="tr-TR" />
+
+      <div style="display:grid; grid-template-columns:1fr 1fr 1fr 1fr; gap:8px; margin-top:4px;">
+        <div>
+          <label for="opPin">Operatör PIN</label>
+          <input type="password" id="opPin" value="cop31" onchange="init()" />
+        </div>
+        <div>
+          <label for="claudeKey">1. Claude Sonnet 5.5</label>
+          <input type="password" id="claudeKey" placeholder="✓ .env kayıtlı" />
+        </div>
+        <div>
+          <label for="geminiKey">2. Gemini 2.5 Flash</label>
+          <input type="password" id="geminiKey" placeholder="AIzaSy..." />
+        </div>
+        <div>
+          <label for="deepgramKey">3. Deepgram Nova</label>
+          <input type="password" id="deepgramKey" placeholder="✓ .env kayıtlı" />
+        </div>
+      </div>
+
+      <div class="controls">
+        <button id="saveBtn" class="btn btn-outline" onclick="saveConfig()">Anahtarları Kaydet</button>
+        <select id="prefLlm" style="width:auto;" onchange="saveConfig()">
+          <option value="claude">Öncelik: Claude Sonnet 5.5 (Yedek: Gemini 2.5)</option>
+          <option value="gemini">Öncelik: Gemini 2.5 Flash (Yedek: Claude 5.5)</option>
+        </select>
+      </div>
+      <div class="controls" style="margin-top:8px;">
+        <span id="modelBadge" class="key-status">Claude...</span>
+        <span id="gemBadge" class="key-status">Gemini...</span>
+        <span id="dgBadge" class="key-status">Deepgram...</span>
+      </div>
+      <div id="glossaryStats" style="font-size:12px; color:#86efac; margin-top:6px;"></div>
+    </div>
+
+    <div class="card">
+      <h2>2. Canlı Ses Yakalama (Deepgram Nova) veya 4 Dilli Test</h2>
+      <p style="font-size:13px; color:#cbd5e1; line-height:1.4;">
+        <b>Önemli:</b> Türkçe konuşurken soldaki <b>🇹🇷 TÜRKÇE</b> butonunun sarı olduğundan emin olun.
+      </p>
+      <div class="controls">
+        <button id="micBtn" class="btn btn-primary" onclick="toggleMic()">🎙️ Canlı Çeviriyi Başlat (Deepgram + Mikrofon)</button>
+        <button class="btn btn-warn" onclick="sendDemo()">⚡ 4 Dilli Örnek Konuşma Gönder</button>
+        <button class="btn btn-outline" onclick="clearScreen()">Ekranı Temizle</button>
+      </div>
+
+      <div class="status-bar">
+        <div id="statusDot" class="dot"></div>
+        <span id="statusText">Hazır — Dinleme bekleniyor</span>
+      </div>
+      <div id="heardBox" class="heard-box">🎙️ Mikrofonun Duyduğu Cümle: (Konuştuğunuzda burada anlık görünür)</div>
+
+      <label for="manualInput">Manuel Cümle Gönder (Canlı 4 Dil Çeviri Testi)</label>
+      <div style="display:flex; gap:8px;">
+        <input type="text" id="manualInput" placeholder="Örn: Kazanılmış çevre haklarında geriye gidiş yasağı ve müştereklerin korunması..." onkeydown="if(event.key==='Enter') sendManual()" />
+        <button class="btn btn-primary" onclick="sendManual()">4 Dile Çevir</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
+      <h2>Canlı 4 Kanal Çıktısı (🇹🇷 Türkçe | 🇬🇧 English | 🇫🇷 Français | 🇩🇪 Deutsch)</h2>
+      <span id="lanInfo" style="font-size:13px; color:var(--muted);"></span>
+    </div>
+    <div id="feed" class="feed"></div>
+  </div>
+
+  <script>
+    const BASE = location.pathname.startsWith('/ceviri') ? '/ceviri' : '';
+    document.getElementById('screenLink').href = `${BASE}/ekran`;
+    document.getElementById('listenLink').href = `${BASE}/dinle`;
+
+    let ws;
+    let dgSocket = null;
+    let dgKeepAlive = null;
+    let mediaRecorder = null;
+    let mediaStream = null;
+    let deepgramApiKey = '';
+    let isListening = false;
+    let demoIdx = 0;
+
+    function getPin() {
+      return document.getElementById('opPin').value.trim() || 'cop31';
+    }
+
+    function highlightLangButton(code) {
+      ['tr-TR', 'en-US', 'fr-FR', 'de-DE'].forEach(c => {
+        const el = document.getElementById('btn-' + c);
+        if (el) el.className = c === code ? 'btn btn-outline btn-lang active' : 'btn btn-outline btn-lang';
+      });
+    }
+
+    function updateBadges(hasClaude, claudeModel, hasGem, hasDg) {
+      const mb = document.getElementById('modelBadge');
+      mb.textContent = hasClaude ? `🟢 Claude: ${claudeModel || 'claude-sonnet-5-5'}` : '⚪ Claude Yok';
+      const gb = document.getElementById('gemBadge');
+      gb.textContent = hasGem ? '🟢 Gemini 2.5 Flash (Aktif)' : '⚪ Gemini 2.5 (Girilmedi)';
+      gb.style.borderColor = hasGem ? '#22c55e' : '#64748b';
+      gb.style.color = hasGem ? '#4ade80' : '#cbd5e1';
+      const db = document.getElementById('dgBadge');
+      db.textContent = hasDg ? '🟢 Deepgram Nova STT' : '⚪ Tarayıcı Mikrofonu';
+    }
+
+    async function init() {
+      const res = await fetch(`${BASE}/api/info?pin=` + encodeURIComponent(getPin()));
+      const info = await res.json();
+      deepgramApiKey = info.deepgram_api_key || '';
+      const sel = document.getElementById('sessionSelect');
+      sel.innerHTML = '';
+      info.sessions.forEach(s => {
+        const opt = document.createElement('option');
+        opt.value = s.id;
+        opt.textContent = `${s.day} — ${s.title}`;
+        if (s.id === info.current_session.id) opt.selected = true;
+        sel.appendChild(opt);
+      });
+      document.getElementById('langSelect').value = info.source_lang;
+      if (info.preferred_llm && info.preferred_llm !== 'auto') {
+        document.getElementById('prefLlm').value = info.preferred_llm;
+      }
+      highlightLangButton(info.source_lang);
+      updateBadges(info.has_claude_key, info.claude_model, info.has_gemini_key, info.has_deepgram_key);
+      const isLocal = location.hostname === 'localhost' || location.hostname === '127.0.0.1';
+      document.getElementById('lanInfo').textContent = `Salon Kulaklık Bağlantısı: ${isLocal ? info.listen_url : (location.origin + BASE + '/dinle')}`;
+      document.getElementById('glossaryStats').textContent = `✓ ${info.glossary_count} Dört Dilli (TR/EN/FR/DE) İklim & Hukuk Terimi + PIN Koruması Aktif`;
+
+      sel.onchange = () => {
+        const found = info.sessions.find(x => x.id === sel.value);
+        if (found) setFastLang(found.default_lang);
+      };
+
+      if (!ws || ws.readyState > 1) connectWS();
+    }
+
+    function setFastLang(langCode) {
+      document.getElementById('langSelect').value = langCode;
+      highlightLangButton(langCode);
+      saveConfig();
+      if (isListening) {
+        stopMic();
+        setTimeout(startMic, 300);
+      }
+    }
+
+    function connectWS() {
+      const proto = location.protocol === 'https:' ? 'wss:' : 'ws:';
+      ws = new WebSocket(`${proto}//${location.host}${BASE}/ws`);
+      ws.onmessage = (ev) => {
+        const data = JSON.parse(ev.data);
+        if (data.type === 'init') {
+          (data.history || []).forEach(renderSubtitle);
+        } else if (data.type === 'session_update') {
+          updateBadges(data.has_claude_key, data.claude_model, data.has_gemini_key, data.has_deepgram_key);
+        } else if (data.type === 'subtitle') {
+          renderSubtitle(data);
+        } else if (data.type === 'clear') {
+          document.getElementById('feed').innerHTML = '';
+        }
+      };
+      ws.onclose = () => setTimeout(connectWS, 1500);
+    }
+
+    function saveConfig() {
+      if (!ws || ws.readyState !== 1) return;
+      const dgVal = document.getElementById('deepgramKey').value.trim();
+      if (dgVal) deepgramApiKey = dgVal;
+      const btn = document.getElementById('saveBtn');
+      btn.textContent = '✓ Kaydedildi!';
+      setTimeout(() => { btn.textContent = 'Anahtarları Kaydet'; }, 2000);
+      ws.send(JSON.stringify({
+        type: 'config',
+        pin: getPin(),
+        session_id: document.getElementById('sessionSelect').value,
+        source_lang: document.getElementById('langSelect').value,
+        preferred_llm: document.getElementById('prefLlm').value,
+        claude_api_key: document.getElementById('claudeKey').value,
+        gemini_api_key: document.getElementById('geminiKey').value,
+        deepgram_api_key: dgVal
+      }));
+    }
+
+    function sendDemo() {
+      if (!ws || ws.readyState !== 1) return;
+      ws.send(JSON.stringify({ type: 'demo', pin: getPin(), index: demoIdx++ }));
+    }
+
+    function sendManual() {
+      const inp = document.getElementById('manualInput');
+      const val = inp.value.trim();
+      if (!val || !ws || ws.readyState !== 1) return;
+      ws.send(JSON.stringify({
+        type: 'speech',
+        pin: getPin(),
+        text: val,
+        source_lang: document.getElementById('langSelect').value,
+        is_final: true
+      }));
+      inp.value = '';
+    }
+
+    function clearScreen() {
+      if (ws && ws.readyState === 1) ws.send(JSON.stringify({ type: 'clear', pin: getPin() }));
+    }
+
+    function renderSubtitle(item) {
+      const feed = document.getElementById('feed');
+      let existing = document.getElementById('sub-interim');
+      const html = `
+        <div class="tr">🇹🇷 ${item.tr || ''}</div>
+        <div class="en">🇬🇧 ${item.en || ''}</div>
+        <div class="fr">🇫🇷 ${item.fr || ''}</div>
+        <div class="de">🇩🇪 ${item.de || ''}</div>
+        <div class="meta">${item.timestamp} • Kaynak: ${item.source_lang || ''} • ${item.latency_ms} ms</div>
+      `;
+      if (!item.is_final) {
+        if (!existing) {
+          existing = document.createElement('div');
+          existing.id = 'sub-interim';
+          existing.className = 'msg';
+          existing.style.opacity = '0.75';
+          feed.prepend(existing);
+        }
+        existing.innerHTML = html;
+        return;
+      }
+      if (existing) existing.remove();
+      const div = document.createElement('div');
+      div.className = 'msg';
+      div.innerHTML = html;
+      feed.prepend(div);
+    }
+
+    function stopMic() {
+      isListening = false;
+      if (dgKeepAlive) { clearInterval(dgKeepAlive); dgKeepAlive = null; }
+      if (mediaRecorder && mediaRecorder.state !== 'inactive') mediaRecorder.stop();
+      if (mediaStream) mediaStream.getTracks().forEach(t => t.stop());
+      if (dgSocket) dgSocket.close();
+      document.getElementById('micBtn').textContent = '🎙️ Canlı Çeviriyi Başlat (Deepgram + Mikrofon)';
+      document.getElementById('micBtn').className = 'btn btn-primary';
+      document.getElementById('statusDot').className = 'dot';
+      document.getElementById('statusText').textContent = 'Durduruldu';
+    }
+
+    async function startMic() {
+      const langFull = document.getElementById('langSelect').value;
+      const langShort = langFull.split('-')[0];
+      try {
+        mediaStream = await navigator.mediaDevices.getUserMedia({ audio: true });
+        const dgUrl = `wss://api.deepgram.com/v1/listen?model=nova-2&language=${langShort}&smart_format=true&interim_results=true&endpointing=350`;
+        dgSocket = new WebSocket(dgUrl, ['token', deepgramApiKey]);
+
+        let lastInterimSent = 0;
+        dgSocket.onopen = () => {
+          mediaRecorder = new MediaRecorder(mediaStream, { mimeType: 'audio/webm' });
+          mediaRecorder.addEventListener('dataavailable', (event) => {
+            if (event.data.size > 0 && dgSocket && dgSocket.readyState === 1) {
+              dgSocket.send(event.data);
+            }
+          });
+          mediaRecorder.start(250);
+          dgKeepAlive = setInterval(() => {
+            if (dgSocket && dgSocket.readyState === 1) {
+              dgSocket.send(JSON.stringify({ type: 'KeepAlive' }));
+            }
+          }, 4000);
+          isListening = true;
+          document.getElementById('micBtn').textContent = '⏹️ Canlı Çeviriyi Durdur';
+          document.getElementById('micBtn').className = 'btn btn-danger';
+          document.getElementById('statusDot').className = 'dot live';
+          document.getElementById('statusText').textContent = `Deepgram Nova Canlı Dinliyor (${langFull})...`;
+        };
+
+        dgSocket.onmessage = (message) => {
+          const received = JSON.parse(message.data);
+          const alt = received.channel && received.channel.alternatives && received.channel.alternatives[0];
+          if (!alt || !alt.transcript) return;
+          const transcript = alt.transcript.trim();
+          if (!transcript) return;
+
+          document.getElementById('heardBox').textContent = `🎙️ Duyulan (${langFull}): "${transcript}"`;
+
+          if (received.is_final) {
+            ws.send(JSON.stringify({
+              type: 'speech',
+              pin: getPin(),
+              text: transcript,
+              source_lang: langFull,
+              is_final: true
+            }));
+          } else {
+            const now = Date.now();
+            if (now - lastInterimSent > 900) {
+              lastInterimSent = now;
+              ws.send(JSON.stringify({
+                type: 'speech',
+                pin: getPin(),
+                text: transcript,
+                source_lang: langFull,
+                is_final: false
+              }));
+            }
+          }
+        };
+
+        dgSocket.onclose = () => {
+          if (isListening) {
+            stopMic();
+            setTimeout(startMic, 300);
+          }
+        };
+      } catch (err) {
+        alert('Mikrofon izni alınamadı: ' + err.message);
+      }
+    }
+
+    function toggleMic() {
+      if (isListening) {
+        stopMic();
+      } else {
+        startMic();
+      }
+    }
+
+    init();
+  </script>
+</body>
+</html>
