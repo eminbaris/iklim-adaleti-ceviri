@@ -20,7 +20,7 @@
     header { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border); padding-bottom: 14px; margin-bottom: 18px; flex-wrap: wrap; gap: 12px; }
     .badge { background: #15803d; color: #fff; padding: 4px 10px; border-radius: 6px; font-size: 13px; font-weight: 600; }
     .links { display: flex; gap: 10px; }
-    .btn { cursor: pointer; border: none; border-radius: 8px; padding: 10px 14px; font-weight: 600; font-size: 14px; text-decoration: none; display: inline-flex; align-items: center; gap: 6px; transition: opacity 0.15s; }
+    .btn { cursor: pointer; border: none; border-radius: 8px; padding: 10px 14px; font-weight: 600; font-size: 13px; text-decoration: none; display: inline-flex; align-items: center; gap: 6px; transition: opacity 0.15s; }
     .btn:hover { opacity: 0.9; }
     .btn-primary { background: var(--accent); color: #052e16; }
     .btn-warn { background: var(--warn); color: #1c1917; }
@@ -83,11 +83,11 @@
 
   <div class="grid">
     <div class="card">
-      <h2>1. Oturum, Kürsü Dili ve 3'lü Yapay Zeka Motoru (Claude + Gemini + Deepgram)</h2>
-      <label for="sessionSelect">Aktif Forum Oturumu (15-16-17 Kasım 2026 Güncel Programı — 17 Oturum)</label>
+      <h2>1. Oturum, Kürsü / Soru-Cevap Dili ve Yapay Zeka Motoru</h2>
+      <label for="sessionSelect">Aktif Forum Oturumu (15-16-17 Kasım 2026 Programı — 18 Oturum)</label>
       <select id="sessionSelect"></select>
 
-      <label>Şu An Kürsüdeki Konuşmacı Hangi Dilde Konuşuyor?</label>
+      <label>Şu An Konuşan Kişi (Kürsü veya Soru-Cevap) Hangi Dilde Konuşuyor?</label>
       <div style="display:grid; grid-template-columns:1fr 1fr 1fr 1fr; gap:6px; margin-top:4px;">
         <button type="button" id="btn-tr-TR" class="btn btn-outline btn-lang active" style="justify-content:center; text-align:center;" onclick="setFastLang('tr-TR')">🇹🇷 TÜRKÇE<br><small>→ EN/FR/DE</small></button>
         <button type="button" id="btn-en-US" class="btn btn-outline btn-lang" style="justify-content:center; text-align:center;" onclick="setFastLang('en-US')">🇬🇧 İNGİLİZCE<br><small>→ TR/FR/DE</small></button>
@@ -132,14 +132,18 @@
     </div>
 
     <div class="card">
-      <h2>2. Canlı Ses Yakalama (Deepgram Nova) veya 4 Dilli Test</h2>
-      <p style="font-size:13px; color:#cbd5e1; line-height:1.4;">
-        <b>Önemli:</b> Yayın başlatmak için soldaki <b>Operatör PIN</b> kutusuna şifrenizi girin.
+      <h2>2. Canlı Ses Yakalama, Soru-Cevap ve Oturum Kaydı (Ses + Tutanak)</h2>
+      <p style="font-size:12px; color:#cbd5e1; line-height:1.4;">
+        <b>Soru-Cevap İpucu:</b> İzleyici Türkçe soru sorarken soldan <b>🇹🇷 TÜRKÇE</b>, yabancı konuk cevaplarken onun diline tıklayın; mikrofon kapanmadan ve ses kaydı bölünmeden anında geçiş yapar.
       </p>
       <div class="controls">
-        <button id="micBtn" class="btn btn-primary" onclick="toggleMic()">🎙️ Canlı Çeviriyi Başlat (Deepgram + Mikrofon)</button>
-        <button class="btn btn-warn" onclick="sendDemo()">⚡ 4 Dilli Örnek Konuşma Gönder</button>
+        <button id="micBtn" class="btn btn-primary" onclick="toggleMic()">🎙️ Canlı Çeviriyi & Ses Kaydını Başlat</button>
+        <button class="btn btn-warn" onclick="sendDemo()">⚡ 4 Dilli Örnek Gönder</button>
         <button class="btn btn-outline" onclick="clearScreen()">Ekranı Temizle</button>
+      </div>
+      <div class="controls" style="margin-top:8px;">
+        <button id="dlAudioBtn" class="btn btn-outline" onclick="downloadAudio()">💾 Oturum Ses Kaydını İndir (.webm)</button>
+        <button id="dlTxtBtn" class="btn btn-outline" onclick="downloadTranscript()">📄 4 Dilli Tutanağı İndir (.txt)</button>
       </div>
 
       <div class="status-bar">
@@ -148,7 +152,7 @@
       </div>
       <div id="heardBox" class="heard-box">🎙️ Mikrofonun Duyduğu Cümle: (Konuştuğunuzda burada anlık görünür)</div>
 
-      <label for="manualInput">Manuel Cümle Gönder (Canlı 4 Dil Çeviri Testi)</label>
+      <label for="manualInput">Manuel Cümle / İzleyici Sorusu Gönder (Canlı 4 Dil Çeviri)</label>
       <div style="display:flex; gap:8px;">
         <input type="text" id="manualInput" placeholder="Örn: Kazanılmış çevre haklarında geriye gidiş yasağı ve müştereklerin korunması..." onkeydown="if(event.key==='Enter') sendManual()" />
         <button class="btn btn-primary" onclick="sendManual()">4 Dile Çevir</button>
@@ -177,7 +181,9 @@
     let ws;
     let dgSocket = null;
     let dgKeepAlive = null;
-    let mediaRecorder = null;
+    let dgRecorder = null;
+    let sessionRecorder = null;
+    let recordedChunks = [];
     let mediaStream = null;
     let deepgramApiKey = '';
     let isAuthorized = false;
@@ -265,9 +271,8 @@
       document.getElementById('langSelect').value = langCode;
       highlightLangButton(langCode);
       saveConfig();
-      if (isListening) {
-        stopMic();
-        setTimeout(startMic, 300);
+      if (isListening && mediaStream) {
+        connectDeepgramSocket();
       }
     }
 
@@ -333,6 +338,27 @@
       if (isAuthorized && ws && ws.readyState === 1) ws.send(JSON.stringify({ type: 'clear', pin: getPin() }));
     }
 
+    function downloadTranscript() {
+      if (!isAuthorized) { alert('Tutanağı indirmek için önce Operatör PIN kutusuna şifrenizi girin.'); return; }
+      window.open(`${BASE}/api/transcript?pin=` + encodeURIComponent(getPin()), '_blank');
+    }
+
+    function downloadAudio() {
+      if (recordedChunks.length === 0) {
+        alert('Henüz kaydedilmiş ses bulunmuyor. Canlı çeviriyi başlattığınızda ses otomatik olarak kaydedilir.');
+        return;
+      }
+      const blob = new Blob(recordedChunks, { type: 'audio/webm' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      const stamp = new Date().toISOString().slice(0, 19).replace(/[:T]/g, '-');
+      a.href = url;
+      a.download = `COP31_Oturum_Ses_Kaydi_${stamp}.webm`;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+    }
+
     function renderSubtitle(item) {
       const feed = document.getElementById('feed');
       let existing = document.getElementById('sub-interim');
@@ -361,16 +387,88 @@
       feed.prepend(div);
     }
 
+    function connectDeepgramSocket() {
+      if (dgKeepAlive) { clearInterval(dgKeepAlive); dgKeepAlive = null; }
+      if (dgRecorder && dgRecorder.state !== 'inactive') dgRecorder.stop();
+      if (dgSocket) {
+        dgSocket.onclose = null;
+        dgSocket.close();
+      }
+
+      const langFull = document.getElementById('langSelect').value;
+      const langShort = langFull.split('-')[0];
+      const dgUrl = `wss://api.deepgram.com/v1/listen?model=nova-2&language=${langShort}&smart_format=true&interim_results=true&endpointing=350`;
+      dgSocket = new WebSocket(dgUrl, ['token', deepgramApiKey]);
+
+      let lastInterimSent = 0;
+      dgSocket.onopen = () => {
+        if (!isListening || !mediaStream) return;
+        dgRecorder = new MediaRecorder(mediaStream, { mimeType: 'audio/webm' });
+        dgRecorder.addEventListener('dataavailable', (event) => {
+          if (event.data.size > 0 && dgSocket && dgSocket.readyState === 1) {
+            dgSocket.send(event.data);
+          }
+        });
+        dgRecorder.start(250);
+        dgKeepAlive = setInterval(() => {
+          if (dgSocket && dgSocket.readyState === 1) {
+            dgSocket.send(JSON.stringify({ type: 'KeepAlive' }));
+          }
+        }, 4000);
+        document.getElementById('statusDot').className = 'dot live';
+        document.getElementById('statusText').textContent = `Deepgram Nova Canlı Dinliyor & Kaydediyor (${langFull})...`;
+      };
+
+      dgSocket.onmessage = (message) => {
+        const received = JSON.parse(message.data);
+        const alt = received.channel && received.channel.alternatives && received.channel.alternatives[0];
+        if (!alt || !alt.transcript) return;
+        const transcript = alt.transcript.trim();
+        if (!transcript) return;
+
+        document.getElementById('heardBox').textContent = `🎙️ Duyulan (${langFull}): "${transcript}"`;
+
+        if (received.is_final) {
+          ws.send(JSON.stringify({
+            type: 'speech',
+            pin: getPin(),
+            text: transcript,
+            source_lang: langFull,
+            is_final: true
+          }));
+        } else {
+          const now = Date.now();
+          if (now - lastInterimSent > 900) {
+            lastInterimSent = now;
+            ws.send(JSON.stringify({
+              type: 'speech',
+              pin: getPin(),
+              text: transcript,
+              source_lang: langFull,
+              is_final: false
+            }));
+          }
+        }
+      };
+
+      dgSocket.onclose = () => {
+        if (isListening) {
+          setTimeout(connectDeepgramSocket, 300);
+        }
+      };
+    }
+
     function stopMic() {
       isListening = false;
       if (dgKeepAlive) { clearInterval(dgKeepAlive); dgKeepAlive = null; }
-      if (mediaRecorder && mediaRecorder.state !== 'inactive') mediaRecorder.stop();
+      if (dgRecorder && dgRecorder.state !== 'inactive') dgRecorder.stop();
+      if (sessionRecorder && sessionRecorder.state !== 'inactive') sessionRecorder.stop();
       if (mediaStream) mediaStream.getTracks().forEach(t => t.stop());
-      if (dgSocket) dgSocket.close();
-      document.getElementById('micBtn').textContent = '🎙️ Canlı Çeviriyi Başlat (Deepgram + Mikrofon)';
+      if (dgSocket) { dgSocket.onclose = null; dgSocket.close(); }
+      document.getElementById('micBtn').textContent = '🎙️ Canlı Çeviriyi & Ses Kaydını Başlat';
       document.getElementById('micBtn').className = 'btn btn-primary';
       document.getElementById('statusDot').className = 'dot';
-      document.getElementById('statusText').textContent = 'Durduruldu';
+      document.getElementById('statusText').textContent = 'Durduruldu — Ses ve tutanak indirmeye hazır';
     }
 
     async function startMic() {
@@ -378,72 +476,23 @@
         alert('Canlı mikrofon yayını için önce soldaki Operatör PIN kutusuna şifrenizi girin.');
         return;
       }
-      const langFull = document.getElementById('langSelect').value;
-      const langShort = langFull.split('-')[0];
       try {
         mediaStream = await navigator.mediaDevices.getUserMedia({ audio: true });
-        const dgUrl = `wss://api.deepgram.com/v1/listen?model=nova-2&language=${langShort}&smart_format=true&interim_results=true&endpointing=350`;
-        dgSocket = new WebSocket(dgUrl, ['token', deepgramApiKey]);
-
-        let lastInterimSent = 0;
-        dgSocket.onopen = () => {
-          mediaRecorder = new MediaRecorder(mediaStream, { mimeType: 'audio/webm' });
-          mediaRecorder.addEventListener('dataavailable', (event) => {
-            if (event.data.size > 0 && dgSocket && dgSocket.readyState === 1) {
-              dgSocket.send(event.data);
-            }
-          });
-          mediaRecorder.start(250);
-          dgKeepAlive = setInterval(() => {
-            if (dgSocket && dgSocket.readyState === 1) {
-              dgSocket.send(JSON.stringify({ type: 'KeepAlive' }));
-            }
-          }, 4000);
-          isListening = true;
-          document.getElementById('micBtn').textContent = '⏹️ Canlı Çeviriyi Durdur';
-          document.getElementById('micBtn').className = 'btn btn-danger';
-          document.getElementById('statusDot').className = 'dot live';
-          document.getElementById('statusText').textContent = `Deepgram Nova Canlı Dinliyor (${langFull})...`;
-        };
-
-        dgSocket.onmessage = (message) => {
-          const received = JSON.parse(message.data);
-          const alt = received.channel && received.channel.alternatives && received.channel.alternatives[0];
-          if (!alt || !alt.transcript) return;
-          const transcript = alt.transcript.trim();
-          if (!transcript) return;
-
-          document.getElementById('heardBox').textContent = `🎙️ Duyulan (${langFull}): "${transcript}"`;
-
-          if (received.is_final) {
-            ws.send(JSON.stringify({
-              type: 'speech',
-              pin: getPin(),
-              text: transcript,
-              source_lang: langFull,
-              is_final: true
-            }));
-          } else {
-            const now = Date.now();
-            if (now - lastInterimSent > 900) {
-              lastInterimSent = now;
-              ws.send(JSON.stringify({
-                type: 'speech',
-                pin: getPin(),
-                text: transcript,
-                source_lang: langFull,
-                is_final: false
-              }));
-            }
+        recordedChunks = [];
+        sessionRecorder = new MediaRecorder(mediaStream, { mimeType: 'audio/webm' });
+        sessionRecorder.addEventListener('dataavailable', (ev) => {
+          if (ev.data && ev.data.size > 0) {
+            recordedChunks.push(ev.data);
+            const mb = (recordedChunks.reduce((a, b) => a + b.size, 0) / (1024 * 1024)).toFixed(1);
+            document.getElementById('dlAudioBtn').textContent = `💾 Oturum Ses Kaydını İndir (${mb} MB)`;
           }
-        };
+        });
+        sessionRecorder.start(1000);
 
-        dgSocket.onclose = () => {
-          if (isListening) {
-            stopMic();
-            setTimeout(startMic, 300);
-          }
-        };
+        isListening = true;
+        document.getElementById('micBtn').textContent = '⏹️ Canlı Çeviriyi Durdur';
+        document.getElementById('micBtn').className = 'btn btn-danger';
+        connectDeepgramSocket();
       } catch (err) {
         alert('Mikrofon izni alınamadı: ' + err.message);
       }

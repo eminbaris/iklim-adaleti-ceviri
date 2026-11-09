@@ -57,6 +57,7 @@ STATE = {
     "gemini_api_key": os.environ.get("GEMINI_API_KEY", ""),
     "deepgram_api_key": os.environ.get("DEEPGRAM_API_KEY", ""),
     "history": [],
+    "full_transcript": [],
 }
 
 # Security: Brute-force lockout & TTS whitelist
@@ -345,8 +346,40 @@ async def api_info(request: Request, pin: Optional[str] = Query(None)):
             "deepgram_api_key": STATE["deepgram_api_key"] if authorized else "",
             "glossary_count": len(QUADRILINGUAL_TERMS),
             "forbidden_count": len(FORBIDDEN_TR),
+            "transcript_count": len(STATE["full_transcript"]),
             "history": STATE["history"][-15:],
         }
+    )
+
+
+@router.get("/api/transcript")
+async def api_transcript(request: Request, pin: Optional[str] = Query(None)):
+    client_ip = get_client_ip(request.headers, request.client.host if request.client else "")
+    if not verify_operator_pin(pin, client_ip):
+        return Response(status_code=403, content="Operatör PIN gerekli.".encode("utf-8"))
+    lines = [
+        "======================================================================",
+        "COP31 ULUSLARARASI İKLİM ADALETİ FORUMU — 4 DİLLİ SİMULTANE TUTANAĞI",
+        f"Aktif Oturum: {STATE['session']['day']} | {STATE['session']['title']}",
+        f"Konuşmacılar: {STATE['session']['speakers']}",
+        "======================================================================",
+        "",
+    ]
+    items = STATE["full_transcript"] or STATE["history"]
+    for idx, item in enumerate(items, 1):
+        lines.append(f"[{idx}] Saat: {item.get('timestamp', '')} | Kaynak Dil: {item.get('source_lang', '')} | Oturum: {item.get('session_title', STATE['session']['title'])}")
+        lines.append(f"  🎙️ Orijinal: {item.get('source', '')}")
+        lines.append(f"  🇹🇷 TR: {item.get('tr', '')}")
+        lines.append(f"  🇬🇧 EN: {item.get('en', '')}")
+        lines.append(f"  🇫🇷 FR: {item.get('fr', '')}")
+        lines.append(f"  🇩🇪 DE: {item.get('de', '')}")
+        lines.append("-" * 70)
+    content = "\n".join(lines).encode("utf-8")
+    filename = f"COP31_Simultane_Tutanak_{time.strftime('%Y-%m-%d_%H-%M')}.txt"
+    return Response(
+        content=content,
+        media_type="text/plain; charset=utf-8",
+        headers={"Content-Disposition": f'attachment; filename="{filename}"'},
     )
 
 
@@ -364,7 +397,7 @@ async def api_tts(text: str = Query(..., min_length=1, max_length=600), lang: st
 async def websocket_endpoint(websocket: WebSocket):
     await manager.connect(websocket)
     client_ip = get_client_ip(websocket.headers, websocket.client.host if websocket.client else "")
-    unauthorized_Attempts = 0
+    unauthorized_attempts = 0
     await websocket.send_json(
         {
             "type": "init",
@@ -383,8 +416,8 @@ async def websocket_endpoint(websocket: WebSocket):
 
             if msg_type in ("config", "speech", "demo", "clear"):
                 if not verify_operator_pin(data.get("pin", ""), client_ip):
-                    unauthorized_Attempts += 1
-                    if unauthorized_Attempts >= 5:
+                    unauthorized_attempts += 1
+                    if unauthorized_attempts >= 5:
                         await websocket.close(code=1008)
                         break
                     continue
@@ -438,6 +471,7 @@ async def websocket_endpoint(websocket: WebSocket):
                 payload = {
                     "type": "subtitle",
                     "id": int(time.time() * 1000),
+                    "session_title": STATE["session"]["title"],
                     "source_lang": src_lang,
                     "source": src_text,
                     "tr": quad["tr"],
@@ -457,6 +491,9 @@ async def websocket_endpoint(websocket: WebSocket):
                     STATE["history"].append(payload)
                     if len(STATE["history"]) > 50:
                         STATE["history"] = STATE["history"][-50:]
+                    STATE["full_transcript"].append(payload)
+                    if len(STATE["full_transcript"]) > 5000:
+                        STATE["full_transcript"] = STATE["full_transcript"][-5000:]
 
                 await manager.broadcast(payload)
 
@@ -468,6 +505,7 @@ async def websocket_endpoint(websocket: WebSocket):
                 payload = {
                     "type": "subtitle",
                     "id": int(time.time() * 1000),
+                    "session_title": STATE["session"]["title"],
                     "source_lang": sample["source_lang"],
                     "source": sample["source"],
                     "tr": sample["tr"],
@@ -479,6 +517,7 @@ async def websocket_endpoint(websocket: WebSocket):
                     "timestamp": time.strftime("%H:%M:%S"),
                 }
                 STATE["history"].append(payload)
+                STATE["full_transcript"].append(payload)
                 await manager.broadcast(payload)
 
             elif msg_type == "clear":
