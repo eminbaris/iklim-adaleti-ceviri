@@ -41,7 +41,7 @@ SESSIONS = [
         "day": "16 Kasım 2026 | 10.30 - 12.00",
         "title": "I. Oturum: Kapitalist Kriz Çağında Doğanın Metalaştırılması, Büyüme ve Sermaye Birikimi / Session I: The Commodification of Nature, Growth, and Capital Accumulation in the Age of Capitalist Crisis",
         "speakers": "Başkan: Dr. Ali Yalçın Göymen (Potsdam Üniv.) | Prof. Dr. Markus Wissen (HWR Berlin), Dr. Jenny Simon (HWR Berlin), Dr. Ali Yalçın Göymen",
-        "default_lang": "de-DE",
+        "default_lang": "en-US",
     },
     {
         "id": "16_kasim_1200_oturum2",
@@ -137,12 +137,34 @@ SESSIONS = [
     },
 ]
 
+# Konuşmacı Özel Hazırlık Brifingleri (AI Translation Preparation Briefs)
+SPEAKER_BRIEFS = (
+    "ÖZEL KONUŞMACI BRİFİNGİ — Dr. Jenny Simon & Prof. Dr. Markus Wissen (HWR Berlin):\n"
+    "- Kurum: Berlin School of Economics and Law (HWR Berlin). Ortak yazarlar: Markus Wissen, Tobias Kalt, Anne Tittor, Johanna Tunn, Franziska Müller, Jesko Hennig.\n"
+    "- Araştırma alanları: Eleştirel politik ekonomi (critical political economy), doğanın/gıdanın/toprağın finansallaşması (financialisation of food, land, and nature), sosyo-ekolojik dönüşüm (socio-ecological transformation), enerji dönüşümünün politik ekonomisi, yeşil hidrojen (green hydrogen), ekstraktivizm ve Küresel Kuzey-Güney eşitsizlikleri.\n"
+    "- KRİTİK ÇEVİRİ KURALI: 'Financialisation' kelimesini ASLA 'finansman / fon sağlama' olarak çevirme -> mutlaka 'finansallaşma' olarak çevir.\n"
+    "- 'Fictitious capital' -> 'hayali sermaye (fiktif sermaye)', 'land grabbing' -> 'toprak gaspı (arazi gaspı)', 'emission trading' -> 'emisyon ticareti', 'externalisation of environmental costs' -> 'çevresel maliyetlerin dışsallaştırılması', 'industrial decarbonisation' -> 'endüstriyel karbonsuzlaşma', 'Konzentration im Kommando über Kapital' -> 'sermaye üzerindeki kumandanın yoğunlaşması (varlık yönetim şirketleri kapitalizmi)'."
+)
+
 # 4 Dilli Eşdeğerlik Tablosu (TR <-> EN <-> FR <-> DE)
 QUADRILINGUAL_TERMS = [
     ("iklim adaleti", "climate justice", "justice climatique", "Klimagerechtigkeit"),
     ("ekolojik adalet", "ecological justice", "justice écologique", "ökologische Gerechtigkeit"),
     ("ekolojinin politik ekonomisi", "the political economy of ecology", "l'économie politique de l'écologie", "die politische Ökonomie der Ökologie"),
+    ("eleştirel politik ekonomi", "critical political economy", "économie politique critique", "kritische politische Ökonomie"),
     ("doğanın metalaştırılması", "commodification of nature", "marchandisation de la nature", "Kommodifizierung (Inwertsetzung) der Natur"),
+    ("doğanın, gıdanın ve toprağın finansallaşması", "financialisation of food, land, and nature", "financiarisation de l'alimentation, de la terre et de la nature", "Finanzialisierung von Nahrung, Land und Natur"),
+    ("finansallaşma", "financialisation (financialization)", "financiarisation", "Finanzialisierung"),
+    ("hayali sermaye (fiktif sermaye)", "fictitious capital", "capital fictif", "fiktives Kapital"),
+    ("finansal spekülasyon", "financial speculation", "spéculation financière", "Finanzspekulation"),
+    ("toprak gaspı (arazi gaspı)", "land grabbing", "accaparement des terres", "Land Grabbing (Landnahme)"),
+    ("emisyon ticareti (karbon piyasaları)", "emission trading (carbon markets)", "échange de quotas d'émission (marchés du carbone)", "Emissionshandel (Kohlenstoffmärkte)"),
+    ("çevresel maliyetlerin dışsallaştırılması", "externalisation of environmental costs", "externalisation des coûts environnementaux", "Externalisierung ökologischer Kosten"),
+    ("sosyo-ekolojik dönüşüm", "socio-ecological transformation", "transformation socio-écologique", "sozial-ökologische Transformation"),
+    ("yeşil hidrojen", "green hydrogen", "hydrogène vert", "grüner Wasserstoff"),
+    ("endüstriyel karbonsuzlaşma", "industrial decarbonisation", "décarbonation industrielle", "industrielle Dekarbonisierung"),
+    ("Kuzey-Güney eşitsizlikleri", "unequal North-South relationships", "relations Nord-Sud inégales", "ungleiche Nord-Süd-Beziehungen"),
+    ("sermaye üzerindeki kumandanın yoğunlaşması", "concentration in the command over capital", "concentration dans le commandement du capital", "Konzentration im Kommando über Kapital"),
     ("metalaşan doğada canlı olmak", "being alive in a commodified nature", "être vivant dans une nature marchandisée", "lebendig sein in einer kommodifizierten Natur"),
     ("sermaye birikimi", "capital accumulation", "accumulation du capital", "Kapitalakkumulation"),
     ("emperyal yaşam tarzı", "imperial mode of living", "mode de vie impérial", "imperiale Lebensweise"),
@@ -208,6 +230,12 @@ QUADRILINGUAL_TERMS = [
 
 FORBIDDEN_TR = [
     ("yeşil yıkama", "yeşil aklama"),
+    ("doğanın finansmanı", "doğanın finansallaşması"),
+    ("gıdanın finansmanı", "gıdanın finansallaşması"),
+    ("toprağın finansmanı", "toprağın finansallaşması"),
+    ("sahte sermaye", "hayali sermaye (fiktif sermaye)"),
+    ("kurgusal sermaye", "hayali sermaye (fiktif sermaye)"),
+    ("arazi kapma", "toprak gaspı (arazi gaspı)"),
     ("tarım ilacı", "tarım zehri (pestisit)"),
     ("tarım ilaçları", "tarım zehirleri (pestisitler)"),
     ("zirai ilaç", "tarım zehri"),
@@ -236,12 +264,12 @@ DEMO_SPEECHES = [
         "de": "Die COP31 gehört den Arbeitenden und den Völkern, nicht den Konzernen; wir verteidigen unsere Gemeingüter und Lebensräume gegen die Kommodifizierung der Natur und Greenwashing.",
     },
     {
-        "source_lang": "de-DE",
-        "source": "[DE - Markus Wissen & Jenny Simon] Die imperiale Lebensweise, die Kommodifizierung der Natur und die endlose Kapitalakkumulation zerstören die globalen Gemeingüter.",
-        "tr": "Emperyal yaşam tarzı, doğanın metalaştırılması ve sınırsız sermaye birikimi küresel müşterekleri tahrip ediyor.",
-        "en": "The imperial mode of living, the commodification of nature, and endless capital accumulation are destroying the global commons.",
-        "fr": "Le mode de vie impérial, la marchandisation de la nature et l'accumulation sans fin du capital détruisent les biens communs mondiaux.",
-        "de": "Die imperiale Lebensweise, die Kommodifizierung der Natur und die endlose Kapitalakkumulation zerstören die globalen Gemeingüter.",
+        "source_lang": "en-US",
+        "source": "[EN - Dr. Jenny Simon & Prof. Markus Wissen] The financialisation of nature, fictitious capital, green hydrogen extractivism, and the imperial mode of living deepen unequal North-South relationships and destroy the global commons.",
+        "tr": "Doğanın finansallaşması, hayali sermaye, yeşil hidrojen ekstraktivizmi ve emperyal yaşam tarzı, eşitsiz Kuzey-Güney ilişkilerini derinleştiriyor ve küresel müşterekleri tahrip ediyor.",
+        "en": "The financialisation of nature, fictitious capital, green hydrogen extractivism, and the imperial mode of living deepen unequal North-South relationships and destroy the global commons.",
+        "fr": "La financiarisation de la nature, le capital fictif, l'extractivisme de l'hydrogène vert et le mode de vie impérial approfondissent les relations Nord-Sud inégales et détruisent les biens communs mondiaux.",
+        "de": "Die Finanzialisierung der Natur, das fiktive Kapital, der Extraktivismus von grünem Wasserstoff und die imperiale Lebensweise vertiefen ungleiche Nord-Süd-Beziehungen und zerstören die globalen Gemeingüter.",
     },
     {
         "source_lang": "fr-FR",
@@ -270,6 +298,7 @@ def build_quadrilingual_system_prompt(session_title: str = "", speakers: str = "
         "için Antalya Barosu'nda görev yapan 4 dilli (Türkçe <-> İngilizce <-> Fransızca <-> Almanca) simultane tercümansın.\n"
         f"Aktif Oturum: {session_title}\n"
         f"Konuşmacılar: {speakers}\n\n"
+        f"{SPEAKER_BRIEFS}\n\n"
         "GÖREVİN:\n"
         "Sana gelen konuşma metni TÜRKÇE, İNGİLİZCE, FRANSIZCA veya ALMANCA olabilir.\n"
         "Metni aynı anda her 4 dile (tr, en, fr, de) çevirerek SADECE geçerli bir JSON nesnesi döndür:\n"
