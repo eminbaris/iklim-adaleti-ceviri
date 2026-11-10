@@ -90,7 +90,7 @@ SESSIONS = [
         "id": "17_kasim_1030_oturum1",
         "day": "17 Kasım 2026 | 10.30 - 12.30",
         "title": "I. Oturum: Uluslararası İklim Hukuku Göstergeleri, İklim Adaleti ve Kırılgan Alanlar / Session I: International Climate Law Indicators, Climate Justice, and Vulnerable Areas",
-        "speakers": "Başkan: Prof. Dr. Ayşe Odman Boztosun (Akdeniz Üniv.) | Prof. Dr. Michel Prieur (CIDCE Başkanı, Univ. de Limoges - FR), Dr. Julien Prieur (CIDCE), Dr. Laurent Vassallo (CIDCE), Lucie Brouwer (CIDCE)",
+        "speakers": "Başkan: Prof. Dr. Ayşe Odman Boztosun (Akdeniz Üniv.) | Prof. Dr. Michel Prieur (CIDCE Başkanı, Univ. de Limoges - FR), Dr. Julien Prieur (CIDCE - FR/EN), Dr. Laurent Vassallo (CIDCE), Lucie Brouwer (CIDCE)",
         "default_lang": "fr-FR",
     },
     {
@@ -146,22 +146,31 @@ SPEAKER_BRIEFS = (
     "=== ÖZEL KONUŞMACI BRİFİNGİ 2: Prof. Dr. Michel Prieur (CIDCE Başkanı, Université de Limoges — Kaynak Dil: FRANSIZCA) ===\n"
     "- Sunum Başlığı: Le rôle des juges et des avocats en droit du climat et de l'environnement : justice, climat et droits humains (İklim ve Çevre Hukukunda Hâkimlerin ve Avukatların Rolü: Adalet, İklim ve İnsan Hakları).\n"
     "- KURAL 1 (DOĞRUDAN FR -> TR ÇEVİRİ): Konuşmacı Fransızca konuştuğunda İngilizce ara çeviri nedeniyle Fransız hukuk kavramlarını bozmadan doğrudan Fransızca hukuk terminolojisinden Türkçeye çevir.\n"
-    "- Ortak yazarlar ve kurumlar: Julien Prieur, Laurent Vassallo, Mohamed Ali Mekouar, Christophe Bastin, Julien Bétaille, Marie-Anne Cohendet, CIDCE, Université de Limoges, Revue juridique de l'environnement, PNUE (UNEP), CEDH (AİHM), CIJ (UAD), TIDM (ITLOS), CJUE (ABAD), Cour interaméricaine des droits de l'homme, Conseil d'État (Fransa Danıştayı), Cour de cassation (Fransa Yargıtayı), Conseil constitutionnel (Fransa Anayasa Konseyi). Fransız mahkemelerini birbirleriyle veya Türk kurumlarıyla karıştırma.\n"
-    "- KESİN HUKUKİ AYRIM KURALLARI (ASLA KARIŞTIRMA):\n"
+    "- Ortak yazarlar ve kurumlar: Julien Prieur, Laurent Vassallo, Mohamed Ali Mekouar, Christophe Bastin, Julien Bétaille, Marie-Anne Cohendet, CIDCE, Université de Limoges, Revue juridique de l'environnement, PNUE (UNEP), CEDH (AİHM), CIJ (UAD), TIDM (ITLOS), CJUE (ABAD), Cour interaméricaine des droits de l'homme, Conseil d'État (Fransa Danıştayı), Cour de cassation (Fransa Yargıtayı), Conseil constitutionnel (Fransa Anayasa Konseyi).\n"
+    "- KESİN HUKUKİ AYRIM KURALLARI:\n"
     "  1. 'Effectivité du droit / Effectivity of law' -> 'hukukun fiilî işlerliği (hukuk kurallarının fiilen uygulanması)'. 'Efficacité / Effectiveness' -> 'etkililik'. 'Efficience / Efficiency' -> 'verimlilik'. 'Effectivité' kelimesini ASLA sıradan 'etkinlik' diye çevirme!\n"
-    "  2. 'Principe de non-régression / Principle of non-regression' -> 'çevre hukukunda geriye gidiş yasağı ilkesi'. 'Principe de non-rétroactivité / Non-retroactivity' -> 'geriye yürümezlik ilkesi'. 'Acquis environnementaux' -> 'çevre hukukunda kazanılmış koruma düzeyi'. 'Progrès du droit' -> 'hukukun aşamalı gelişimi' (teknolojik/ekonomik büyüme değil).\n"
+    "  2. 'Principe de non-régression / Principle of non-regression' -> 'çevre hukukunda geriye gidiş yasağı ilkesi'. 'Principe de non-rétroactivité / Non-retroactivity' -> 'geriye yürümezlik ilkesi'. 'Acquis environnementaux' -> 'çevre hukukunda kazanılmış koruma düzeyi'.\n"
     "  3. 'Accès à la justice' -> 'adalete erişim', 'Accès au juge' -> 'hâkime / yargı merciine erişim', 'Accès au tribunal' -> 'mahkemeye erişim hakkı'.\n"
     "  4. 'Qualité pour agir / Legal standing' -> 'dava açma yetkisi / dava açma ehliyeti', 'Intérêt à agir' -> 'dava açmada menfaat', 'Recevabilité' -> 'kabul edilebilirlik', 'Irrecevabilité' -> 'kabul edilemezlik'.\n"
-    "  5. 'Jurisprudence' -> 'içtihat' vs 'Doctrine juridique' -> 'hukuk öğretisi / doktrin'.\n"
-    "  6. 'Arrêt / Jugement contentieux' -> 'çekişmeli yargı kararı / yüksek mahkeme kararı' vs 'Avis consultatif' -> 'danışma görüşü' (TIDM/ITLOS 21 Mayıs 2024, Cour interaméricaine OC-32/25 ve CIJ/UAD 23 Temmuz 2025 danışma görüşlerini çekişmeli bağlayıcı mahkeme ilamı gibi çevirme).\n"
-    "  7. CEDH (AİHM) Büyük Daire 'Verein KlimaSeniorinnen Schweiz et autres c. Suisse (9 Nisan 2024)' kararında derneğin dava açma ehliyeti (qualité pour agir) kabul edilmiş, bireysel başvurular kabul edilemez (irrecevables) bulunmuştur.\n"
-    "  8. CIJ (UAD) 23 Temmuz 2025 Danışma Görüşü terimleri: 'diligence requise' -> 'gereken özeni gösterme yükümlülüğü', 'prévention des dommages significatifs' -> 'önemli zararların önlenmesi', 'réparation' -> 'giderim', 'cessation' -> 'ihlale yol açan eylem veya ihmalin sona erdirilmesi', 'garanties de non-répétition' -> 'tekrarlanmama güvenceleri', 'obligations erga omnes' -> 'herkese karşı ileri sürülebilen yükümlülükler', 'obligations erga omnes partes' -> 'antlaşmanın tüm taraflarına karşı ileri sürülebilen yükümlülükler'.\n"
-    "  9. Fransızca Kiplik ve Doktriner Nüanslar: 'doit' -> 'zorundadır / gerekmektedir', 'peut' -> 'yapabilir / bulunabilir', 'devrait' -> 'yapmalıdır / yapılması gerekir', 'est tenu de' -> 'yükümlüdür', 'est susceptible de' -> 'ihtimali vardır / mümkün olabilir', 'en principe' -> 'kural olarak / ilke olarak', 'sous réserve de' -> 'saklı kalmak kaydıyla / koşuluyla', 'ne garantit pas nécessairement' -> 'zorunlu olarak garanti etmez'. Latince terimleri ('erga omnes', 'erga omnes partes', 'lex specialis', 'lex posterior', 'pacta sunt servanda', 'jus cogens', 'in dubio pro natura') koru.\n"
-    "  10. KANONİK FR -> TR ÇEVİRİ ÖRNEKLERİ:\n"
-    "      • 'Le principe de non-régression vise à empêcher l'affaiblissement des normes de protection de l'environnement.' -> 'Geriye gidiş yasağı ilkesi, çevrenin korunmasına ilişkin standartların zayıflatılmasını önlemeyi amaçlar.'\n"
-    "      • 'L'existence d'une législation environnementale ne garantit pas nécessairement l'effectivité du droit de l'environnement.' -> 'Çevre mevzuatının mevcut olması, çevre hukukunun fiilen işlediğini zorunlu olarak garanti etmez.'\n"
-    "      • 'Il faut distinguer l'effectivité des normes environnementales de l'efficacité des politiques publiques.' -> 'Çevre hukuku kurallarının fiilî işlerliği ile kamu politikalarının etkililiğini birbirinden ayırmak gerekir.'\n"
-    "      • 'Le développement du contentieux climatique renforce le rôle des juridictions dans le contrôle des obligations des États.' -> 'İklim davalarının gelişmesi, devletlerin yükümlülüklerinin denetlenmesinde yargı mercilerinin rolünü güçlendirmektedir.'"
+    "  5. 'Jurisprudence' -> 'içtihat' vs 'Doctrine juridique' -> 'hukuk öğretisi / doktrin'. 'Arrêt / Jugement contentieux' -> 'çekişmeli yargı kararı' vs 'Avis consultatif' -> 'danışma görüşü' (TIDM/ITLOS 2024, Cour interaméricaine OC-32/25 ve CIJ/UAD 23 Temmuz 2025).\n"
+    "  6. CEDH (AİHM) Büyük Daire 'Verein KlimaSeniorinnen Schweiz et autres c. Suisse (9 Nisan 2024)' kararında derneğin dava açma ehliyeti (qualité pour agir) kabul edilmiş, bireysel başvurular kabul edilemez (irrecevables) bulunmuştur.\n\n"
+    "=== ÖZEL KONUŞMACI BRİFİNGİ 3: Dr. Julien Prieur (CIDCE, Université de Limoges / Paris 1 Panthéon-Sorbonne — Kaynak Dil: FRANSIZCA veya İNGİLİZCE) ===\n"
+    "- Kimlik Kuralı: Dr. Julien Prieur'ü Prof. Michel Prieur ile karıştırma. Sunum Başlığı: 'Bilan de la COP30 du point de vue de la justice climatique, dans la perspective de la COP31 à Antalya en 2026 / A Climate Justice Assessment of COP30 on the Road to COP31 in Antalya, 2026' (Antalya'da 2026'da Yapılacak COP31'e Giden Süreçte COP30'un İklim Adaleti Açısından Özeti).\n"
+    "- Ortak yazarlar ve coğrafi referanslar: Gina Marcílio Pompeu, Luciana Barreira de Vasconcelos Pinheiro, Grace Ladeira Garbaccio, Nelson Gularte Ramos Neto, Jeferson Dytz Marin, José Antônio Tietzmann e Silva, Ricardo Stanziola Vieira; Belém, Pará, Brezilya, Amazon Havzası, 'Caatinga' ekosistemi (Brezilya), Luiz Inácio Lula da Silva, André Corrêa do Lago, Marina Silva, Simon Stiell, António Guterres.\n"
+    "- COP30 (10-22 Kasım 2025, Belém, Brezilya) Karar ve Mekanizmaları:\n"
+    "  1. 'Belém Political Package / Paquet politique de Belém' -> 'Belém Siyasi Paketi'.\n"
+    "  2. 'Global Mutirão Decision / Décision Global Mutirão' -> 'Küresel Mutirão Kararı (Global Mutirão Decision)' (Portekizce 'mutirão' tek başına geçtiğinde: 'kolektif seferberlik / ortaklaşa seferberlik').\n"
+    "  3. 'Baku to Belém Roadmap to 1.3T / Feuille de route de Bakou à Belém vers 1 300 milliards' -> '1,3 trilyon dolarlık Bakü–Belém Yol Haritası' (2035'e kadar yıllık en az 1,3 trilyon dolar hedefi; ASLA hâlihazırda ödenmiş/aktarılmış para gibi çevirme!).\n"
+    "  4. 'Global Goal on Adaptation / Objectif mondial en matière d'adaptation' -> 'Küresel Uyum Hedefi' ve '59 Belém Adaptation Indicators / 59 indicateurs d'adaptation de Belém' (gönüllü ve cezai olmayan 59 uyum göstergesi). KRİTİK: 'Indicateurs d'adaptation / Adaptation indicators' (uyum göstergeleri) ile 'Indicateurs juridiques / Legal indicators' (hukuki göstergeler) kavramlarını ASLA karıştırma!\n"
+    "  5. 'Just Transition Mechanism / Mécanisme de transition juste' -> 'Adil Geçiş Mekanizması' ('transition juste' -> 'adil geçiş'; asla genel 'yeşil dönüşüm' deme).\n"
+    "  6. 'Tropical Forest Forever Facility (TFFF)' (6 Kasım 2025 Belém Zirvesi'nde başlatılan girişim) -> 'Tropikal Ormanları Kalıcı Olarak Koruma Finansman Mekanizması (TFFF)' (COP'un bağlayıcı kararı değil, finansman girişimidir).\n"
+    "- KESİN KAVRAMSAL VE SAYISAL AYRIM KURALLARI:\n"
+    "  • 'Sortie progressive des combustibles fossiles / Fossil fuel phase-out' -> 'fosil yakıtların aşamalı olarak tamamen terk edilmesi' vs 'Réduction progressive / Phase-down' -> 'fosil yakıt kullanımının aşamalı olarak azaltılması' vs 'Transition hors des combustibles fossiles / Transitioning away from fossil fuels' -> 'fosil yakıtlardan uzaklaşma'. (COP30 nihai metninde açık bir 'phase-out / tamamen terk etme' yol haritası yer almamıştır; müzakere teklifi ile kabul edilen COP kararını karıştırma).\n"
+    "  • 'Atténuation / Mitigation' -> 'emisyon azaltımı (iklim değişikliğinin azaltılması)' vs 'Adaptation' -> 'iklim değişikliğine uyum' vs 'Pertes et préjudices / Loss and damage' -> 'kayıp ve zarar'.\n"
+    "  • 'Promesse de financement / Financial pledge' -> 'finansman taahhüdü' vs 'Financements mobilisés / Mobilised finance' -> 'harekete geçirilen finansman' vs 'Financements effectivement versés / Disbursed finance' -> 'fiilen aktarılan / kullandırılan finansman'.\n"
+    "  • SAYISAL ÇEVİRİ KURALI (FR/EN): Fransızca 'un milliard' = İngilizce 'one billion' = '1 milyar'. Fransızca '1 000 milliards (un billion)' = İngilizce 'one trillion' = '1 trilyon' ('1 300 milliards de dollars' = '1,3 trilyon dolar').\n"
+    "  • 'Fonction socio-environnementale de la propriété / Socio-environmental function of property' -> 'mülkiyetin sosyo-ekolojik işlevi'.\n"
+    "  • 'Accords volontaires / Voluntary agreements' -> 'gönüllü anlaşmalar' ve 'Responsabilité sociétale des entreprises (RSE) / Corporate social responsibility' -> 'kurumsal sosyal sorumluluk' (devletlerin hukuken bağlayıcı yükümlülükleriyle karıştırma)."
 )
 
 # 4 Dilli Eşdeğerlik Tablosu (TR <-> EN <-> FR <-> DE)
@@ -173,6 +182,7 @@ QUADRILINGUAL_TERMS = [
     ("iklim hukuku", "climate law", "droit du climat", "Klimarecht"),
     ("uluslararası çevre hukuku", "international environmental law", "droit international de l'environnement", "internationales Umweltrecht"),
     ("karşılaştırmalı çevre hukuku", "comparative environmental law", "droit comparé de l'environnement", "vergleichendes Umweltrecht"),
+    ("çevresel hukuk devleti ilkesi", "environmental rule of law", "État de droit environnemental", "umweltrechtliche Rechtsstaatlichkeit"),
     ("çevre hukukunda geriye gidiş yasağı ilkesi", "principle of non-regression", "principe de non-régression", "Nicht-Regressionsprinzip (Rückschrittsverbot im Umweltrecht)"),
     ("geriye yürümezlik ilkesi", "principle of non-retroactivity", "principe de non-rétroactivité", "Rückwirkungsverbot"),
     ("hukuki koruma düzeyinde geriye gidiş", "legal regression", "régression du droit (régression juridique)", "rechtlicher Rückschritt"),
@@ -184,28 +194,35 @@ QUADRILINGUAL_TERMS = [
     ("çevresel zarar", "environmental damage", "dommage environnemental", "Umweltschaden"),
     ("çevresel değerlendirme", "environmental assessment", "évaluation environnementale", "Umweltbewertung"),
     ("çevresel etki değerlendirmesi (ÇED)", "environmental impact assessment (EIA)", "étude d'impact environnemental", "Umweltverträglichkeitsprüfung (UVP)"),
-    ("biyolojik çeşitliliğin korunması", "protection of biodiversity", "protection de la biodiversité", "Schutz der biologischen Vielfalt"),
-    ("hukukun fiilî işlerliği", "effectivity of law", "effectivité du droit", "Effektivität (tatsächliche Wirksamkeit) des Rechts"),
+    ("biyolojik çeşitliliğin korunması", "biodiversity conservation (protection of biodiversity)", "conservation de la biodiversité (protection de la biodiversité)", "Schutz und Erhaltung der biologischen Vielfalt"),
+    ("hukukun fiilî işlerliği", "effectivity of law (legal effectivity)", "effectivité du droit", "Effektivität (tatsächliche Wirksamkeit) des Rechts"),
     ("etkililik", "effectiveness", "efficacité", "Wirksamkeit (Effektivität)"),
     ("verimlilik", "efficiency", "efficience", "Effizienz"),
     ("temel hakların fiilen korunması", "effectivity of fundamental rights", "effectivité des droits fondamentaux", "tatsächliche Wirksamkeit der Grundrechte"),
     ("hukuki göstergeler", "legal indicators", "indicateurs juridiques", "Rechtsindikatoren"),
+    ("uyum göstergeleri", "adaptation indicators", "indicateurs d'adaptation", "Anpassungsindikatoren"),
     ("hukukun uygulanması", "implementation of law", "mise en œuvre du droit", "Umsetzung des Rechts"),
     ("fiilen uygulanma", "effective application", "application effective", "tatsächliche Anwendung"),
     ("fiilen işleyen hukuk", "law in action", "droit en action (effectif)", "gelebtes Recht (Law in Action)"),
     ("kâğıt üzerinde kalan hukuk", "law on the books", "droit sur le papier", "Recht auf dem Papier"),
-    ("hukukun fiilen uygulanması ve yaptırımla desteklenmesi", "enforcement of environmental law", "application effective et contrôle du droit", "Durchsetzung und Vollzug des Umweltrechts"),
+    ("hukuken icra edilebilir nitelik (hukuken uygulanabilirlik)", "legal enforceability", "caractère juridiquement exécutoire", "rechtliche Durchsetzbarkeit (Vollstreckbarkeit)"),
     ("yükümlülüklere uyum", "compliance", "respect des obligations", "Einhaltung von Verpflichtungen (Compliance)"),
     ("hukuki izleme", "legal monitoring", "suivi juridique", "rechtliches Monitoring"),
     ("ölçülebilir ölçütler", "measurable criteria", "critères mesurables", "messbare Kriterien"),
     ("normatif çerçeve", "normative framework", "cadre normatif", "normativer Rahmen"),
-    ("hukuken bağlayıcı yükümlülükler", "binding obligations", "obligations contraignantes", "rechtlich bindende Verpflichtungen"),
+    ("hukuken bağlayıcı yükümlülükler", "legally binding obligations", "obligations juridiquement contraignantes", "rechtlich bindende Verpflichtungen"),
     ("hukuken bağlayıcı olmayan araçlar", "non-binding instruments", "instruments non contraignants", "nicht rechtsverbindliche Instrumente"),
     ("bağlayıcı güç", "binding force", "force obligatoire", "verbindliche Kraft"),
     ("hukuki güç (hukuki etki)", "legal force", "force juridique", "Rechtskraft (rechtliche Wirkung)"),
     ("uygunluk denetimi", "compliance control", "contrôle de conformité", "Konformitätskontrolle"),
     ("pozitif hukuk", "positive law", "droit positif", "positives Recht"),
+    ("bağlayıcı hukuk kuralları", "hard law", "droit contraignant", "zwingendes Recht (Hard Law)"),
     ("yumuşak hukuk", "soft law", "droit souple", "Soft Law (weiches Recht)"),
+    ("gönüllü anlaşmalar", "voluntary agreements", "accords volontaires", "freiwillige Vereinbarungen"),
+    ("gönüllü taahhüt", "voluntary commitment", "engagement volontaire", "freiwillige Selbstverpflichtung"),
+    ("kurumsal sosyal sorumluluk (KSS)", "corporate social responsibility (CSR)", "responsabilité sociétale des entreprises (RSE)", "unternehmerische Sozialverantwortung (CSR)"),
+    ("mülkiyetin sosyo-ekolojik işlevi", "socio-environmental function of property", "fonction socio-environnementale de la propriété", "sozio-ökologische Funktion des Eigentums"),
+    ("çevresel hesap verebilirlik", "environmental accountability", "redevabilité environnementale", "ökologische Rechenschaftspflicht"),
     ("hukuki boşluk", "legal gap (lacuna)", "lacune juridique", "Rechtslücke"),
     ("hukuki güvenlik", "legal certainty", "sécurité juridique", "Rechtssicherheit"),
     ("insan hakları", "human rights", "droits humains (droits de l'homme)", "Menschenrechte"),
@@ -219,6 +236,7 @@ QUADRILINGUAL_TERMS = [
     ("devletin sorumluluğu", "state responsibility", "responsabilité de l'État", "Staatshaftung (Staatenverantwortlichkeit)"),
     ("devletlerin yükümlülükleri", "obligations of states", "obligations des États", "Pflichten der Staaten"),
     ("kuşaklar arası adalet", "intergenerational justice", "justice intergénérationnelle", "intergenerationale Gerechtigkeit"),
+    ("kuşaklar arası hakkaniyet", "intergenerational equity", "équité intergénérationnelle", "intergenerationale Billigkeit (Gerechtigkeit)"),
     ("gelecek kuşaklar", "future generations", "générations futures", "künftige Generationen"),
     ("çevre savunucuları", "environmental defenders", "défenseurs de l'environnement", "Umweltverteidiger"),
     ("insan hakları savunucuları", "human rights defenders", "défenseurs des droits humains", "Menschenrechtsverteidiger"),
@@ -268,6 +286,9 @@ QUADRILINGUAL_TERMS = [
     ("usuli haklar", "procedural rights", "droits procéduraux", "Verfahrensrechte"),
     ("maddi haklar", "substantive rights", "droits substantiels", "materielle Rechte"),
     ("kolektif haklar", "collective rights", "droits collectifs", "Kollektivrechte"),
+    ("usuli adalet", "procedural justice", "justice procédurale", "Verfahrensgerechtigkeit"),
+    ("bölüşüm adaleti", "distributive justice", "justice distributive", "Verteilungsgerechtigkeit"),
+    ("tanınma adaleti", "recognition justice", "justice de reconnaissance", "Anerkennungsgerechtigkeit"),
     ("hukuki güvenceler", "legal guarantees", "garanties juridiques", "Rechtsgarantien"),
     ("kamu yararı", "public interest (general interest)", "intérêt général", "Allgemeininteresse (öffentliches Interesse)"),
     ("halkın görüşünün alınması", "public consultation", "consultation publique", "öffentliche Konsultation"),
@@ -282,12 +303,59 @@ QUADRILINGUAL_TERMS = [
     ("tekrarlanmama güvenceleri", "guarantees of non-repetition", "garanties de non-répétition", "Garantien der Nichtwiederholung"),
     ("herkese karşı ileri sürülebilen yükümlülükler (erga omnes)", "obligations erga omnes", "obligations erga omnes", "Erga-omnes-Verpflichtungen"),
     ("antlaşmanın tüm taraflarına karşı ileri sürülebilen yükümlülükler (erga omnes partes)", "obligations erga omnes partes", "obligations erga omnes partes", "Erga-omnes-partes-Verpflichtungen"),
-    ("Ulusal Katkı Beyanları", "Nationally Determined Contributions (NDCs)", "Contributions déterminées au niveau national (CDN)", "Nationale Klimaschutzbeiträge (NDCs)"),
-    ("iklim değişikliğinin azaltılması", "climate change mitigation", "atténuation du changement climatique", "Klimaschutz (Minderung des Klimawandels)"),
-    ("iklim değişikliğine uyum", "climate change adaptation", "adaptation au changement climatique", "Anpassung an den Klimawandel"),
-    ("ortak fakat farklılaştırılmış sorumluluklar ve göreceli kabiliyetler", "common but differentiated responsibilities and respective capabilities", "responsabilités communes mais différenciées et capacités respectives", "gemeinsame, aber unterschiedliche Verantwortlichkeiten und jeweilige Fähigkeiten"),
+    # COP30 / COP31 Uluslararası İklim Yönetişimi ve İklim Finansmanı (Dr. Julien Prieur)
+    ("Taraflar Konferansı (COP)", "Conference of the Parties (COP)", "Conférence des Parties (COP)", "Vertragsstaatenkonferenz (COP)"),
+    ("Birleşmiş Milletler İklim Değişikliği Çerçeve Sözleşmesi (BMİDÇS)", "United Nations Framework Convention on Climate Change (UNFCCC)", "Convention-cadre des Nations unies sur les changements climatiques (CCNUCC)", "Klimarahmenkonvention der Vereinten Nationen (UNFCCC)"),
+    ("Belém Siyasi Paketi", "Belém Political Package", "Paquet politique de Belém", "Politisches Paket von Belém"),
+    ("Küresel Mutirão Kararı (Kolektif Seferberlik Kararı)", "Global Mutirão Decision", "Décision Global Mutirão", "Global-Mutirão-Entscheidung (kollektive Mobilisierung)"),
+    ("1,3 trilyon dolarlık Bakü–Belém Yol Haritası", "Baku to Belém Roadmap to 1.3T", "Feuille de route de Bakou à Belém vers 1 300 milliards", "Baku-Belém-Fahrplan für 1,3 Billionen US-Dollar"),
+    ("Tropikal Ormanları Kalıcı Olarak Koruma Finansman Mekanizması (TFFF)", "Tropical Forest Forever Facility (TFFF)", "Tropical Forest Forever Facility (TFFF)", "Tropical Forest Forever Facility (TFFF)"),
+    ("Adil Geçiş Mekanizması", "Just Transition Mechanism", "Mécanisme de transition juste", "Mechanismus für einen gerechten Übergang"),
+    ("Küresel Uyum Hedefi", "Global Goal on Adaptation (GGA)", "Objectif mondial en matière d'adaptation", "Globales Anpassungsziel (GGA)"),
+    ("Yeni Kolektif Sayısallaştırılmış Hedef (NCQG)", "New Collective Quantified Goal (NCQG)", "Nouvel objectif collectif chiffré (NCQG)", "Neues kollektives quantifiziertes Finanzierungsziel (NCQG)"),
+    ("Yeşil İklim Fonu (GCF)", "Green Climate Fund (GCF)", "Fonds vert pour le climat (GCF)", "Grüner Klimafonds (GCF)"),
+    ("Uyum Fonu", "Adaptation Fund", "Fonds pour l'adaptation", "Anpassungsfonds"),
+    ("Kayıp ve Zarar Fonu", "Loss and Damage Fund", "Fonds pour les pertes et préjudices", "Fonds für Verluste und Schäden"),
+    ("kayıp ve zarar", "loss and damage", "pertes et préjudices", "Verluste und Schäden (Loss and Damage)"),
     ("iklim finansmanı", "climate finance", "financement climatique", "Klimafinanzierung"),
+    ("uyum finansmanı", "adaptation finance", "financement de l'adaptation", "Anpassungsfinanzierung"),
+    ("emisyon azaltım finansmanı", "mitigation finance", "financement de l'atténuation", "Minderungsfinanzierung"),
+    ("finansman taahhüdü", "financial pledge", "promesse de financement", "Finanzierungszusage"),
+    ("fiilen aktarılan / kullandırılan finansman", "disbursed finance", "financements effectivement versés", "tatsächlich ausgezahlte Finanzmittel"),
+    ("harekete geçirilen finansman", "mobilised finance", "financements mobilisés", "mobilisierte Finanzmittel"),
+    ("hibe temelli finansman", "grant-based finance", "financement sous forme de dons", "zuschussbasierte Finanzierung"),
+    ("imtiyazlı krediler", "concessional loans", "prêts concessionnels", "konzessionäre Darlehen"),
+    ("borç sürdürülebilirliği", "debt sustainability", "soutenabilité de la dette", "Schuldentragfähigkeit"),
+    ("yeni ve ilave finansman", "new and additional finance", "financement nouveau et additionnel", "neue und zusätzliche Finanzmittel"),
+    ("tarihsel sorumluluk", "historical responsibility", "responsabilité historique", "historische Verantwortung"),
+    ("iklim borcu", "climate debt", "dette climatique", "Klimaschuld"),
+    ("iklim zararları için giderim / tazminat talepleri", "climate reparations", "réparations climatiques", "Klimareparationen"),
+    ("Küresel Kuzey", "Global North", "Nord global", "Globaler Norden"),
+    ("Küresel Güney", "Global South", "Sud global", "Globaler Süden"),
+    ("en az gelişmiş ülkeler (EAGÜ)", "least developed countries (LDCs)", "pays les moins avancés (PMA)", "am wenigsten entwickelte Länder (LDCs)"),
+    ("gelişmekte olan küçük ada devletleri (SIDS)", "small island developing states (SIDS)", "petits États insulaires en développement", "kleine Inselentwicklungsländer (SIDS)"),
+    ("yerli halklar", "Indigenous Peoples", "peuples autochtones", "indigene Völker"),
+    ("geleneksel topluluklar", "traditional communities", "communautés traditionnelles", "traditionelle Gemeinschaften"),
+    ("geleneksel ekolojik bilgi", "traditional ecological knowledge", "savoirs écologiques traditionnels", "traditionelles ökologisches Wissen"),
+    ("Caatinga ekosistemi (Brezilya)", "Caatinga ecosystem (Brazil)", "écosystème de la Caatinga (Brésil)", "Caatinga-Ökosystem (Brasilien)"),
+    ("Amazon Havzası", "Amazon basin", "bassin amazonien", "Amazonasbecken"),
+    ("fosil yakıtların aşamalı olarak tamamen terk edilmesi", "fossil fuel phase-out", "sortie progressive des combustibles fossiles", "schrittweiser Ausstieg aus fossilen Brennstoffen (Phase-out)"),
+    ("fosil yakıt kullanımının aşamalı olarak azaltılması", "fossil fuel phase-down", "réduction progressive des combustibles fossiles", "schrittweise Reduzierung fossiler Brennstoffe (Phase-down)"),
+    ("fosil yakıtlardan uzaklaşma", "transitioning away from fossil fuels", "transition hors des combustibles fossiles", "Abkehr von fossilen Brennstoffen"),
+    ("uygulama açığı", "implementation gap", "déficit de mise en œuvre", "Umsetzungslücke"),
+    ("hedeflenen çaba düzeyindeki açık", "ambition gap", "déficit d'ambition", "Ambitionslücke"),
+    ("emisyon açığı", "emissions gap", "écart d'émissions", "Emissionslücke"),
+    ("karbon nötrlüğü", "carbon neutrality", "neutralité carbone", "Kohlenstoffneutralität"),
+    ("net sıfır emisyon", "net-zero emissions", "émissions nettes nulles", "Netto-Null-Emissionen"),
+    ("enerji demokrasisi", "energy democracy", "démocratie énergétique", "Energiedemokratie"),
+    ("Ulusal Katkı Beyanları (NDC)", "Nationally Determined Contributions (NDCs)", "Contributions déterminées au niveau national (CDN)", "Nationale Klimaschutzbeiträge (NDCs)"),
+    ("Ulusal Uyum Planları (NAP)", "National Adaptation Plans (NAPs)", "Plans nationaux d'adaptation", "Nationale Anpassungspläne (NAPs)"),
+    ("iklim değişikliğinin azaltılması (emisyon azaltımı)", "climate change mitigation", "atténuation du changement climatique", "Klimaschutz (Minderung des Klimawandels)"),
+    ("iklim değişikliğine uyum", "climate change adaptation", "adaptation au changement climatique", "Anpassung an den Klimawandel"),
+    ("iklim dirençliliği", "climate resilience", "résilience climatique", "Klimaresilienz"),
+    ("ortak fakat farklılaştırılmış sorumluluklar ve göreceli kabiliyetler", "common but differentiated responsibilities and respective capabilities", "responsabilités communes mais différenciées et capacités respectives", "gemeinsame, aber unterschiedliche Verantwortlichkeiten und jeweilige Fähigkeiten"),
     ("küresel durum değerlendirmesi", "global stocktake", "bilan mondial", "globale Bestandsaufnahme"),
+    # Politik Ekonomi, Müşterekler ve Forum Temaları
     ("ekolojinin politik ekonomisi", "the political economy of ecology", "l'économie politique de l'écologie", "die politische Ökonomie der Ökologie"),
     ("eleştirel politik ekonomi", "critical political economy", "économie politique critique", "kritische politische Ökonomie"),
     ("doğanın metalaştırılması", "commodification of nature", "marchandisation de la nature", "Kommodifizierung (Inwertsetzung) der Natur"),
@@ -395,12 +463,12 @@ DEMO_SPEECHES = [
         "de": "Das Vorhandensein von Umweltgesetzen garantiert nicht zwangsläufig die tatsächliche Wirksamkeit des Umweltrechts; man muss die tatsächliche Wirksamkeit von Rechtsnormen von der Effektivität öffentlicher Politiken unterscheiden und das Nicht-Regressionsprinzip wahren.",
     },
     {
-        "source_lang": "en-US",
-        "source": "[EN - La Via Campesina] Peasant movements and environmental defenders demand food sovereignty and agroecology against agribusiness, pesticides, corporate crimes, and ecocide of the commons.",
-        "tr": "Köylü hareketleri ve yaşam savunucuları; şirket tarımına, tarım zehirlerine, şirket suçlarına ve müştereklerin ekokırımına karşı gıda egemenliği ve agroekoloji talep ediyor.",
-        "en": "Peasant movements and environmental defenders demand food sovereignty and agroecology against agribusiness, pesticides, corporate crimes, and ecocide of the commons.",
-        "fr": "Les mouvements paysans et les défenseurs de l'environnement exigent la souveraineté alimentaire et l'agroécologie contre l'agro-industrie, les pesticides, les crimes d'entreprise et l'écocide des biens communs.",
-        "de": "Bäuerliche Bewegungen und Umweltverteidiger fordern Ernährungssouveränität und Agrarökologie gegen Agrarindustrie, Pestizide, Unternehmensverbrechen und den Ökozid an den Gemeingütern.",
+        "source_lang": "fr-FR",
+        "source": "[FR - Dr. Julien Prieur] La feuille de route de Bakou à Belém visant à mobiliser 1 300 milliards de dollars par an ne doit pas être confondue avec des financements déjà effectivement versés, et le résultat final de la COP30 ne comprenait pas de feuille de route explicite pour la sortie progressive des combustibles fossiles.",
+        "tr": "Yıllık 1,3 trilyon dolarlık finansmanı harekete geçirmeyi hedefleyen Bakü–Belém Yol Haritası, hâlihazırda fiilen aktarılmış finansmanla karıştırılmamalıdır; ayrıca COP30 nihai sonucu, fosil yakıtların aşamalı olarak tamamen terk edilmesine yönelik açık bir yol haritası içermiyordu.",
+        "en": "The Baku to Belém Roadmap aiming to mobilise 1.3 trillion dollars annually must not be confused with finance already disbursed, and the final outcome of COP30 did not include an explicit roadmap for phasing out fossil fuels.",
+        "fr": "La feuille de route de Bakou à Belém visant à mobiliser 1 300 milliards de dollars par an ne doit pas être confondue avec des financements déjà effectivement versés, et le résultat final de la COP30 ne comprenait pas de feuille de route explicite pour la sortie progressive des combustibles fossiles.",
+        "de": "Der Baku-Belém-Fahrplan zur Mobilisierung von jährlich 1,3 Billionen US-Dollar darf nicht mit bereits tatsächlich ausgezahlten Finanzmitteln verwechselt werden, und das Endergebnis der COP30 enthielt keinen expliziten Fahrplan für den schrittweisen Ausstieg aus fossilen Brennstoffen.",
     },
 ]
 
