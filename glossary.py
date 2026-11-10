@@ -90,7 +90,7 @@ SESSIONS = [
         "id": "17_kasim_1030_oturum1",
         "day": "17 Kasım 2026 | 10.30 - 12.30",
         "title": "I. Oturum: Uluslararası İklim Hukuku Göstergeleri, İklim Adaleti ve Kırılgan Alanlar / Session I: International Climate Law Indicators, Climate Justice, and Vulnerable Areas",
-        "speakers": "Başkan: Prof. Dr. Ayşe Odman Boztosun (Akdeniz Üniv.) | Prof. Dr. Michel Prieur (CIDCE Başkanı, Univ. of Limoges), Dr. Julien Prieur (CIDCE), Dr. Laurent Vassallo (CIDCE), Lucie Brouwer (CIDCE)",
+        "speakers": "Başkan: Prof. Dr. Ayşe Odman Boztosun (Akdeniz Üniv.) | Prof. Dr. Michel Prieur (CIDCE Başkanı, Univ. de Limoges - FR), Dr. Julien Prieur (CIDCE), Dr. Laurent Vassallo (CIDCE), Lucie Brouwer (CIDCE)",
         "default_lang": "fr-FR",
     },
     {
@@ -137,26 +137,31 @@ SESSIONS = [
     },
 ]
 
-# Konuşmacı Özel Hazırlık Brifingleri (AI Translation Preparation Briefs)
+# Konuşmacı Özel Hazırlık Brifingleri (AI Translation Preparation Briefs — EN & FR)
 SPEAKER_BRIEFS = (
     "=== ÖZEL KONUŞMACI BRİFİNGİ 1: Dr. Jenny Simon & Prof. Dr. Markus Wissen (HWR Berlin) ===\n"
     "- Kurum: Berlin School of Economics and Law (HWR Berlin). Ortak yazarlar: Markus Wissen, Tobias Kalt, Anne Tittor, Johanna Tunn, Franziska Müller, Jesko Hennig.\n"
     "- KRİTİK KURAL: 'Financialisation' kelimesini ASLA 'finansman / fon sağlama' olarak çevirme -> mutlaka 'finansallaşma' olarak çevir.\n"
     "- 'Fictitious capital' -> 'hayali sermaye (fiktif sermaye)', 'land grabbing' -> 'toprak gaspı (arazi gaspı)', 'emission trading' -> 'emisyon ticareti', 'externalisation of environmental costs' -> 'çevresel maliyetlerin dışsallaştırılması', 'industrial decarbonisation' -> 'endüstriyel karbonsuzlaşma', 'Konzentration im Kommando über Kapital' -> 'sermaye üzerindeki kumandanın yoğunlaşması'.\n\n"
-    "=== ÖZEL KONUŞMACI BRİFİNGİ 2: Prof. Dr. Michel Prieur (CIDCE Başkanı, Université de Limoges) ===\n"
-    "- Sunum Başlığı: İklim ve Çevre Hukukunda Hâkimlerin ve Avukatların Rolü: Adalet, İklim ve İnsan Hakları (The Role of Judges and Lawyers in Climate and Environmental Law: Justice, Climate and Human Rights).\n"
-    "- Ortak yazarlar ve kurumlar: Julien Prieur, Laurent Vassallo, Mohamed Ali Mekouar, Christophe Bastin, Julien Bétaille, Marie-Anne Cohendet, CIDCE, Université de Limoges, Revue juridique de l'environnement, UNEP, AİHM (ECtHR/CEDH), UAD (ICJ/CIJ), ITLOS, Conseil d'État, Cour de cassation.\n"
+    "=== ÖZEL KONUŞMACI BRİFİNGİ 2: Prof. Dr. Michel Prieur (CIDCE Başkanı, Université de Limoges — Kaynak Dil: FRANSIZCA) ===\n"
+    "- Sunum Başlığı: Le rôle des juges et des avocats en droit du climat et de l'environnement : justice, climat et droits humains (İklim ve Çevre Hukukunda Hâkimlerin ve Avukatların Rolü: Adalet, İklim ve İnsan Hakları).\n"
+    "- KURAL 1 (DOĞRUDAN FR -> TR ÇEVİRİ): Konuşmacı Fransızca konuştuğunda İngilizce ara çeviri nedeniyle Fransız hukuk kavramlarını bozmadan doğrudan Fransızca hukuk terminolojisinden Türkçeye çevir.\n"
+    "- Ortak yazarlar ve kurumlar: Julien Prieur, Laurent Vassallo, Mohamed Ali Mekouar, Christophe Bastin, Julien Bétaille, Marie-Anne Cohendet, CIDCE, Université de Limoges, Revue juridique de l'environnement, PNUE (UNEP), CEDH (AİHM), CIJ (UAD), TIDM (ITLOS), CJUE (ABAD), Cour interaméricaine des droits de l'homme, Conseil d'État (Fransa Danıştayı), Cour de cassation (Fransa Yargıtayı), Conseil constitutionnel (Fransa Anayasa Konseyi). Fransız mahkemelerini birbirleriyle veya Türk kurumlarıyla karıştırma.\n"
     "- KESİN HUKUKİ AYRIM KURALLARI (ASLA KARIŞTIRMA):\n"
-    "  1. 'Effectivity of law / Effectivité du droit' -> 'hukukun fiilî işlerliği (hukuk kurallarının fiilen uygulanması)'. 'Effectiveness / Efficacité' -> 'etkililik'. 'Efficiency / Efficience' -> 'verimlilik'. Üçünü de tek tip 'etkinlik' diye çevirme!\n"
-    "  2. 'Principle of non-regression / Principe de non-régression' -> 'çevre hukukunda geriye gidiş yasağı ilkesi'. 'Non-retroactivity / Non-rétroactivité' -> 'geriye yürümezlik ilkesi'. İkisini ASLA karıştırma!\n"
-    "  3. 'Law in action' -> 'fiilen işleyen hukuk' vs 'Law on the books' -> 'kâğıt üzerinde kalan hukuk'.\n"
-    "  4. 'Access to justice / Accès à la justice' -> 'adalete erişim' vs 'Access to a court / Accès au tribunal' -> 'mahkemeye erişim hakkı'.\n"
-    "  5. 'Legal standing / Qualité pour agir' -> 'dava açma ehliyeti (dava açma yetkisi)' vs 'Interest to bring proceedings / Intérêt à agir' -> 'dava açmada menfaat'.\n"
-    "  6. 'Legal doctrine / Doctrine juridique' -> 'hukuk öğretisi (doktrin)' vs 'Case law / Jurisprudence' -> 'içtihat'.\n"
-    "  7. 'Binding judgment' -> 'bağlayıcı mahkeme kararı' vs 'Advisory opinion / Avis consultatif' -> 'danışma görüşü (istişari görüş)' (ITLOS 2024, IACtHR OC-32/25 ve ICJ 23 Temmuz 2025 danışma görüşlerini çekişmeli bağlayıcı dava kararı gibi çevirme).\n"
-    "  8. AİHM Büyük Daire 'Verein KlimaSeniorinnen Schweiz ve Diğerleri / İsviçre (2024)' kararında derneğin dava açma ehliyeti (association standing) kabul edilmiş, bireysel başvurular kabul edilemez (inadmissible) bulunmuştur.\n"
-    "  9. UAD (ICJ) 23 Temmuz 2025 Danışma Görüşü terimleri: 'due diligence' -> 'gereken özeni gösterme yükümlülüğü', 'prevention of significant harm' -> 'önemli zararın önlenmesi', 'reparation' -> 'giderim', 'cessation' -> 'ihlale yol açan eylemin sona erdirilmesi', 'guarantees of non-repetition' -> 'tekrarlanmama güvenceleri', 'obligations erga omnes' -> 'herkese karşı ileri sürülebilen yükümlülükler'.\n"
-    "  10. Hukuki kiplikleri koru: 'may' (-ebilir / bulunabilir), 'must/shall' (zorundadır / gerekir), 'in principle' (ilke olarak), 'not necessarily' (zorunlu olarak ... göstermez) ayrımlarını asla yok etme; konuşmacının söylemediği hiçbir argümanı ekleme."
+    "  1. 'Effectivité du droit / Effectivity of law' -> 'hukukun fiilî işlerliği (hukuk kurallarının fiilen uygulanması)'. 'Efficacité / Effectiveness' -> 'etkililik'. 'Efficience / Efficiency' -> 'verimlilik'. 'Effectivité' kelimesini ASLA sıradan 'etkinlik' diye çevirme!\n"
+    "  2. 'Principe de non-régression / Principle of non-regression' -> 'çevre hukukunda geriye gidiş yasağı ilkesi'. 'Principe de non-rétroactivité / Non-retroactivity' -> 'geriye yürümezlik ilkesi'. 'Acquis environnementaux' -> 'çevre hukukunda kazanılmış koruma düzeyi'. 'Progrès du droit' -> 'hukukun aşamalı gelişimi' (teknolojik/ekonomik büyüme değil).\n"
+    "  3. 'Accès à la justice' -> 'adalete erişim', 'Accès au juge' -> 'hâkime / yargı merciine erişim', 'Accès au tribunal' -> 'mahkemeye erişim hakkı'.\n"
+    "  4. 'Qualité pour agir / Legal standing' -> 'dava açma yetkisi / dava açma ehliyeti', 'Intérêt à agir' -> 'dava açmada menfaat', 'Recevabilité' -> 'kabul edilebilirlik', 'Irrecevabilité' -> 'kabul edilemezlik'.\n"
+    "  5. 'Jurisprudence' -> 'içtihat' vs 'Doctrine juridique' -> 'hukuk öğretisi / doktrin'.\n"
+    "  6. 'Arrêt / Jugement contentieux' -> 'çekişmeli yargı kararı / yüksek mahkeme kararı' vs 'Avis consultatif' -> 'danışma görüşü' (TIDM/ITLOS 21 Mayıs 2024, Cour interaméricaine OC-32/25 ve CIJ/UAD 23 Temmuz 2025 danışma görüşlerini çekişmeli bağlayıcı mahkeme ilamı gibi çevirme).\n"
+    "  7. CEDH (AİHM) Büyük Daire 'Verein KlimaSeniorinnen Schweiz et autres c. Suisse (9 Nisan 2024)' kararında derneğin dava açma ehliyeti (qualité pour agir) kabul edilmiş, bireysel başvurular kabul edilemez (irrecevables) bulunmuştur.\n"
+    "  8. CIJ (UAD) 23 Temmuz 2025 Danışma Görüşü terimleri: 'diligence requise' -> 'gereken özeni gösterme yükümlülüğü', 'prévention des dommages significatifs' -> 'önemli zararların önlenmesi', 'réparation' -> 'giderim', 'cessation' -> 'ihlale yol açan eylem veya ihmalin sona erdirilmesi', 'garanties de non-répétition' -> 'tekrarlanmama güvenceleri', 'obligations erga omnes' -> 'herkese karşı ileri sürülebilen yükümlülükler', 'obligations erga omnes partes' -> 'antlaşmanın tüm taraflarına karşı ileri sürülebilen yükümlülükler'.\n"
+    "  9. Fransızca Kiplik ve Doktriner Nüanslar: 'doit' -> 'zorundadır / gerekmektedir', 'peut' -> 'yapabilir / bulunabilir', 'devrait' -> 'yapmalıdır / yapılması gerekir', 'est tenu de' -> 'yükümlüdür', 'est susceptible de' -> 'ihtimali vardır / mümkün olabilir', 'en principe' -> 'kural olarak / ilke olarak', 'sous réserve de' -> 'saklı kalmak kaydıyla / koşuluyla', 'ne garantit pas nécessairement' -> 'zorunlu olarak garanti etmez'. Latince terimleri ('erga omnes', 'erga omnes partes', 'lex specialis', 'lex posterior', 'pacta sunt servanda', 'jus cogens', 'in dubio pro natura') koru.\n"
+    "  10. KANONİK FR -> TR ÇEVİRİ ÖRNEKLERİ:\n"
+    "      • 'Le principe de non-régression vise à empêcher l'affaiblissement des normes de protection de l'environnement.' -> 'Geriye gidiş yasağı ilkesi, çevrenin korunmasına ilişkin standartların zayıflatılmasını önlemeyi amaçlar.'\n"
+    "      • 'L'existence d'une législation environnementale ne garantit pas nécessairement l'effectivité du droit de l'environnement.' -> 'Çevre mevzuatının mevcut olması, çevre hukukunun fiilen işlediğini zorunlu olarak garanti etmez.'\n"
+    "      • 'Il faut distinguer l'effectivité des normes environnementales de l'efficacité des politiques publiques.' -> 'Çevre hukuku kurallarının fiilî işlerliği ile kamu politikalarının etkililiğini birbirinden ayırmak gerekir.'\n"
+    "      • 'Le développement du contentieux climatique renforce le rôle des juridictions dans le contrôle des obligations des États.' -> 'İklim davalarının gelişmesi, devletlerin yükümlülüklerinin denetlenmesinde yargı mercilerinin rolünü güçlendirmektedir.'"
 )
 
 # 4 Dilli Eşdeğerlik Tablosu (TR <-> EN <-> FR <-> DE)
@@ -166,63 +171,123 @@ QUADRILINGUAL_TERMS = [
     ("ekolojik adalet", "ecological justice", "justice écologique", "ökologische Gerechtigkeit"),
     ("çevre hukuku", "environmental law", "droit de l'environnement", "Umweltrecht"),
     ("iklim hukuku", "climate law", "droit du climat", "Klimarecht"),
+    ("uluslararası çevre hukuku", "international environmental law", "droit international de l'environnement", "internationales Umweltrecht"),
     ("karşılaştırmalı çevre hukuku", "comparative environmental law", "droit comparé de l'environnement", "vergleichendes Umweltrecht"),
     ("çevre hukukunda geriye gidiş yasağı ilkesi", "principle of non-regression", "principe de non-régression", "Nicht-Regressionsprinzip (Rückschrittsverbot im Umweltrecht)"),
     ("geriye yürümezlik ilkesi", "principle of non-retroactivity", "principe de non-rétroactivité", "Rückwirkungsverbot"),
-    ("hukuki koruma düzeyinde geriye gidiş", "legal regression", "régression juridique", "rechtlicher Rückschritt"),
-    ("aşamalı gelişim (ilerleyici gelişim)", "progressive development", "développement progressif", "fortschreitende Weiterentwicklung"),
+    ("hukuki koruma düzeyinde geriye gidiş", "legal regression", "régression du droit (régression juridique)", "rechtlicher Rückschritt"),
+    ("hukukun aşamalı gelişimi", "progressive development of law", "développement progressif du droit (progrès du droit)", "fortschreitende Weiterentwicklung des Rechts"),
+    ("çevre hukukunda kazanılmış koruma düzeyi", "environmental acquis (acquired environmental protection)", "acquis environnementaux", "umweltrechtlicher Besitzstand"),
     ("çevresel koruma güvenceleri", "environmental safeguards", "garanties environnementales", "umweltrechtliche Schutzgarantien"),
     ("çevresel dayanışma", "environmental solidarity", "solidarité environnementale", "ökologische Solidarität"),
     ("ekolojik zarar", "ecological damage", "préjudice écologique", "ökologischer Schaden"),
     ("çevresel zarar", "environmental damage", "dommage environnemental", "Umweltschaden"),
+    ("çevresel değerlendirme", "environmental assessment", "évaluation environnementale", "Umweltbewertung"),
+    ("çevresel etki değerlendirmesi (ÇED)", "environmental impact assessment (EIA)", "étude d'impact environnemental", "Umweltverträglichkeitsprüfung (UVP)"),
+    ("biyolojik çeşitliliğin korunması", "protection of biodiversity", "protection de la biodiversité", "Schutz der biologischen Vielfalt"),
     ("hukukun fiilî işlerliği", "effectivity of law", "effectivité du droit", "Effektivität (tatsächliche Wirksamkeit) des Rechts"),
+    ("etkililik", "effectiveness", "efficacité", "Wirksamkeit (Effektivität)"),
+    ("verimlilik", "efficiency", "efficience", "Effizienz"),
+    ("temel hakların fiilen korunması", "effectivity of fundamental rights", "effectivité des droits fondamentaux", "tatsächliche Wirksamkeit der Grundrechte"),
     ("hukuki göstergeler", "legal indicators", "indicateurs juridiques", "Rechtsindikatoren"),
+    ("hukukun uygulanması", "implementation of law", "mise en œuvre du droit", "Umsetzung des Rechts"),
+    ("fiilen uygulanma", "effective application", "application effective", "tatsächliche Anwendung"),
     ("fiilen işleyen hukuk", "law in action", "droit en action (effectif)", "gelebtes Recht (Law in Action)"),
     ("kâğıt üzerinde kalan hukuk", "law on the books", "droit sur le papier", "Recht auf dem Papier"),
-    ("hukukun fiilen uygulanması ve yaptırımla desteklenmesi", "enforcement of environmental law", "application effective du droit", "Durchsetzung und Vollzug des Umweltrechts"),
+    ("hukukun fiilen uygulanması ve yaptırımla desteklenmesi", "enforcement of environmental law", "application effective et contrôle du droit", "Durchsetzung und Vollzug des Umweltrechts"),
     ("yükümlülüklere uyum", "compliance", "respect des obligations", "Einhaltung von Verpflichtungen (Compliance)"),
     ("hukuki izleme", "legal monitoring", "suivi juridique", "rechtliches Monitoring"),
+    ("ölçülebilir ölçütler", "measurable criteria", "critères mesurables", "messbare Kriterien"),
+    ("normatif çerçeve", "normative framework", "cadre normatif", "normativer Rahmen"),
     ("hukuken bağlayıcı yükümlülükler", "binding obligations", "obligations contraignantes", "rechtlich bindende Verpflichtungen"),
     ("hukuken bağlayıcı olmayan araçlar", "non-binding instruments", "instruments non contraignants", "nicht rechtsverbindliche Instrumente"),
+    ("bağlayıcı güç", "binding force", "force obligatoire", "verbindliche Kraft"),
+    ("hukuki güç (hukuki etki)", "legal force", "force juridique", "Rechtskraft (rechtliche Wirkung)"),
+    ("uygunluk denetimi", "compliance control", "contrôle de conformité", "Konformitätskontrolle"),
+    ("pozitif hukuk", "positive law", "droit positif", "positives Recht"),
+    ("yumuşak hukuk", "soft law", "droit souple", "Soft Law (weiches Recht)"),
+    ("hukuki boşluk", "legal gap (lacuna)", "lacune juridique", "Rechtslücke"),
+    ("hukuki güvenlik", "legal certainty", "sécurité juridique", "Rechtssicherheit"),
+    ("insan hakları", "human rights", "droits humains (droits de l'homme)", "Menschenrechte"),
+    ("temel haklar", "fundamental rights", "droits fondamentaux", "Grundrechte"),
     ("sağlıklı bir çevrede yaşama hakkı", "right to a healthy environment", "droit à un environnement sain", "Recht auf eine gesunde Umwelt"),
     ("temiz, sağlıklı ve sürdürülebilir bir çevrede yaşama hakkı", "right to a clean, healthy and sustainable environment", "droit à un environnement propre, sain et durable", "Recht auf eine saubere, gesunde und nachhaltige Umwelt"),
+    ("yaşam hakkı", "right to life", "droit à la vie", "Recht auf Leben"),
     ("özel hayata ve aile hayatına saygı hakkı", "right to respect for private and family life", "droit au respect de la vie privée et familiale", "Recht auf Achtung des Privat- und Familienlebens"),
     ("pozitif yükümlülükler", "positive obligations", "obligations positives", "positive Schutzpflichten"),
     ("negatif yükümlülükler", "negative obligations", "obligations négatives", "negative Unterlassungspflichten"),
-    ("devletin uluslararası sorumluluğu", "state responsibility", "responsabilité de l'État", "Staatenverantwortlichkeit"),
+    ("devletin sorumluluğu", "state responsibility", "responsabilité de l'État", "Staatshaftung (Staatenverantwortlichkeit)"),
+    ("devletlerin yükümlülükleri", "obligations of states", "obligations des États", "Pflichten der Staaten"),
     ("kuşaklar arası adalet", "intergenerational justice", "justice intergénérationnelle", "intergenerationale Gerechtigkeit"),
     ("gelecek kuşaklar", "future generations", "générations futures", "künftige Generationen"),
-    ("çevresel insan hakları savunucuları", "environmental human rights defenders", "défenseurs des droits humains environnementaux", "Umweltmenschenrechtsverteidiger"),
+    ("çevre savunucuları", "environmental defenders", "défenseurs de l'environnement", "Umweltverteidiger"),
+    ("insan hakları savunucuları", "human rights defenders", "défenseurs des droits humains", "Menschenrechtsverteidiger"),
     ("etkili başvuru hakkı", "right to an effective remedy", "droit à un recours effectif", "Recht auf eine wirksame Beschwerde"),
+    ("temel hakların güvenceleri", "guarantees of fundamental rights", "garanties des droits fondamentaux", "Grundrechtsgarantien"),
+    ("yargı erki", "judiciary (judicial power)", "pouvoir judiciaire", "richterliche Gewalt (Judikative)"),
+    ("yargı makamı", "judicial authority", "autorité judiciaire", "Justizbehörde"),
     ("yargı bağımsızlığı", "judicial independence", "indépendance de la justice", "richterliche Unabhängigkeit"),
-    ("hukuk devleti (hukukun üstünlüğü)", "rule of law", "État de droit", "Rechtsstaatlichkeit"),
+    ("yargısal tarafsızlık", "judicial impartiality", "impartialité judiciaire", "richterliche Unparteilichkeit"),
+    ("hukuk devleti", "rule of law (Rechtsstaat)", "État de droit", "Rechtsstaat"),
+    ("hukukun üstünlüğü", "supremacy of law (rule of law)", "primauté du droit", "Vorrang des Rechts (Herrschaft des Rechts)"),
     ("adalete erişim", "access to justice", "accès à la justice", "Zugang zum Recht (Zugang zur Justiz)"),
+    ("hâkime / yargı merciine erişim", "access to a judge", "accès au juge", "Zugang zum Richter"),
     ("mahkemeye erişim hakkı", "access to a court", "accès au tribunal", "Recht auf Zugang zu einem Gericht"),
     ("çevre davaları (çevresel uyuşmazlıklar)", "environmental litigation", "contentieux environnemental", "Umweltrechtsstreitigkeiten"),
-    ("iklim davaları (iklim yargılaması)", "climate litigation", "contentieux climatique", "Klimaklagen"),
+    ("iklim davaları", "climate litigation", "contentieux climatique", "Klimaklagen"),
     ("yargısal denetim", "judicial review", "contrôle juridictionnel", "gerichtliche Überprüfung"),
     ("içtihat", "case law (judicial precedent)", "jurisprudence", "Rechtsprechung"),
     ("hukuk öğretisi (doktrin)", "legal doctrine", "doctrine juridique", "Rechtslehre (Doktrin)"),
-    ("dava açma ehliyeti (dava açma yetkisi)", "legal standing", "qualité pour agir", "Klagebefugnis"),
+    ("dava açma yetkisi (dava açma ehliyeti)", "legal standing", "qualité pour agir", "Klagebefugnis"),
     ("dava açmada menfaat", "interest to bring proceedings", "intérêt à agir", "Rechtsschutzinteresse"),
     ("kabul edilebilirlik", "admissibility", "recevabilité", "Zulässigkeit"),
+    ("kabul edilemezlik", "inadmissibility", "irrecevabilité", "Unzulässigkeit"),
     ("ispat yükü", "burden of proof", "charge de la preuve", "Beweislast"),
+    ("yargısal başvuru yolu", "judicial remedy", "recours juridictionnel", "gerichtlicher Rechtsbehelf"),
     ("geçici tedbirler", "interim measures", "mesures provisoires", "einstweilige Maßnahmen"),
-    ("mahkeme kararlarının yerine getirilmesi", "enforcement of judgments", "exécution des décisions de justice", "Vollstreckung gerichtlicher Entscheidungen"),
-    ("kamu yararını korumaya yönelik dava", "public interest litigation", "contentieux d'intérêt général", "Public-Interest-Klagen"),
+    ("koruyucu tedbirler", "precautionary (conservatory) measures", "mesures conservatoires", "Sicherungsmaßnahmen"),
+    ("yargısal emir", "injunction", "injonction", "gerichtliche Anordnung"),
+    ("yargı kararı", "judicial decision", "décision de justice", "Gerichtsentscheidung"),
+    ("yüksek mahkeme / ilgili mahkeme kararı", "judgment of a higher court (arrêt)", "arrêt", "Urteil eines höheren Gerichts"),
+    ("mahkeme kararı", "court judgment", "jugement", "Gerichtsurteil"),
+    ("danışma görüşü (istişari görüş)", "advisory opinion", "avis consultatif", "Rechtsgutachten (Advisory Opinion)"),
+    ("yargı kararlarının yerine getirilmesi", "enforcement of judicial decisions", "exécution des décisions de justice", "Vollstreckung gerichtlicher Entscheidungen"),
+    ("adli yardım", "legal aid", "aide juridictionnelle", "Prozesskostenhilfe"),
     ("stratejik dava yoluyla hak mücadelesi", "strategic litigation", "contentieux stratégique", "strategische Prozessführung"),
+    ("kamu yararını korumaya yönelik dava", "public interest litigation", "action d'intérêt public", "Public-Interest-Klage"),
+    ("yargısal denetime elverişlilik", "justiciability", "justiciabilité", "Justiziabilität"),
+    ("hukuken ileri sürülebilirlik", "enforceability against third parties (opposability)", "opposabilité", "Drittwirkung (Entgegenhaltbarkeit)"),
     ("çevresel demokrasi", "environmental democracy", "démocratie environnementale", "Umweltdemokratie"),
     ("halkın katılımı", "public participation", "participation du public", "Öffentlichkeitsbeteiligung"),
     ("çevresel bilgiye erişim", "access to environmental information", "accès à l'information environnementale", "Zugang zu Umweltinformationen"),
+    ("karar alma süreçlerine katılım", "participation in decision-making", "participation à la prise de décision", "Beteiligung an Entscheidungsprozessen"),
+    ("şeffaflık", "transparency", "transparence", "Transparenz"),
+    ("hesap verebilirlik", "accountability", "redevabilité", "Rechenschaftspflicht"),
+    ("çevre örgütleri", "environmental associations", "associations environnementales", "Umweltverbände"),
+    ("kamu makamları", "public authorities", "autorités publiques", "öffentliche Behörden"),
     ("usuli haklar", "procedural rights", "droits procéduraux", "Verfahrensrechte"),
     ("maddi haklar", "substantive rights", "droits substantiels", "materielle Rechte"),
-    ("danışma görüşü (istişari görüş)", "advisory opinion", "avis consultatif", "Rechtsgutachten (Advisory Opinion)"),
-    ("gereken özeni gösterme yükümlülüğü", "due diligence", "diligence requise (due diligence)", "Sorgfaltspflicht (Due Diligence)"),
+    ("kolektif haklar", "collective rights", "droits collectifs", "Kollektivrechte"),
+    ("hukuki güvenceler", "legal guarantees", "garanties juridiques", "Rechtsgarantien"),
+    ("kamu yararı", "public interest (general interest)", "intérêt général", "Allgemeininteresse (öffentliches Interesse)"),
+    ("halkın görüşünün alınması", "public consultation", "consultation publique", "öffentliche Konsultation"),
+    ("etkili katılım", "effective participation", "participation effective", "wirksame Beteiligung"),
+    ("çevresel yönetişim", "environmental governance", "gouvernance environnementale", "Umwelt-Governance"),
+    ("gereken özeni gösterme yükümlülüğü", "due diligence", "diligence requise", "Sorgfaltspflicht (Due Diligence)"),
+    ("önemli zararların önlenmesi", "prevention of significant harm", "prévention des dommages significatifs", "Verhütung erheblicher Schäden"),
+    ("uluslararası iş birliği", "international cooperation", "coopération internationale", "internationale Zusammenarbeit"),
+    ("devletin uluslararası sorumluluğu", "international responsibility of the state", "responsabilité internationale de l'État", "völkerrechtliche Staatenverantwortlichkeit"),
     ("giderim", "reparation", "réparation", "Wiedergutmachung"),
+    ("ihlale yol açan eylem veya ihmalin sona erdirilmesi", "cessation", "cessation", "Beendigung des rechtswidrigen Verhaltens"),
     ("tekrarlanmama güvenceleri", "guarantees of non-repetition", "garanties de non-répétition", "Garantien der Nichtwiederholung"),
-    ("herkese karşı ileri sürülebilen yükümlülükler", "obligations erga omnes", "obligations erga omnes", "Erga-omnes-Verpflichtungen"),
+    ("herkese karşı ileri sürülebilen yükümlülükler (erga omnes)", "obligations erga omnes", "obligations erga omnes", "Erga-omnes-Verpflichtungen"),
+    ("antlaşmanın tüm taraflarına karşı ileri sürülebilen yükümlülükler (erga omnes partes)", "obligations erga omnes partes", "obligations erga omnes partes", "Erga-omnes-partes-Verpflichtungen"),
     ("Ulusal Katkı Beyanları", "Nationally Determined Contributions (NDCs)", "Contributions déterminées au niveau national (CDN)", "Nationale Klimaschutzbeiträge (NDCs)"),
-    ("ortak fakat farklılaştırılmış sorumluluklar", "common but differentiated responsibilities", "responsabilités communes mais différenciées", "gemeinsame, aber unterschiedliche Verantwortlichkeiten"),
+    ("iklim değişikliğinin azaltılması", "climate change mitigation", "atténuation du changement climatique", "Klimaschutz (Minderung des Klimawandels)"),
+    ("iklim değişikliğine uyum", "climate change adaptation", "adaptation au changement climatique", "Anpassung an den Klimawandel"),
+    ("ortak fakat farklılaştırılmış sorumluluklar ve göreceli kabiliyetler", "common but differentiated responsibilities and respective capabilities", "responsabilités communes mais différenciées et capacités respectives", "gemeinsame, aber unterschiedliche Verantwortlichkeiten und jeweilige Fähigkeiten"),
+    ("iklim finansmanı", "climate finance", "financement climatique", "Klimafinanzierung"),
+    ("küresel durum değerlendirmesi", "global stocktake", "bilan mondial", "globale Bestandsaufnahme"),
     ("ekolojinin politik ekonomisi", "the political economy of ecology", "l'économie politique de l'écologie", "die politische Ökonomie der Ökologie"),
     ("eleştirel politik ekonomi", "critical political economy", "économie politique critique", "kritische politische Ökonomie"),
     ("doğanın metalaştırılması", "commodification of nature", "marchandisation de la nature", "Kommodifizierung (Inwertsetzung) der Natur"),
@@ -248,7 +313,6 @@ QUADRILINGUAL_TERMS = [
     ("ekokırım", "ecocide", "écocide", "Ökozid"),
     ("şirket suçları", "corporate crimes", "crimes d'entreprise", "Unternehmensverbrechen"),
     ("hukuki mücadele araçları", "instruments of legal struggle", "instruments de lutte juridique", "Instrumente des Rechtskampfes"),
-    ("yumuşak hukuk", "soft law", "droit souple (soft law)", "Soft Law (weiches Recht)"),
     ("bağlayıcılık ve dava edilebilirlik", "legal bindingness and justiciability", "force contraignante et justiciabilité", "rechtliche Verbindlichkeit und Justiziabilität (Einklagbarkeit)"),
     ("biyosferik ilişkiler ve hukuk devleti", "biospheric relations and the rule of law", "relations biosphériques et État de droit", "biosphärische Beziehungen und Rechtsstaatlichkeit"),
     ("temsil olmadan dağıtım olmaz", "no distribution without representation", "pas de répartition sans représentation", "keine Verteilung ohne Repräsentation"),
@@ -256,10 +320,9 @@ QUADRILINGUAL_TERMS = [
     ("deniz taşımacılığı", "maritime shipping (maritime transport)", "transport maritime", "Seeverkehr (Seeschifffahrt)"),
     ("ihtiyatlılık ilkesi", "precautionary principle", "principe de précaution", "Vorsorgeprinzip"),
     ("önleme ilkesi", "principle of prevention", "principe de prévention", "Präventionsprinzip"),
-    ("kirleten öder ilkesi", "polluter pays principle", "principe pollueur-payeur", "Verursacherprinzip"),
-    ("Çevresel Etki Değerlendirmesi (ÇED)", "Environmental Impact Assessment (EIA)", "évaluation des incidences sur l'environnement", "Umweltverträglichkeitsprüfung (UVP)"),
-    ("kolektif haklar", "collective rights", "droits collectifs", "Kollektivrechte"),
-    ("kırılgan alanlar", "vulnerable areas", "zones vulnérables", "vulnerable Gebiete"),
+    ("kirleten öder ilkesi", "polluter pays principle", "principe du pollueur-payeur", "Verursacherprinzip"),
+    ("katılım ilkesi", "principle of participation", "principe de participation", "Partizipationsprinzip"),
+    ("kırılgan alanlar", "vulnerable areas", "territoires vulnérables (zones vulnérables)", "vulnerable Gebiete"),
     ("kırılgan gruplar", "vulnerable groups", "groupes vulnérables", "vulnerable Gruppen"),
     ("iklim nedeniyle yerinden edilmiş kişiler", "climate-displaced persons", "personnes déplacées climatiques", "klimabedingt Vertriebene"),
     ("Sürdürülebilir Kalkınma Amacı 14 (SKA 14)", "Sustainable Development Goal 14 (SDG 14)", "Objectif de développement durable 14 (ODD 14)", "Nachhaltigkeitsziel 14 (SDG 14)"),
@@ -298,7 +361,8 @@ FORBIDDEN_TR = [
     ("yemek egemenliği", "gıda egemenliği"),
     ("besin egemenliği", "gıda egemenliği"),
     ("regresyon olmama", "çevre hukukunda geriye gidiş yasağı"),
-    ("çevreciler", "yaşam savunucuları"),
+    ("gerilememe ilkesi", "çevre hukukunda geriye gidiş yasağı ilkesi"),
+    ("çevreciler", "yaşam savunucuları / çevre savunucuları"),
     ("ekolojik cinayet", "ekokırım"),
     ("savunmasız gruplar", "kırılgan gruplar"),
     ("hassas alanlar", "kırılgan alanlar"),
@@ -324,11 +388,11 @@ DEMO_SPEECHES = [
     },
     {
         "source_lang": "fr-FR",
-        "source": "[FR - Prof. Dr. Michel Prieur] L'existence d'une législation environnementale ne démontre pas nécessairement l'effectivité du droit de l'environnement ; le principe de non-régression et l'indépendance de la justice sont essentiels.",
-        "tr": "Çevre mevzuatının mevcut olması, çevre hukukunun fiilen işlediğini zorunlu olarak göstermez; çevre hukukunda geriye gidiş yasağı ilkesi ve yargı bağımsızlığı hayati önemdedir.",
-        "en": "The existence of environmental legislation does not necessarily demonstrate the effectivity of environmental law; the principle of non-regression and judicial independence are essential.",
-        "fr": "L'existence d'une législation environnementale ne démontre pas nécessairement l'effectivité du droit de l'environnement ; le principe de non-régression et l'indépendance de la justice sont essentiels.",
-        "de": "Das Vorhandensein von Umweltgesetzen beweist nicht zwangsläufig die tatsächliche Wirksamkeit des Umweltrechts; das Nicht-Regressionsprinzip und die richterliche Unabhängigkeit sind von entscheidender Bedeutung.",
+        "source": "[FR - Prof. Dr. Michel Prieur] L'existence d'une législation environnementale ne garantit pas nécessairement l'effectivité du droit de l'environnement ; il faut distinguer l'effectivité des normes de l'efficacité des politiques publiques et respecter le principe de non-régression.",
+        "tr": "Çevre mevzuatının mevcut olması, çevre hukukunun fiilen işlediğini zorunlu olarak garanti etmez; çevre hukuku kurallarının fiilî işlerliği ile kamu politikalarının etkililiğini birbirinden ayırmak ve geriye gidiş yasağı ilkesine uymak gerekir.",
+        "en": "The existence of environmental legislation does not necessarily guarantee the effectivity of environmental law; one must distinguish the effectivity of environmental norms from the effectiveness of public policies and uphold the principle of non-regression.",
+        "fr": "L'existence d'une législation environnementale ne garantit pas nécessairement l'effectivité du droit de l'environnement ; il faut distinguer l'effectivité des normes de l'efficacité des politiques publiques et respecter le principe de non-régression.",
+        "de": "Das Vorhandensein von Umweltgesetzen garantiert nicht zwangsläufig die tatsächliche Wirksamkeit des Umweltrechts; man muss die tatsächliche Wirksamkeit von Rechtsnormen von der Effektivität öffentlicher Politiken unterscheiden und das Nicht-Regressionsprinzip wahren.",
     },
     {
         "source_lang": "en-US",

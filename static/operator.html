@@ -398,8 +398,8 @@
       const langFull = document.getElementById('langSelect').value;
       const langShort = langFull.split('-')[0];
       const dgKeywords = [
-        'Prieur:2', 'CIDCE:2', 'Vassallo:2', 'Mekouar:2', 'Limoges:2',
-        'KlimaSeniorinnen:2', 'Aarhus:2', 'Escazu:2', 'ITLOS:2', 'Wissen:2', 'COP31:2'
+        'Prieur:2', 'CIDCE:2', 'Vassallo:2', 'Mekouar:2', 'Bastin:2', 'Cohendet:2', 'Limoges:2',
+        'KlimaSeniorinnen:2', 'Aarhus:2', 'Escazu:2', 'ITLOS:2', 'CEDH:2', 'CIJ:2', 'TIDM:2', 'CJUE:2', 'PNUE:2', 'Wissen:2', 'COP31:2'
       ].map(k => `keywords=${encodeURIComponent(k)}`).join('&');
       const dgUrl = `wss://api.deepgram.com/v1/listen?model=nova-2&language=${langShort}&smart_format=true&interim_results=true&endpointing=350&${dgKeywords}`;
       dgSocket = new WebSocket(dgUrl, ['token', deepgramApiKey]);
