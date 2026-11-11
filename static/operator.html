@@ -25,7 +25,7 @@
     .btn-primary { background: var(--accent); color: #052e16; }
     .btn-warn { background: var(--warn); color: #1c1917; }
     .btn-danger { background: var(--danger); color: #fff; }
-    .btn-outline { background: var(--card); color: var(--text); border: 1px solid var(--border); }
+    .btn-outline { background: var(--card); color: #Vol; border: 1px solid var(--border); color: var(--text); }
     .btn-lang.active { background: var(--warn); color: #1c1917; border-color: var(--warn); }
     .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 16px; }
     @media (max-width: 800px) { .grid { grid-template-columns: 1fr; } }
@@ -97,22 +97,26 @@
       </div>
       <input type="hidden" id="langSelect" value="tr-TR" />
 
-      <div style="display:grid; grid-template-columns:1fr 1fr 1fr 1fr; gap:8px; margin-top:4px;">
+      <div style="display:grid; grid-template-columns:1fr 1fr 1fr 1fr 1fr; gap:6px; margin-top:4px;">
         <div>
           <label for="opPin">Operatör PIN</label>
           <input type="password" id="opPin" placeholder="PIN girin" oninput="onPinChange()" />
         </div>
         <div>
-          <label for="claudeKey">1. Claude Sonnet 5.5</label>
-          <input type="password" id="claudeKey" placeholder="✓ Sunucuda kayıtlı" />
+          <label for="claudeKey">1. Claude 5.5</label>
+          <input type="password" id="claudeKey" placeholder="✓ Kayıtlı" />
         </div>
         <div>
-          <label for="geminiKey">2. Gemini 2.5 Flash</label>
-          <input type="password" id="geminiKey" placeholder="✓ Sunucuda kayıtlı" />
+          <label for="geminiKey">2. Gemini 2.5</label>
+          <input type="password" id="geminiKey" placeholder="✓ Kayıtlı" />
         </div>
         <div>
-          <label for="deepgramKey">3. Deepgram Nova</label>
-          <input type="password" id="deepgramKey" placeholder="✓ Sunucuda kayıtlı" />
+          <label for="deepgramKey">3. Deepgram</label>
+          <input type="password" id="deepgramKey" placeholder="✓ Kayıtlı" />
+        </div>
+        <div>
+          <label for="openaiKey">4. OpenAI TTS</label>
+          <input type="password" id="openaiKey" placeholder="sk-... (Yedek Ses)" />
         </div>
       </div>
 
@@ -131,6 +135,7 @@
         <span id="modelBadge" class="key-status">Claude...</span>
         <span id="gemBadge" class="key-status">Gemini...</span>
         <span id="dgBadge" class="key-status">Deepgram...</span>
+        <span id="oaiBadge" class="key-status">OpenAI TTS...</span>
         <span id="listenerBadge" class="key-status">👥 0 Bağlı Ekran/Kulaklık</span>
       </div>
       <div id="glossaryStats" style="font-size:12px; color:#86efac; margin-top:6px;"></div>
@@ -195,7 +200,6 @@
     let isListening = false;
     let demoIdx = 0;
 
-    // Smart sentence buffer to prevent mid-breath sentence splitting
     let pendingFinalText = '';
     let pendingFlushTimer = null;
 
@@ -227,7 +231,7 @@
       });
     }
 
-    function updateBadges(auth, hasClaude, claudeModel, hasGem, hasDg, activeListeners) {
+    function updateBadges(auth, hasClaude, claudeModel, hasGem, hasDg, hasOai, activeListeners) {
       const pb = document.getElementById('pinBadge');
       pb.textContent = auth ? '🔓 Operatör PIN Aktif' : '🔒 Operatör PIN Girin';
       pb.style.borderColor = auth ? '#22c55e' : '#ef4444';
@@ -241,6 +245,10 @@
       gb.style.color = hasGem ? '#4ade80' : '#cbd5e1';
       const db = document.getElementById('dgBadge');
       db.textContent = hasDg ? '🟢 Deepgram Nova STT' : '⚪ Tarayıcı Mikrofonu';
+      const ob = document.getElementById('oaiBadge');
+      ob.textContent = hasOai ? '🟢 OpenAI TTS Yedek (Aktif)' : '⚪ OpenAI TTS (Edge Aktif)';
+      ob.style.borderColor = hasOai ? '#22c55e' : '#64748b';
+      ob.style.color = hasOai ? '#4ade80' : '#cbd5e1';
       if (typeof activeListeners === 'number') {
         document.getElementById('listenerBadge').textContent = `👥 ${activeListeners} Bağlı Ekran/Kulaklık`;
       }
@@ -269,7 +277,7 @@
         document.getElementById('prefLlm').value = info.preferred_llm;
       }
       highlightLangButton(info.source_lang);
-      updateBadges(isAuthorized, info.has_claude_key, info.claude_model, info.has_gemini_key, info.has_deepgram_key, info.active_listeners);
+      updateBadges(isAuthorized, info.has_claude_key, info.claude_model, info.has_gemini_key, info.has_deepgram_key, info.has_openai_key, info.active_listeners);
       const isLocal = location.hostname === 'localhost' || location.hostname === '127.0.0.1';
       document.getElementById('lanInfo').textContent = `Salon Kulaklık Bağlantısı: ${isLocal ? info.listen_url : (location.origin + BASE + '/dinle')}`;
       document.getElementById('glossaryStats').textContent = `✓ ${info.glossary_count} Dört Dilli (TR/EN/FR/DE) Terim + 7 Konuşmacı Brifingi + Son 3 Cümle Hafızası + 250 Kişilik Kulaklık Önbelleği Aktif`;
@@ -318,7 +326,7 @@
         if (data.type === 'init') {
           (data.history || []).forEach(renderSubtitle);
         } else if (data.type === 'session_update') {
-          updateBadges(isAuthorized, data.has_claude_key, data.claude_model, data.has_gemini_key, data.has_deepgram_key, data.active_listeners);
+          updateBadges(isAuthorized, data.has_claude_key, data.claude_model, data.has_gemini_key, data.has_deepgram_key, data.has_openai_key, data.active_listeners);
         } else if (data.type === 'subtitle') {
           renderSubtitle(data);
         } else if (data.type === 'clear') {
@@ -344,7 +352,8 @@
         speaker_notes: document.getElementById('speakerNotes').value.trim(),
         claude_api_key: document.getElementById('claudeKey').value,
         gemini_api_key: document.getElementById('geminiKey').value,
-        deepgram_api_key: dgVal
+        deepgram_api_key: dgVal,
+        openai_api_key: document.getElementById('openaiKey').value.trim()
       }));
     }
 
@@ -482,8 +491,6 @@
           const wordCount = pendingFinalText.split(/\s+/).filter(Boolean).length;
           const endsWithPunct = /[.?!:;]$/.test(pendingFinalText);
 
-          // If sentence is complete (>= 5 words or ends with punctuation), flush immediately;
-          // otherwise hold up to 1.3s to merge with the speaker's next breath clause
           if (wordCount >= 5 || endsWithPunct) {
             flushPendingSentence(langFull);
           } else {
