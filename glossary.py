@@ -139,10 +139,15 @@ SESSIONS = [
 
 # Konuşmacı Özel Hazırlık Brifingleri (AI Translation Preparation Briefs — 7 Yabancı Konuşmacı Eksiksiz Set)
 SPEAKER_BRIEFS = (
-    "=== ÖZEL KONUŞMACI BRİFİNGİ 1: Dr. Jenny Simon & Prof. Dr. Markus Wissen (HWR Berlin — 16 Kasım I. Oturum, EN) ===\n"
-    "- Kurum: Berlin School of Economics and Law (HWR Berlin). Ortak yazarlar: Markus Wissen, Tobias Kalt, Anne Tittor, Johanna Tunn, Franziska Müller, Jesko Hennig.\n"
-    "- KRİTİK KURAL: 'Financialisation' kelimesini ASLA 'finansman / fon sağlama' olarak çevirme -> mutlaka 'finansallaşma' olarak çevir.\n"
-    "- 'Fictitious capital' -> 'hayali sermaye (fiktif sermaye)', 'land grabbing' -> 'toprak gaspı (arazi gaspı)', 'emission trading' -> 'emisyon ticareti', 'externalisation of environmental costs' -> 'çevresel maliyetlerin dışsallaştırılması', 'industrial decarbonisation' -> 'endüstriyel karbonsuzlaşma', 'Konzentration im Kommando über Kapital' -> 'sermaye üzerindeki kumandanın yoğunlaşması'.\n\n"
+    "=== ÖZEL KONUŞMACI BRİFİNGİ 1: Dr. Jenny Simon & Prof. Dr. Markus Wissen (HWR Berlin — 16 Kasım I. Oturum, EN/DE — 10 Makale ve 2026 Çalışma Raporları Seti) ===\n"
+    "- Kurum: Berlin School of Economics and Law (HWR Berlin) & IPE Berlin. Ortak yazarlar ve referanslar: Ulrich Brand, Tobias Kalt, Anne Tittor, Johanna Tunn, Franziska Müller, Jesko Hennig, Rosa Luxemburg, Antonio Gramsci, Karl Marx, Elmar Altvater, Alf Hornborg, Nancy Fraser, André Gorz, Erik Olin Wright, Alain Lipietz, David Harvey, John Bellamy Foster, Jason W. Moore, Maria Mies, Christos Zografos.\n"
+    "- Temel 2026 ve Öncesi Yayınlar: (1) Simon, Kalt & Wissen (2026) 'Decarbonisation in Crisis: Transformation of the German Automotive and Steel Industry' (IPE Working Paper 271/2026), (2) Wissen (2026) 'Ökoimperialismus: Von der Existenzbedingung zur Grenze der kapitalistischen Produktionsweise' (Das Argument 345), (3) Wissen (2026) 'Radikaler Reformismus statt Resignation: Eine Strategie gegen den Krisenkapitalismus' (Blätter 5/2026), (4) Simon (2026) 'Chinas Wasserstoffökonomie: Geoökonomie in der ökologischen Modernisierung' (PROKLA 223), (5) Simon, Tittor & Kalt (2024) 'Postfossile Transformation? Wasserstoffökonomie' (PROKLA 216), (6) Kalt, Simon, Tunn & Hennig (2023) 'Between green extractivism and energy justice: South Africa's hydrogen transition', (7) Wissen (2020) 'Klimakrise und Klassenkampf' (PROKLA 200), (8) Simon & Tittor (2014) 'The Financialisation of Food, Land, and Nature', (9) Brand & Wissen (2013) 'The imperial mode of living', (10) Wissen (2009) 'Contested terrains: Politics of scale'.\n"
+    "- KESİN POLİTİK EKONOMİ, MARKSİST EKOLOJİ VE ENDÜSTRİYEL DÖNÜŞÜM AYRIMLARI:\n"
+    "  1. Finansallaşma ve Mülksüzleştirme: 'Financialisation' -> ASLA 'finansman' diye çevirme, mutlaka 'finansallaşma'! 'Fictitious capital' -> 'hayali sermaye (fiktif sermaye)', 'Accumulation by dispossession / Akkumulation durch Enteignung' (David Harvey) -> 'mülksüzleştirme yoluyla birikim' (ASLA 'kamulaştırma yoluyla birikim' deme!), 'Primitive accumulation / ursprüngliche Akkumulation' -> 'ilkel birikim (sermayenin ilk birikimi)', 'Permanenz der ursprünglichen Akkumulation' -> 'ilkel birikimin sürekliliği', 'Spatial fix' -> 'mekânsal çözüm (krizin mekânsal aktarımı)', 'Enclosure, appropriation and valorisation / Einhegung, Aneignung und Inwertsetzung' -> 'çitleme, el koyma (temellük) ve değerleme (sermayeleştirme)'.\n"
+    "  2. Eko-Emperyalizm ve Toplumsal Metabolizma: 'Eco-imperialism / Ökoimperialismus' -> 'eko-emperyalizm (ekolojik emperyalizm)', 'Eco-imperial tensions / öko-imperiale Spannungen' -> 'eko-emperyal gerilimler', 'Imperial mode of living / imperiale Lebensweise' -> 'emperyal yaşam tarzı', 'Societal nature relations / gesellschaftliche Naturverhältnisse' -> 'toplumsal doğa ilişkileri', 'Social metabolism with nature / gesellschaftlicher Stoffwechsel mit der Natur' -> 'doğayla toplumsal metabolizma', 'Metabolic rift / metabolischer Bruch' -> 'metabolik yarılma (toplumsal-ekolojik metabolizma kırılması)', 'Ecologically unequal exchange / ökologisch ungleicher Tausch' -> 'ekolojik olarak eşitsiz mübadele', 'Consumption-degradation paradox / Konsumtions-Degradations-Paradox' -> 'tüketim-tahribat paradoksu', 'Islands of syntropy / Syntropieinseln' (Altvater) -> 'sentropi adaları' vs 'Entropy disposal / Entropieabfuhr' -> 'entropi ihracı (atık ve emisyonların çevre ülkelere yıkılması)', 'Carbon sinks / Kohlenstoffsenken' -> 'karbon yutakları'.\n"
+    "  3. Kapitalizmin Dış Alanı ve Yeşil Sömürgecilik: 'Non-capitalist outside / nicht-kapitalistisches Außen' (Rosa Luxemburg) -> 'kapitalist olmayan dış alan', 'Zones of non-commodification / Zonen der Nicht-Warenförmigkeit' & 'Cannibal capitalism / kannibalisierter Kapitalismus' (Nancy Fraser) -> 'metalaşmamış alanlar' ve 'yamyam kapitalizm', 'Bielefeld subsistence approach / Bielefelder Subsistenzansatz' (Mies) -> 'Bielefeld geçimlik ekonomi yaklaşımı', 'Externalisation as a principle / Externalisierung als Prinzip' -> 'ilke olarak dışsallaştırma', 'Green grabbing / grüne Landnahme' -> 'yeşil gasp (ekolojik gerekçelerle toprak gaspı)', 'Green sacrifice zones / grüne Opferzonen' -> 'yeşil feda bölgeleri'.\n"
+    "  4. Hidrojen Ekonomisi ve Jeoekonomi (Çin, Güney Afrika, Namibya, Şili, Arjantin): 'Green extractivism / grüner Extraktivismus' -> 'yeşil ekstraktivizm', 'Post-fossil extractivism / postfossiler Extraktivismus' -> 'post-fosil ekstraktivizm', 'Fossil continuities / fossile Kontinuitäten' -> 'fosil süreklilikler', 'Green developmentalism' -> 'yeşil kalkınmacılık', 'Fossilism' -> 'fosilizm', 'Energy justice / Energiegerechtigkeit' -> 'enerji adaleti', 'Geoeconomics / Geoökonomie' -> 'jeoekonomi', 'State capitalism / Staatskapitalismus' -> 'devlet kapitalizmi', 'Ecological modernisation / ökologische Modernisierung' -> 'ekolojik modernleşme', 'Electrolyser / Elektrolyseur' -> 'elektrolizör', 'Power-to-X (PtX)' -> 'Power-to-X (hidrojenden sentetik yakıt üretimi)', 'Load shedding' -> 'planlı elektrik kesintileri (Güney Afrika enerji krizi)' (Eskom, Sasol, Boegoebaai, Saldanha Bay, Vaca Muerta).\n"
+    "  5. Alman Otomotiv ve Çelik Sanayii Karbonsuzlaşması (2026 Raporu) & Radikal Reformizm: 'Blast furnace route (BF-BOF) / Hochofenroute' -> 'yüksek fırın yöntemi' vs 'Direct reduction of iron ore (DRI) / Direktreduktion von Eisenerz' -> 'demir cevherinin doğrudan indirgenmesi (yeşil hidrojenle çelik üretimi)', 'Electric arc furnace (EAF)' -> 'elektrik ark ocağı', 'Green steel / grüner Stahl' -> 'yeşil çelik', 'Corporate decarbonisation regimes' -> 'şirket içi karbonsuzlaşma rejimleri', 'Carbon Contracts for Difference (CCfD) / Klimaschutzverträge' -> 'iklim koruma sözleşmeleri (karbon fark sözleşmeleri)', 'Fossil rollback' -> 'fosil yakıtlara geri dönüş (fosil karşı-hamle)', 'Militarisation' -> 'militarizasyon / silahlanma', 'Works councils / Betriebsräte' -> 'işyeri konseyleri', 'Workers subjectivities' -> 'işçilerin öznellikleri', 'Use-value orientation / Gebrauchswertorientierung' -> 'kullanım değeri yönelimi' vs 'Logic of valorisation / Verwertungslogik' -> 'sermayenin değerlenme (kâr) mantığı', 'Fordist consumption norm' -> 'Fordist tüketim normu', 'Family resemblance / Familienähnlichkeit' (Lipietz) -> 'aile benzerliği', 'Radical reformism / radikaler Reformismus' -> 'radikal reformizm', 'Revolutionary realpolitik' (Luxemburg) -> 'devrimci gerçekçi siyaset', 'Non-reformist reforms / nicht-reformistische Reformen' (Gorz) -> 'reformist olmayan (yapısal dönüştürücü) reformlar', 'Real utopias' (Wright) -> 'gerçek ütopyalar', 'Socialisation / Vergesellschaftung' -> 'toplumsallaştırma (kamulaştırma / müşterekleştirme)', 'Politics of scale' -> 'ölçek siyaseti', 'Rio model of politics' -> 'siyasetin Rio modeli'.\n\n"
     "=== ÖZEL KONUŞMACI BRİFİNGİ 2: Prof. Dr. Michel Prieur (CIDCE Başkanı, Université de Limoges — 17 Kasım I. Oturum, FR) ===\n"
     "- Sunum Başlığı: Le rôle des juges et des avocats en droit du climat et de l'environnement : justice, climat et droits humains (İklim ve Çevre Hukukunda Hâkimlerin ve Avukatların Rolü: Adalet, İklim ve İnsan Hakları).\n"
     "- KURAL 1 (DOĞRUDAN FR -> TR ÇEVİRİ): Konuşmacı Fransızca konuştuğunda İngilizce ara çeviri yapmadan doğrudan Fransız hukuk kavramlarından Türkçeye çevir.\n"
@@ -594,6 +599,53 @@ QUADRILINGUAL_TERMS = [
     ("doğa savunucusu / yaşam savunucuları", "nature defender / environmental and land defenders", "défenseurs de la nature et du vivant", "Natur- und Lebensraumverteidiger"),
     ("kamuculuk", "public ownership", "propriété publique et service public", "öffentliches Eigentum und Gemeinwirtschaft"),
     ("adil geçiş", "just transition", "transition juste", "gerechter Übergang (Just Transition)"),
+    ("mülksüzleştirme yoluyla birikim", "accumulation by dispossession", "accumulation par dépossession", "Akkumulation durch Enteignung"),
+    ("ilkel birikim (sermayenin ilk birikimi)", "primitive accumulation (original accumulation)", "accumulation primitive (accumulation initiale)", "ursprüngliche Akkumulation"),
+    ("ilkel birikimin sürekliliği", "permanence of primitive accumulation", "permanence de l'accumulation primitive", "Permanenz der ursprünglichen Akkumulation"),
+    ("mekânsal çözüm (krizin mekânsal aktarımı)", "spatial fix", "aménagement spatial (solution spatiale)", "räumliche Verlagerung (Spatial Fix)"),
+    ("çitleme, el koyma ve değerleme (sermayeleştirme)", "enclosure, appropriation and valorisation", "clôture, appropriation et valorisation", "Einhegung, Aneignung und Inwertsetzung"),
+    ("eko-emperyalizm (ekolojik emperyalizm)", "eco-imperialism (ecological imperialism)", "éco-impérialisme (impérialisme écologique)", "Ökoimperialismus (ökologischer Imperialismus)"),
+    ("eko-emperyal gerilimler", "eco-imperial tensions", "tensions éco-impériales", "öko-imperiale Spannungen"),
+    ("toplumsal doğa ilişkileri", "societal nature relations (society-nature relationships)", "rapports sociaux à la nature", "gesellschaftliche Naturverhältnisse"),
+    ("doğayla toplumsal metabolizma", "social metabolism with nature", "métabolisme social avec la nature", "gesellschaftlicher Stoffwechsel mit der Natur"),
+    ("metabolik yarılma (metabolizma kırılması)", "metabolic rift", "rupture métabolique", "metabolischer Bruch"),
+    ("ekolojik olarak eşitsiz mübadele", "ecologically unequal exchange", "échange écologiquement inégal", "ökologisch ungleicher Tausch"),
+    ("tüketim-tahribat paradoksu", "consumption-degradation paradox", "paradoxe consommation-dégradation", "Konsumtions-Degradations-Paradox"),
+    ("sentropi adaları", "islands of syntropy", "îlots de syntropie", "Syntropieinseln"),
+    ("entropi ihracı (atık ve emisyonların dışsallaştırılması)", "entropy disposal (export of entropy)", "évacuation de l'entropie", "Entropieabfuhr"),
+    ("karbon yutakları ve yutak kapasiteleri", "carbon sinks and sink capacities", "puits de carbone et capacités d'absorption", "Kohlenstoffsenken und Senkenkapazitäten"),
+    ("kapitalist olmayan dış alan", "non-capitalist outside (non-capitalist milieu)", "extérieur non capitaliste", "nicht-kapitalistisches Außen (nicht-kapitalistisches Milieu)"),
+    ("metalaşmamış alanlar", "zones of non-commodification", "zones de non-marchandisation", "Zonen der Nicht-Warenförmigkeit"),
+    ("yamyam kapitalizm", "cannibal capitalism", "capitalisme cannibale", "kannibalisierter Kapitalismus"),
+    ("Bielefeld geçimlik ekonomi yaklaşımı", "Bielefeld subsistence approach", "approche de la subsistance de Bielefeld", "Bielefelder Subsistenzansatz"),
+    ("ilke olarak dışsallaştırma", "externalisation as a principle", "l'externalisation comme principe", "Externalisierung als Prinzip"),
+    ("yeşil gasp (ekolojik gerekçelerle toprak gaspı)", "green grabbing", "accaparement vert (green grabbing)", "grüne Landnahme (Green Grabbing)"),
+    ("yeşil feda bölgeleri", "green sacrifice zones", "zones de sacrifice vertes", "grüne Opferzonen"),
+    ("yeşil ekstraktivizm", "green extractivism", "extractivisme vert", "grüner Extraktivismus"),
+    ("post-fosil ekstraktivizm", "post-fossil extractivism", "extractivisme post-fossile", "postfossiler Extraktivismus"),
+    ("fosil süreklilikler", "fossil continuities", "continuités fossiles", "fossile Kontinuitäten"),
+    ("yeşil kalkınmacılık", "green developmentalism", "développementalisme vert", "grüner Entwicklungsstaat (Green Developmentalism)"),
+    ("fosilizm (fosil yakıt rejimi)", "fossilism", "fossilisme", "Fossilismus"),
+    ("enerji adaleti", "energy justice", "justice énergétique", "Energiegerechtigkeit"),
+    ("jeoekonomi ve jeoekonomik rekabet", "geoeconomics and geoeconomic competition", "géoéconomie et concurrence géoéconomique", "Geoökonomie und geoökonomische Konkurrenz"),
+    ("devlet kapitalizmi", "state capitalism", "capitalisme d'État", "Staatskapitalismus"),
+    ("ekolojik modernleşme", "ecological modernisation", "modernisation écologique", "ökologische Modernisierung"),
+    ("elektrolizör", "electrolyser", "électrolyseur", "Elektrolyseur"),
+    ("planlı elektrik kesintileri (Güney Afrika yük atma krizi)", "load shedding (power cuts)", "délestage électrique", "Lastabwurf (Stromabschaltungen / Load Shedding)"),
+    ("yüksek fırın yöntemi (emisyon yoğun çelik üretimi)", "blast furnace route (BF-BOF)", "filière haut fourneau", "Hochofenroute"),
+    ("demir cevherinin doğrudan indirgenmesi (yeşil hidrojenle çelik)", "direct reduction of iron ore (DRI)", "réduction directe du minerai de fer", "Direktreduktion von Eisenerz"),
+    ("elektrik ark ocağı", "electric arc furnace (EAF)", "four à arc électrique", "Elektrolichtbogenofen"),
+    ("yeşil çelik", "green steel", "acier vert", "grüner Stahl"),
+    ("şirket içi karbonsuzlaşma rejimleri", "corporate decarbonisation regimes", "régimes de décarbonation d'entreprise", "betriebliche Dekarbonisierungsregime"),
+    ("iklim koruma sözleşmeleri (karbon fark sözleşmeleri)", "climate protection contracts (Carbon Contracts for Difference - CCfD)", "contrats d'écart sur le carbone", "Klimaschutzverträge (Carbon Contracts for Difference)"),
+    ("fosil yakıtlara geri dönüş (fosil karşı-hamle)", "fossil rollback", "recul fossile (retour aux énergies fossiles)", "fossiler Rollback"),
+    ("işyeri konseyleri ve işçilerin öznellikleri", "works councils and workers' subjectivities", "conseils d'entreprise et subjectivités ouvrières", "Betriebsräte und Subjektivitäten der Beschäftigten"),
+    ("kullanım değeri yönelimi", "use-value orientation", "orientation vers la valeur d'usage", "Gebrauchswertorientierung"),
+    ("sermayenin değerlenme (kâr) mantığı", "capitalist logic of valorisation", "logique capitaliste de valorisation", "kapitalistische Verwertungslogik"),
+    ("regülasyon teorisi ve Fordist tüketim normu", "regulation theory and Fordist consumption norm", "théorie de la régulation et norme de consommation fordiste", "Regulationstheorie und fordistische Konsumnorm"),
+    ("radikal reformizm ve reformist olmayan reformlar", "radical reformism and non-reformist reforms", "réformisme radical et réformes non réformistes", "radikaler Reformismus und nicht-reformistische Reformen"),
+    ("toplumsallaştırma (kamulaştırma / müşterekleştirme)", "socialisation (democratic public ownership)", "socialisation (appropriation sociale)", "Vergesellschaftung"),
+    ("ölçek siyaseti ve siyasetin Rio modeli", "politics of scale and the Rio model of politics", "politique des échelles et modèle politique de Rio", "Maßstabspolitik (Politics of Scale) und Rio-Modell der Politik"),
 ]
 
 FORBIDDEN_TR = [
@@ -623,6 +675,12 @@ FORBIDDEN_TR = [
     ("hukuki endeksler", "hukuki göstergeler (legal indicators)"),
     ("savunmasız gruplar", "kırılgan gruplar"),
     ("hassas alanlar", "kırılgan alanlar"),
+    ("kamulaştırma yoluyla birikim", "mülksüzleştirme yoluyla birikim (accumulation by dispossession)"),
+    ("yeşil yakalama", "yeşil gasp (green grabbing)"),
+    ("metabolik çatlak", "metabolik yarılma (metabolic rift)"),
+    ("reformcu olmayan reformlar", "reformist olmayan (yapısal dönüştürücü) reformlar"),
+    ("yüksek fırın rotası", "yüksek fırın yöntemi (blast furnace route)"),
+    ("yeşil kurban bölgeleri", "yeşil feda bölgeleri (green sacrifice zones)"),
 ]
 
 # 4 Dilli Örnek Konuşmalar (TR, DE, FR, EN)
