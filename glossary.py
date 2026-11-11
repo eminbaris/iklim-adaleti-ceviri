@@ -90,7 +90,7 @@ SESSIONS = [
         "id": "17_kasim_1030_oturum1",
         "day": "17 Kasım 2026 | 10.30 - 12.30",
         "title": "I. Oturum: Uluslararası İklim Hukuku Göstergeleri, İklim Adaleti ve Kırılgan Alanlar / Session I: International Climate Law Indicators, Climate Justice, and Vulnerable Areas",
-        "speakers": "Başkan: Prof. Dr. Ayşe Odman Boztosun (Akdeniz Üniv.) | Prof. Dr. Michel Prieur (CIDCE Başkanı - FR), Dr. Julien Prieur (CIDCE - FR/EN), Dr. Laurent Vassallo (CIDCE - FR), Lucie Brouwer (CIDCE / CDMO Nantes / SKEMA - FR)",
+        "speakers": "Başkan: Prof. Dr. Ayşe Odman Boztosun (Akdeniz Üniv.) | Prof. Dr. Michel Prieur (CIDCE Başkanı - FR), Dr. Julien Prieur (CIDCE - FR/EN), Dr. Laurent Vassallo (CIDCE / Univ. de Montpellier - FR/EN), Lucie Brouwer (CIDCE / CDMO Nantes / SKEMA - FR/EN)",
         "default_lang": "fr-FR",
     },
     {
@@ -137,7 +137,7 @@ SESSIONS = [
     },
 ]
 
-# Konuşmacı Özel Hazırlık Brifingleri (AI Translation Preparation Briefs — 6 Yabancı Konuşmacı)
+# Konuşmacı Özel Hazırlık Brifingleri (AI Translation Preparation Briefs — 7 Yabancı Konuşmacı Eksiksiz Set)
 SPEAKER_BRIEFS = (
     "=== ÖZEL KONUŞMACI BRİFİNGİ 1: Dr. Jenny Simon & Prof. Dr. Markus Wissen (HWR Berlin — 16 Kasım I. Oturum, EN) ===\n"
     "- Kurum: Berlin School of Economics and Law (HWR Berlin). Ortak yazarlar: Markus Wissen, Tobias Kalt, Anne Tittor, Johanna Tunn, Franziska Müller, Jesko Hennig.\n"
@@ -161,16 +161,24 @@ SPEAKER_BRIEFS = (
     "  3. 'Indicateurs d'adaptation / Adaptation indicators' (59 Belém uyum göstergesi — gönüllü ve cezai olmayan) ile 'Indicateurs juridiques / Legal indicators' (hukuki göstergeler) kavramlarını ASLA karıştırma.\n"
     "  4. 'Sortie progressive des combustibles fossiles / Fossil fuel phase-out' -> 'fosil yakıtların aşamalı olarak tamamen terk edilmesi' vs 'Réduction progressive / Phase-down' -> 'fosil yakıt kullanımının aşamalı olarak azaltılması' vs 'Transition hors des combustibles fossiles / Transitioning away from fossil fuels' -> 'fosil yakıtlardan uzaklaşma'.\n"
     "  5. 'Tropical Forest Forever Facility (TFFF)' -> 'Tropikal Ormanları Kalıcı Olarak Koruma Finansman Mekanizması (TFFF)', 'Caatinga' -> 'Caatinga ekosistemi (Brezilya)', 'fonction socio-environnementale de la propriété' -> 'mülkiyetin sosyo-ekolojik işlevi'.\n\n"
-    "=== ÖZEL KONUŞMACI BRİFİNGİ 4: Lucie Brouwer (CIDCE, CDMO Nantes Université, SKEMA Business School — 17 Kasım I. Oturum, FR) ===\n"
-    "- Sunum Başlığı: Indicateurs juridiques de l'effectivité des obligations climatiques des États : défis du transport maritime et de la justice climatique (Devletlerin İklim Yükümlülüklerinin Fiilî İşlerliğine İlişkin Hukuki Göstergeler: Deniz Taşımacılığı ve İklim Adaleti Alanındaki Zorluklar).\n"
-    "- Ortak yazarlar ve kurumlar: Mattéa Armandoni, Laurent Vassallo, Michel Prieur, Christophe Bastin; OMI (IMO), MEPC (Deniz Çevresini Koruma Komitesi), TIDM (ITLOS), CNUDM (UNCLOS / BMDHS md. 192, 194, 206), MARPOL Annexe VI, Convention de Barcelone, Protocole 'Prévention et situations critiques' (2002 - 25 madde için 117 hukuki gösterge), REMPEC, ODD 14 (SKA 14: Sudaki Yaşam), CMA CGM.\n"
+    "=== ÖZEL KONUŞMACI BRİFİNGİ 4: Dr. Laurent Vassallo (CIDCE Saymanı, Université de Montpellier — 17 Kasım I. Oturum, FR/EN) ===\n"
+    "- Sunum Başlığı: Les indicateurs juridiques pour mesurer l'effectivité du droit de l'environnement : vers l'action climatique / Legal Indicators for Measuring the Effectivity of Environmental Law: Towards Climate Action (Çevre Hukukunun Fiilî İşlerliğini Ölçmeye Yönelik Hukuki Göstergeler: İklim Eylemi İçin).\n"
+    "- Yayınlar ve Kurumlar: Université de Montpellier, CIDCE, UNOC 2025 (ODD 14 / SDG 14 değerlendirmesi: Fransa, Malta, Portekiz, Tunus, Brezilya, Şili, Kolombiya, Kosta Rika, Çin), Convention de Barcelone, Convention de Minamata sur le mercure (Cıvaya İlişkin Minamata Sözleşmesi), sağlık kuruluşlarında sürdürülebilir kalkınma hukuku (établissements de santé), Jérôme Fromageau, Émilie Gaillard.\n"
+    "- CIDCE HUKUKİ FİİLÎ İŞLERLİK (EFFECTIVITÉ) ÖLÇÜMÜNÜN 6 TEMEL SORUSU VE METODOLOJİK AYRIMLAR:\n"
+    "  1. Altı Aşama: (1) Hukuk kuralı var mı? (existence), (2) Uygulanabilir mi? ('applicabilité / applicability' -> 'uygulanabilirlik' vs 'caractère exécutoire / enforceability' -> 'hukuken icra edilebilirlik'), (3) Kurumsal çerçeve nedir? ('autorité compétente' -> 'yetkili makam' vs kurumsal uygulama kapasitesi), (4) Normatif içerik nedir? ('contenu normatif'), (5) Fiilen uygulanıyor ve yaptırımla destekleniyor mu? ('application effective / enforcement'), (6) Hukuk dışı (siyasi, ekonomik, sosyal, kültürel) engeller nelerdir? ('facteurs extrajuridiques').\n"
+    "  2. 'Indicateurs juridiques / Legal indicators' (hukuki göstergeler) ile 'Indicateurs environnementaux / écologiques' (çevresel/ekolojik göstergeler), 'Indicateurs d'adaptation' (uyum göstergeleri) ve 'Indicateurs de santé publique' (halk sağlığı göstergeleri) kavramlarını ASLA karıştırma. Emisyonların azalması çevresel bir sonuçtur; tek başına hukuki yükümlülüğün fiilî işlerliğini ölçmez.\n"
+    "  3. Metodolojik Terimler: 'Indicateur / Indicator' -> 'gösterge' vs 'Indice / Index' -> 'endeks' (her göstergeye 'endeks' deme!). 'Référentiel / Reference framework' -> 'referans çerçevesi', 'Qualification des données' -> 'verilerin nitelendirilmesi', 'Quantification des données' -> 'verilerin nicelleştirilmesi', 'Agrégation des données / Data aggregation' -> 'verilerin birleştirilmesi / toplulaştırılması', 'Pondération / Weighting' -> 'ağırlıklandırma', 'Système de notation / Scoring system' -> 'puanlama sistemi', 'Questionnaire juridique' -> 'hukuki soru formu / anket', 'Panel d'experts' -> 'uzman paneli', 'Tableau de bord / Dashboard' -> 'gösterge paneli', 'Diagramme radar' -> 'radar grafiği'.\n"
+    "  4. 'Corrélation / Correlation' (korelasyon / ilişki) ile 'Causalité / Causation' (nedensellik) kavramlarını ASLA eşitleme. 'Lacune de mise en œuvre / Implementation gap' (uygulama açığı) ile 'Lacune juridique / Legal gap' (hukuki boşluk) kavramlarını ayır. Hukuki göstergelerin amacı ülkeleri yarışma gibi sıralamak (ranking) değil, uygulama engellerini teşhis etmektir; konuşmacı söylemedikçe puan/formül/sıralama uydurma!\n\n"
+    "=== ÖZEL KONUŞMACI BRİFİNGİ 5: Lucie Brouwer (CIDCE, CDMO Nantes Université, SKEMA Business School — 17 Kasım I. Oturum, FR/EN) ===\n"
+    "- Sunum Başlığı: Indicateurs juridiques de l'effectivité des obligations climatiques des États : défis du transport maritime et de la justice climatique / Legal Indicators for Assessing the Effectivity of States' Climate Obligations: Challenges in Maritime Transport and Climate Justice.\n"
+    "- Ortak yazarlar ve kurumlar: Mattéa Armandoni, Laurent Vassallo, Michel Prieur, Christophe Bastin, Martin Ndende; OMI (IMO), MEPC (Deniz Çevresini Koruma Komitesi), TIDM (ITLOS), CNUDM (UNCLOS / BMDHS md. 192, 194, 206), MARPOL Annexe VI, Convention de Barcelone, Protocole 'Prévention et situations critiques' (2002 - 25 madde için 117 hukuki gösterge), REMPEC, EMSA (AESM), ODD 14 (SKA 14: Sudaki Yaşam), CMA CGM.\n"
     "- KESİN DENİZ HUKUKU VE EMİSYON AYRIMLARI:\n"
-    "  1. 'Indicateurs juridiques / Indicateurs d'effectivité' (hukuki göstergeler / fiilî işlerlik göstergeleri) ile OMI'nin teknik göstergesi olan 'Indicateur d'intensité carbone (CII)' (Karbon Yoğunluğu Göstergesi) veya 'EEXI / SEEMP / DCS / MRV' kavramlarını ASLA karıştırma!\n"
-    "  2. 'Droit maritime' -> 'deniz ticaret hukuku / denizcilik hukuku' vs 'Droit de la mer' -> 'uluslararası deniz hukuku'.\n"
-    "  3. Üç devlet kategorisini ASLA tek tip 'devlet' diye düzleştirme: 'État du pavillon' -> 'bayrak devleti', 'État du port' -> 'liman devleti', 'État côtier' -> 'kıyı devleti'. Özel aktörler: 'Armateur' -> 'donatan / gemi sahibi', 'Exploitant du navire' -> 'gemi işletmecisi', 'Affréteur' -> 'çarterer / gemi kiralayan'.\n"
-    "  4. 'Émissions well-to-wake' -> 'yakıtın üretiminden gemide kullanımına kadar oluşan yaşam döngüsü emisyonları' vs 'Émissions tank-to-wake' -> 'yakıtın gemide kullanımından kaynaklanan emisyonlar'. 'Intensité carbone' (karbon yoğunluğu) ile 'émissions absolues' (mutlak emisyonlar) aynı şey değildir.\n"
-    "  5. OMI 'Cadre zéro émission nette (IMO Net-Zero Framework)' hukuki durumu: Taslak Nisan 2025'te MEPC 83'te onaylandı (approuvé), Sonbahar 2025'te ertelendi, Kasım 2026 itibarıyla henüz yürürlüğe girmiş (entré en vigueur) değildir! 'Approbation' (onaylama), 'adoption' (kabul edilme) ve 'entrée en vigueur' (yürürlüğe girme) aşamalarını asla birbirinin yerine kullanma. SEQE-UE (AB ETS: 2024 %40, 2025 %70, 2026 %100) ile FuelEU Maritime (1 Ocak 2025) ayrı düzenlemelerdir.\n\n"
-    "=== ÖZEL KONUŞMACI BRİFİNGİ 5: Prof. Dr. Pasquale Policastro (University of Szczecin — 17 Kasım II. Oturum, EN) ===\n"
+    "  1. 'Indicateurs juridiques / Legal indicators' (hukuki göstergeler) ile OMI'nin teknik göstergesi olan 'Indicateur d'intensité carbone / Carbon Intensity Indicator (CII)' (Karbon Yoğunluğu Göstergesi) veya 'EEXI / SEEMP / DCS / MRV' kavramlarını ASLA karıştırma!\n"
+    "  2. 'Droit maritime / Maritime law' -> 'deniz ticaret hukuku / denizcilik hukuku' vs 'Droit de la mer / Law of the sea' -> 'uluslararası deniz hukuku'.\n"
+    "  3. Üç devlet kategorisini ASLA tek tip 'devlet' diye düzleştirme: 'État du pavillon / Flag state' -> 'bayrak devleti', 'État du port / Port state' -> 'liman devleti', 'État côtier / Coastal state' -> 'kıyı devleti'. Özel aktörler: 'Armateur / Shipowner' -> 'donatan / gemi sahibi', 'Exploitant du navire / Ship operator' -> 'gemi işletmecisi', 'Affréteur / Charterer' -> 'çarterer / gemi kiralayan'.\n"
+    "  4. 'Émissions well-to-wake / Well-to-wake emissions' -> 'yakıtın üretiminden gemide kullanımına kadar oluşan yaşam döngüsü emisyonları' vs 'Émissions tank-to-wake / Tank-to-wake emissions' -> 'yakıtın gemide kullanımından kaynaklanan emisyonlar'. 'Intensité carbone / Carbon intensity' (karbon yoğunluğu) ile 'émissions absolues / absolute emissions' (mutlak emisyonlar) ve 'jauge brute / gross tonnage' (gros tonaj — gemi iç hacmi) ile 'poids des marchandises / cargo weight' (yük ağırlığı) ayrımlarını koru.\n"
+    "  5. OMI 'Cadre zéro émission nette / IMO Net-Zero Framework' hukuki durumu: Taslak Nisan 2025'te MEPC 83'te onaylandı (approuvé / approved), Ekim 2025'te kabul edilmedi, Kasım 2026 itibarıyla henüz yürürlüğe girmiş (entré en vigueur / entered into force) değildir! 'Approbation' (onaylama), 'adoption' (kabul edilme) ve 'entrée en vigueur' (yürürlüğe girme) aşamalarını asla karıştırma. SEQE-UE / EU ETS (2024 %40, 2025 %70, 2026 %100) ile FuelEU Maritime (1 Ocak 2025) ayrı düzenlemelerdir.\n\n"
+    "=== ÖZEL KONUŞMACI BRİFİNGİ 6: Prof. Dr. Pasquale Policastro (University of Szczecin — 17 Kasım II. Oturum, EN) ===\n"
     "- Sunum Başlığı: Biospheric Relations and the Rule of Law (Biyosferik İlişkiler ve Hukuk Devleti).\n"
     "- Düşünür ve kavram referansları: Vladimir Vernadsky ('Biosphere / Biyosfer', 'Noosphere / Noosfer', 'living matter / canlı madde', 'biogeochemical cycles / biyojeokimyasal döngüler'), Giambattista Vico, Ludwig von Bertalanffy, Niklas Luhmann, Lynn Margulis, James Lovelock, Robert Alexy.\n"
     "- KESİN ANAYASAL VE FELSEFİ AYRIMLAR:\n"
@@ -180,7 +188,7 @@ SPEAKER_BRIEFS = (
     "  4. 'Legal subsumption / Sussunzione giuridica' -> 'hukuki nitelendirme / hukuk normu kapsamına alma' (ASLA 'itaat / tabi kılma' diye çevirme!). Doğadaki bilimsel düzenliliklerin (scientific regularities) betimlenmesi ile hukuki normları (legal norms / ought) karıştırma.\n"
     "  5. 'Constitutional legal personality of forests / Personalità giuridica delle foreste / Osobowość prawna lasów' -> 'ormanların anayasal düzeyde hukuki kişiliği' (doktriner öneridir; yürürlükteki genel kural gibi sunma). 'Legal personality' (hukuki kişilik), 'legal subjectivity' (hukuk öznesi olma niteliği) ve 'legal standing' (dava açma ehliyeti) ayrımlarını koru.\n"
     "  6. 'Universal harm / Danno universale' -> 'evrensel zarar' (ASLA 'evrensel suç / insanlığa karşı suç' diye çevirme). 'Symbiosis' -> 'simbiyoz / ortakyaşam' vs 'Coexistence' -> 'bir arada var olma'. 'Climate migrant' -> 'iklim göçmeni' vs 'Refugee' -> 'mülteci' (1951 Sözleşmesi ayrımı).\n\n"
-    "=== ÖZEL KONUŞMACI BRİFİNGİ 6: Dr. Markus Johannes Theodorus Schrijer (Humboldt University of Berlin / Akdeniz Üniv. — 17 Kasım II. Oturum, EN) ===\n"
+    "=== ÖZEL KONUŞMACI BRİFİNGİ 7: Dr. Markus Johannes Theodorus Schrijer (Humboldt University of Berlin / Akdeniz Üniv. — 17 Kasım II. Oturum, EN) ===\n"
     "- Sunum Başlığı: No Distribution Without Representation: The Problem of Intertemporal Freedom and Equality in the German Climate Decision (Temsil Olmadan Dağıtım Olmaz: Alman İklim Kararında Zamanlar Arası Özgürlük ve Eşitlik Sorunu).\n"
     "- Birincil Hukuki Kaynak: Almanya Federal Anayasa Mahkemesi (Bundesverfassungsgericht / BVerfG) Birinci Senatosu'nun 24 Mart 2021 tarihli İklim Kararı (Klimabeschluss — 1 BvR 2656/18, 1 BvR 78/20, 1 BvR 96/20, 1 BvR 288/20) ve 2019 Federal İklim Koruma Kanunu (Bundes-Klimaschutzgesetz / KSG).\n"
     "- KESİN ALMAN ANAYASA HUKUKU VE SİYASET TEORİSİ AYRIMLARI:\n"
@@ -191,7 +199,7 @@ SPEAKER_BRIEFS = (
     "  5. 'Constituent power / Verfassungsgebende Gewalt' -> 'kurucu iktidar' vs 'Constituted power / Verfasste Gewalt' -> 'kurulu iktidar'. 'Formal legality' -> 'biçimsel hukuka uygunluk' vs 'Democratic legitimacy / Substantive legitimacy' -> 'demokratik meşruiyet / maddi (özsel) meşruiyet'.\n"
     "  6. 'Proportionality / Verhältnismäßigkeit' -> 'ölçülülük ilkesi' ve 3 aşamalı testi (Özgür Aydın & Markus J. T. Schrijer 2025 makalesi): (a) 'Suitability / Geeignetheit' -> 'elverişlilik', (b) 'Necessity / Erforderlichkeit' -> 'gereklilik', (c) 'Proportionality in the strict sense / Angemessenheit' -> 'dar anlamda ölçülülük / orantılılık' ('Abwägung' -> 'dengeleme').\n"
     "  7. 'Article 20a of the Basic Law / Artikel 20a Grundgesetz (GG)' -> 'Alman Temel Yasası'nın 20a maddesi' ('Staatszielbestimmung' -> 'devlet hedefini düzenleyen anayasal hüküm', 'natürliche Lebensgrundlagen' -> 'yaşamın doğal temelleri'; doğrudan bireysel sübjektif temel hak değil, yargısal denetime elverişli anayasal devlet ödevidir). 'Article 2(2) GG' -> 'yaşam ve beden bütünlüğü hakkı' ('Schutzpflicht' -> 'koruma yükümlülüğü').\n"
-    "  8. 'Declaration of incompatibility / Unvereinbarkeitserklärung' -> 'anayasayla bağdaşmazlık kararı' vs 'Declaration of nullity / Nichtigerklärung' -> 'hükümsüzlük (iptal) kararı' (BVerfG 2019 Kanunu'nu derhâl tamamen iptal etmemiş, 2030 sonrası azaltım patikası eksikliği nedeniyle bağdaşmazlık kararı verip yasama organına 31 Aralık 2022'ye kadar süre tanımıştır)."
+    "  8. 'Declaration of incompatibility / Unvereinbarkeitserklärung' -> 'anayasayla bağdaşmazlık kararı' vs 'Declaration of nullity / Nichtigerklärung' -> 'hükümsüzlük (iptal) kararı'."
 )
 
 # 4 Dilli Eşdeğerlik Tablosu (TR <-> EN <-> FR <-> DE)
@@ -220,21 +228,52 @@ QUADRILINGUAL_TERMS = [
     ("çevresel etki değerlendirmesi (ÇED)", "environmental impact assessment (EIA)", "étude d'impact environnemental (évaluation des incidences)", "Umweltverträglichkeitsprüfung (UVP)"),
     ("biyolojik çeşitliliğin korunması", "biodiversity conservation (protection of biodiversity)", "conservation de la biodiversité (protection de la biodiversité)", "Schutz und Erhaltung der biologischen Vielfalt"),
     ("hukukun fiilî işlerliği", "effectivity of law (legal effectivity)", "effectivité du droit", "Effektivität (tatsächliche Wirksamkeit) des Rechts"),
+    ("çevre hukukunun fiilî işlerliği", "effectivity of environmental law", "effectivité du droit de l'environnement", "tatsächliche Wirksamkeit des Umweltrechts"),
     ("fiilî işlerlik göstergeleri", "indicators of effectivity", "indicateurs d'effectivité", "Effektivitätsindikatoren"),
     ("etkililik", "effectiveness", "efficacité", "Wirksamkeit (Effektivität)"),
     ("verimlilik", "efficiency", "efficience", "Effizienz"),
     ("temel hakların fiilen korunması", "effectivity of fundamental rights", "effectivité des droits fondamentaux", "tatsächliche Wirksamkeit der Grundrechte"),
     ("hukuki göstergeler", "legal indicators", "indicateurs juridiques", "Rechtsindikatoren"),
+    ("çevre hukukuna ilişkin hukuki göstergeler", "environmental legal indicators", "indicateurs juridiques environnementaux", "umweltrechtliche Rechtsindikatoren"),
+    ("çevresel performans göstergeleri", "environmental performance indicators", "indicateurs de performance environnementale", "Umweltleistungsindikatoren"),
+    ("ekolojik göstergeler", "ecological indicators", "indicateurs écologiques", "ökologische Indikatoren"),
     ("uyum göstergeleri", "adaptation indicators", "indicateurs d'adaptation", "Anpassungsindikatoren"),
-    ("hukukun uygulanması", "implementation of law", "mise en œuvre du droit", "Umsetzung des Rechts"),
+    ("gösterge", "indicator", "indicateur", "Indikator"),
+    ("endeks", "index", "indice", "Index"),
+    ("referans çerçevesi", "reference framework", "référentiel", "Referenzrahmen"),
+    ("karşılaştırma ölçütü", "benchmark", "référence de comparaison", "Benchmark (Vergleichsmaßstab)"),
+    ("başlangıç durumu / referans değer", "baseline", "situation de référence", "Ausgangswert (Baseline)"),
+    ("nitel veriler", "qualitative data", "données qualitatives", "qualitative Daten"),
+    ("nicel veriler", "quantitative data", "données quantitatives", "quantitative Daten"),
+    ("verilerin nitelendirilmesi", "data qualification", "qualification des données", "Datenqualifizierung"),
+    ("verilerin nicelleştirilmesi", "data quantification", "quantification des données", "Datenquantifizierung"),
+    ("verilerin birleştirilmesi / toplulaştırılması", "data aggregation", "agrégation des données", "Datenaggregation"),
+    ("ağırlıklandırma", "weighting", "pondération", "Gewichtung"),
+    ("puanlama sistemi", "scoring system", "système de notation", "Bewertungssystem (Scoring-System)"),
+    ("hukuki soru formu / anket", "legal questionnaire", "questionnaire juridique", "juristischer Fragebogen"),
+    ("uzman paneli", "expert panel", "panel d'experts", "Expertenpanel"),
+    ("temsil kabiliyeti bulunan örneklem", "representative sample", "échantillon représentatif", "repräsentative Stichprobe"),
+    ("korelasyon / ilişki", "correlation", "corrélation", "Korrelation"),
+    ("nedensellik", "causation", "causalité", "Kausalität"),
+    ("gösterge paneli", "dashboard", "tableau de bord", "Dashboard"),
+    ("radar grafiği", "radar chart", "diagramme radar", "Netzdiagramm (Radar-Chart)"),
+    ("hukukun uygulanması", "legal implementation (implementation of law)", "mise en œuvre du droit", "Umsetzung des Rechts"),
+    ("fiilen hayata geçirme", "actual implementation", "mise en œuvre effective", "tatsächliche Umsetzung"),
     ("fiilen uygulanma", "effective application", "application effective", "tatsächliche Anwendung"),
     ("fiilen işleyen hukuk", "law in action", "droit en action (effectif)", "gelebtes Recht (Law in Action)"),
-    ("kâğıt üzerinde kalan hukuk", "law on the books", "droit sur le papier", "Recht auf dem Papier"),
-    ("hukuken icra edilebilir nitelik (hukuken uygulanabilirlik)", "legal enforceability", "caractère juridiquement exécutoire", "rechtliche Durchsetzbarkeit (Vollstreckbarkeit)"),
-    ("yükümlülüklere uyum", "compliance", "conformité (respect des obligations)", "Einhaltung von Verpflichtungen (Compliance)"),
-    ("hukuki uyum denetim mekanizması", "compliance control mechanism", "mécanisme de contrôle de conformité", "Mechanismus zur Einhaltungskontrolle"),
+    ("kâğıt üzerindeki hukuk (kâğıt üzerinde kalan hukuk)", "law on the books", "droit sur le papier", "Recht auf dem Papier"),
+    ("uygulanabilirlik", "applicability", "applicabilité", "Anwendbarkeit"),
+    ("hukuken icra edilebilir nitelik (hukuken uygulanabilirlik)", "legal enforceability (enforceability)", "caractère juridiquement exécutoire", "rechtliche Durchsetzbarkeit (Vollstreckbarkeit)"),
+    ("idari uygulama ve yaptırım", "administrative enforcement", "mise en œuvre administrative et sanctions", "verwaltungsrechtliche Durchsetzung und Sanktionen"),
+    ("yargısal yolla uygulamanın sağlanması", "judicial enforcement", "mise en œuvre par voie juridictionnelle", "gerichtliche Durchsetzung"),
+    ("yetkili makam", "competent authority", "autorité compétente", "zuständige Behörde"),
+    ("yükümlülüklere uyum", "compliance (legal compliance)", "conformité (respect des obligations)", "Einhaltung von Verpflichtungen (Compliance)"),
+    ("yükümlülüklere aykırılık / uyumsuzluk", "non-compliance", "non-respect des obligations", "Nichteinhaltung"),
+    ("hukuki uyum denetim mekanizması", "compliance control mechanism", "mécanisme de contrôle du respect des obligations", "Mechanismus zur Einhaltungskontrolle"),
     ("hukuki izleme", "legal monitoring", "suivi juridique", "rechtliches Monitoring"),
+    ("hukuki değerlendirme yöntemi", "legal evaluation methodology", "méthodologie d'évaluation juridique", "Methodik der rechtlichen Evaluierung"),
     ("izleme, raporlama ve doğrulama (MRV)", "monitoring, reporting and verification (MRV)", "surveillance, déclaration et vérification (MRV)", "Überwachung, Berichterstattung und Verifizierung (MRV)"),
+    ("Geliştirilmiş Şeffaflık Çerçevesi", "Enhanced Transparency Framework (ETF)", "Cadre de transparence renforcé", "Erweiterter Transparenzrahmen"),
     ("ölçülebilir ölçütler", "measurable criteria", "critères mesurables", "messbare Kriterien"),
     ("normatif çerçeve", "normative framework", "cadre normatif", "normativer Rahmen"),
     ("düzenleyici çerçeve", "regulatory framework", "cadre réglementaire", "Regulierungsrahmen"),
@@ -244,6 +283,7 @@ QUADRILINGUAL_TERMS = [
     ("hukuken bağlayıcı olmayan araçlar", "non-binding instruments", "instruments non contraignants", "nicht rechtsverbindliche Instrumente"),
     ("bağlayıcı güç", "binding force", "force obligatoire", "verbindliche Kraft"),
     ("hukuki güç (hukuki etki)", "legal force", "force juridique", "Rechtskraft (rechtliche Wirkung)"),
+    ("hukuki geçerlilik", "legal validity", "validité juridique", "Rechtsgültigkeit"),
     ("uygunluk denetimi", "compliance control", "contrôle de conformité", "Konformitätskontrolle"),
     ("pozitif hukuk", "positive law", "droit positif", "positives Recht"),
     ("doğal hukuk", "natural law", "droit naturel", "Naturrecht"),
@@ -257,6 +297,12 @@ QUADRILINGUAL_TERMS = [
     ("hukuki hesap verebilirlik", "legal accountability", "redevabilité juridique", "rechtliche Rechenschaftspflicht"),
     ("hukuki boşluk", "legal gap (lacuna)", "lacune juridique", "Rechtslücke"),
     ("hukuki güvenlik", "legal certainty", "sécurité juridique", "Rechtssicherheit"),
+    ("Cıvaya İlişkin Minamata Sözleşmesi", "Minamata Convention on Mercury", "Convention de Minamata sur le mercure", "Minamata-Übereinkommen über Quecksilber"),
+    ("Biyolojik Çeşitlilik Sözleşmesi", "Convention on Biological Diversity (CBD)", "Convention sur la diversité biologique (CDB)", "Übereinkommen über die biologische Vielfalt (CBD)"),
+    ("bütünleşik kıyı alanları yönetimi", "integrated coastal zone management (ICZM)", "gestion intégrée des zones côtières", "integriertes Küstenzonenmanagement (IKZM)"),
+    ("deniz koruma alanları", "marine protected areas (MPAs)", "aires marines protégées", "Meeresschutzgebiete"),
+    ("çevre sağlığı", "environmental health", "santé environnementale", "Umweltgesundheit"),
+    ("sağlık kuruluşları", "healthcare institutions", "établissements de santé", "Gesundheitseinrichtungen"),
     ("insan hakları", "human rights", "droits humains (droits de l'homme)", "Menschenrechte"),
     ("insan onuru", "human dignity", "dignité humaine", "Menschenwürde"),
     ("temel haklar", "fundamental rights", "droits fondamentaux", "Grundrechte"),
@@ -428,17 +474,19 @@ QUADRILINGUAL_TERMS = [
     ("Münhasır Ekonomik Bölge (MEB)", "Exclusive Economic Zone (EEZ)", "Zone économique exclusive (ZEE)", "Ausschließliche Wirtschaftszone (AWZ)"),
     ("açık deniz", "high seas", "haute mer", "Hohe See"),
     ("deniz ticareti uyuşmazlıklarında tahkim", "maritime arbitration", "arbitrage maritime", "seerechtliches Schiedsverfahren"),
-    ("deniz taşımacılığının karbonsuzlaştırılması", "decarbonisation of maritime shipping", "décarbonation du transport maritime", "Dekarbonisierung der Seeschifffahrt"),
+    ("deniz taşımacılığının karbonsuzlaştırılması", "decarbonisation of maritime shipping (maritime decarbonisation)", "décarbonation du transport maritime", "Dekarbonisierung der Seeschifffahrt"),
     ("karbon yoğunluğu", "carbon intensity", "intensité carbone", "Kohlenstoffintensität"),
     ("Karbon Yoğunluğu Göstergesi (CII)", "Carbon Intensity Indicator (CII)", "Indicateur d'intensité carbone (CII)", "Kohlenstoffintensitätsindikator (CII)"),
     ("Mevcut Gemiler İçin Enerji Verimliliği Endeksi (EEXI)", "Energy Efficiency Existing Ship Index (EEXI)", "Indice de rendement énergétique des navires existants (EEXI)", "Energieeffizienz-Index für vorhandene Schiffe (EEXI)"),
     ("Gemi Enerji Verimliliği Yönetim Planı (SEEMP)", "Ship Energy Efficiency Management Plan (SEEMP)", "Plan de gestion de l'efficacité énergétique du navire (SEEMP)", "Schiffsenergieeffizienz-Managementplan (SEEMP)"),
+    ("Gemi Yakıt Tüketimi Veri Toplama Sistemi (DCS)", "Ship Fuel Oil Consumption Data Collection System (DCS)", "Système de collecte de données sur la consommation de fuel (DCS)", "Datenerhebungssystem für den Kraftstoffverbrauch von Schiffen (DCS)"),
     ("yakıtın üretiminden gemide kullanımına kadar oluşan emisyonlar (well-to-wake)", "well-to-wake emissions", "émissions well-to-wake (cycle de vie du carburant)", "Well-to-Wake-Emissionen"),
     ("yakıtın gemide kullanımından kaynaklanan emisyonlar (tank-to-wake)", "tank-to-wake emissions", "émissions tank-to-wake", "Tank-to-Wake-Emissionen"),
     ("IMO Net Sıfır Çerçevesi", "IMO Net-Zero Framework", "Cadre zéro émission nette de l'OMI", "IMO-Netto-Null-Rahmenwerk"),
     ("AB Emisyon Ticaret Sistemi (SEQE-UE / EU ETS)", "EU Emissions Trading System (EU ETS)", "Système d'échange de quotas d'émission de l'UE (SEQE-UE)", "EU-Emissionshandelssystem (EU-EHS)"),
     ("Barselona Sözleşmesi ve Önleme ve Acil Durum Protokolü", "Barcelona Convention and Prevention and Emergency Protocol", "Convention de Barcelone et Protocole Prévention et situations critiques", "Barcelona-Übereinkommen und Protokoll über Verhütung und Notfälle"),
-    ("deniz çevresinin korunması", "protection of the marine environment", "protection du milieu marin", "Schutz der Meeresumwelt"),
+    ("deniz çevresinin korunması", "protection of the marine environment (marine environmental protection)", "protection du milieu marin", "Schutz der Meeresumwelt"),
+    ("okyanus yönetişimi", "ocean governance", "gouvernance des océans", "Meeres-Governance (Ozean-Governance)"),
     ("okyanus asitlenmesi", "ocean acidification", "acidification des océans", "Ozeanversauerung"),
     # COP30 / COP31 Uluslararası İklim Yönetişimi ve İklim Finansmanı (Dr. Julien Prieur)
     ("Taraflar Konferansı (COP)", "Conference of the Parties (COP)", "Conférence des Parties (COP)", "Vertragsstaatenkonferenz (COP)"),
@@ -479,7 +527,7 @@ QUADRILINGUAL_TERMS = [
     ("fosil yakıtların aşamalı olarak tamamen terk edilmesi", "fossil fuel phase-out", "sortie progressive des combustibles fossiles", "schrittweiser Ausstieg aus fossilen Brennstoffen (Phase-out)"),
     ("fosil yakıt kullanımının aşamalı olarak azaltılması", "fossil fuel phase-down", "réduction progressive des combustibles fossiles", "schrittweise Reduzierung fossiler Brennstoffe (Phase-down)"),
     ("fosil yakıtlardan uzaklaşma", "transitioning away from fossil fuels", "transition hors des combustibles fossiles", "Abkehr von fossilen Brennstoffen"),
-    ("uygulama açığı", "implementation gap", "déficit de mise en œuvre", "Umsetzungslücke"),
+    ("uygulama açığı", "implementation gap", "déficit de mise en œuvre (lacune de mise en œuvre)", "Umsetzungslücke"),
     ("hedeflenen çaba düzeyindeki açık", "ambition gap", "déficit d'ambition", "Ambitionslücke"),
     ("emisyon açığı", "emissions gap", "écart d'émissions", "Emissionslücke"),
     ("karbon nötrlüğü", "carbon neutrality", "neutralité carbone", "Kohlenstoffneutralität"),
@@ -530,7 +578,8 @@ QUADRILINGUAL_TERMS = [
     ("kırılgan alanlar", "vulnerable areas", "territoires vulnérables (espaces vulnérables)", "vulnerable Gebiete"),
     ("kırılgan gruplar", "vulnerable groups", "groupes vulnérables", "vulnerable Gruppen"),
     ("iklim nedeniyle yerinden edilmiş kişiler", "climate-displaced persons", "personnes déplacées climatiques", "klimabedingt Vertriebene"),
-    ("Sürdürülebilir Kalkınma Amacı 14: Sudaki Yaşam (SKA 14)", "Sustainable Development Goal 14 (SDG 14)", "Objectif de développement durable 14 (ODD 14)", "Nachhaltigkeitsziel 14 (SDG 14)"),
+    ("Sürdürülebilir Kalkınma Amacı 13: İklim Eylemi (SKA 13)", "Sustainable Development Goal 13: Climate Action (SDG 13)", "Objectif de développement durable 13 (ODD 13)", "Nachhaltigkeitsziel 13: Maßnahmen zum Klimaschutz (SDG 13)"),
+    ("Sürdürülebilir Kalkınma Amacı 14: Sudaki Yaşam (SKA 14)", "Sustainable Development Goal 14: Life Below Water (SDG 14)", "Objectif de développement durable 14 (ODD 14)", "Nachhaltigkeitsziel 14: Leben unter Wasser (SDG 14)"),
     ("gıda egemenliği", "food sovereignty", "souveraineté alimentaire", "Ernährungssouveränität"),
     ("köylü tarımı", "peasant agriculture", "agriculture paysanne", "bäuerliche Landwirtschaft"),
     ("agroekoloji", "agroecology", "agroécologie", "Agrarökologie"),
@@ -571,6 +620,7 @@ FORBIDDEN_TR = [
     ("ekolojik cinayet", "ekokırım"),
     ("evrensel suç", "evrensel zarar (universal harm)"),
     ("hukuki itaat", "hukuki nitelendirme / norm kapsamına alma (legal subsumption)"),
+    ("hukuki endeksler", "hukuki göstergeler (legal indicators)"),
     ("savunmasız gruplar", "kırılgan gruplar"),
     ("hassas alanlar", "kırılgan alanlar"),
 ]
@@ -587,11 +637,11 @@ DEMO_SPEECHES = [
     },
     {
         "source_lang": "fr-FR",
-        "source": "[FR - Prof. Dr. Michel Prieur & Lucie Brouwer] L'adoption de règles maritimes internationales ne garantit pas nécessairement l'effectivité du droit de l'environnement ; les indicateurs juridiques et le principe de non-régression permettent de vérifier si les États du pavillon et du port respectent leurs obligations.",
-        "tr": "Uluslararası denizcilik kurallarının kabul edilmesi, çevre hukukunun fiilen işlediğini zorunlu olarak garanti etmez; hukuki göstergeler ve geriye gidiş yasağı ilkesi, bayrak ve liman devletlerinin yükümlülüklerine uyup uymadığını denetlemeyi sağlar.",
-        "en": "The adoption of international maritime rules does not necessarily guarantee the effectivity of environmental law; legal indicators and the principle of non-regression make it possible to verify whether flag and port states comply with their obligations.",
-        "fr": "L'adoption de règles maritimes internationales ne garantit pas nécessairement l'effectivité du droit de l'environnement ; les indicateurs juridiques et le principe de non-régression permettent de vérifier si les États du pavillon et du port respectent leurs obligations.",
-        "de": "Die Verabschiedung internationaler Seerechtsregeln garantiert nicht zwangsläufig die tatsächliche Wirksamkeit des Umweltrechts; Rechtsindikatoren und das Nicht-Regressionsprinzip ermöglichen es zu überprüfen, ob Flaggen- und Hafenstaaten ihre Verpflichtungen einhalten.",
+        "source": "[FR - Prof. Michel Prieur, Dr. Laurent Vassallo & Lucie Brouwer] Nous devons examiner non seulement le droit sur le papier, mais également le droit tel qu'il fonctionne en pratique ; les indicateurs juridiques et le principe de non-régression permettent d'évaluer l'effectivité des obligations climatiques des États du pavillon et du port.",
+        "tr": "Yalnızca kâğıt üzerindeki hukuku değil, fiilen işleyen hukuku da incelemeliyiz; hukuki göstergeler ve geriye gidiş yasağı ilkesi, bayrak ve liman devletlerinin iklim yükümlülüklerinin fiilî işlerliğini değerlendirmeyi sağlar.",
+        "en": "We must examine not only the law on the books, but also the law in action; legal indicators and the principle of non-regression make it possible to assess the effectivity of the climate obligations of flag and port states.",
+        "fr": "Nous devons examiner non seulement le droit sur le papier, mais également le droit tel qu'il fonctionne en pratique ; les indicateurs juridiques et le principe de non-régression permettent d'évaluer l'effectivité des obligations climatiques des États du pavillon et du port.",
+        "de": "Wir müssen nicht nur das Recht auf dem Papier, sondern auch das gelebte Recht in der Praxis untersuchen; Rechtsindikatoren und das Nicht-Regressionsprinzip ermöglichen es, die tatsächliche Wirksamkeit der Klimaverpflichtungen von Flaggen- und Hafenstaaten zu bewerten.",
     },
     {
         "source_lang": "en-US",

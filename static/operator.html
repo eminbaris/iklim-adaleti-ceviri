@@ -257,7 +257,7 @@
       updateBadges(isAuthorized, info.has_claude_key, info.claude_model, info.has_gemini_key, info.has_deepgram_key);
       const isLocal = location.hostname === 'localhost' || location.hostname === '127.0.0.1';
       document.getElementById('lanInfo').textContent = `Salon Kulaklık Bağlantısı: ${isLocal ? info.listen_url : (location.origin + BASE + '/dinle')}`;
-      document.getElementById('glossaryStats').textContent = `✓ ${info.glossary_count} Dört Dilli (TR/EN/FR/DE) İklim & Hukuk Terimi + 6 Konuşmacı Özel Brifingi Aktif`;
+      document.getElementById('glossaryStats').textContent = `✓ ${info.glossary_count} Dört Dilli (TR/EN/FR/DE) İklim & Hukuk Terimi + 7 Konuşmacı Özel Brifingi Aktif`;
 
       sel.onchange = () => {
         const found = info.sessions.find(x => x.id === sel.value);
@@ -398,11 +398,12 @@
       const langFull = document.getElementById('langSelect').value;
       const langShort = langFull.split('-')[0];
       const dgKeywords = [
-        'Prieur:2', 'CIDCE:2', 'Vassallo:2', 'Brouwer:2', 'Mekouar:2', 'Bastin:2', 'Limoges:2',
+        'Prieur:2', 'CIDCE:2', 'Vassallo:2', 'Brouwer:2', 'Mekouar:2', 'Bastin:2', 'Limoges:2', 'Montpellier:2',
         'Schrijer:2', 'Policastro:2', 'Szczecin:2', 'Vernadsky:2', 'Noosphere:2', 'Biosphere:2',
         'Bundesverfassungsgericht:2', 'Grundgesetz:2', 'Klimabeschluss:2', 'KlimaSeniorinnen:2',
         'Aarhus:2', 'Escazu:2', 'ITLOS:2', 'CEDH:2', 'CIJ:2', 'TIDM:2', 'CJUE:2', 'PNUE:2',
         'MARPOL:2', 'MEPC:2', 'CNUDM:2', 'UNCLOS:2', 'EEXI:2', 'SEEMP:2', 'FuelEU:2', 'REMPEC:2', 'CDMO:2',
+        'Minamata:2', 'Gaillard:2', 'Fromageau:2', 'Armandoni:2', 'UNOC:2',
         'Belem:2', 'Mutirao:2', 'Caatinga:2', 'TFFF:2', 'NCQG:2', 'CCNUCC:2', 'UNFCCC:2', 'Wissen:2', 'COP30:2', 'COP31:2'
       ].map(k => `keywords=${encodeURIComponent(k)}`).join('&');
       const dgUrl = `wss://api.deepgram.com/v1/listen?model=nova-2&language=${langShort}&smart_format=true&interim_results=true&endpointing=350&${dgKeywords}`;
