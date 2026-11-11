@@ -8,7 +8,8 @@ import os
 import re
 import socket
 import time
-from typing import Dict, List, Optional, Set
+from collections import deque
+from typing import Deque, Dict, List, Optional, Set
 
 import edge_tts
 import httpx
@@ -56,13 +57,15 @@ STATE = {
     "claude_model": os.environ.get("ANTHROPIC_MODEL", ""),
     "gemini_api_key": os.environ.get("GEMINI_API_KEY", ""),
     "deepgram_api_key": os.environ.get("DEEPGRAM_API_KEY", ""),
+    "openai_api_key": os.environ.get("OPENAI_API_KEY", ""),
+    "speaker_notes": "",
     "history": [],
     "full_transcript": [],
 }
 
-# Security: Brute-force lockout & TTS whitelist
+# Security: Brute-force lockout & bounded TTS whitelist for 250+ hall listeners
 FAILED_PIN_BY_IP: Dict[str, List[float]] = {}
-ALLOWED_TTS_TEXTS: Set[str] = {
+PERMANENT_TTS_TEXTS: Set[str] = {
     "Türkçe simultane ses kanalı aktif.",
     "English simultaneous audio channel active.",
     "Canal audio simultané français actif.",
@@ -70,10 +73,23 @@ ALLOWED_TTS_TEXTS: Set[str] = {
 }
 for _demo in DEMO_SPEECHES:
     for _k in ("tr", "en", "fr", "de"):
-        ALLOWED_TTS_TEXTS.add(_demo[_k])
+        PERMANENT_TTS_TEXTS.add(_demo[_k].strip())
 
+RECENT_TTS_TEXTS: Deque[str] = deque(maxlen=1200)
 TTS_CACHE: Dict[str, bytes] = {}
-HTTP_CLIENT = httpx.AsyncClient(timeout=8.0)
+TTS_INFLIGHT_LOCKS: Dict[str, asyncio.Lock] = {}
+HTTP_CLIENT = httpx.AsyncClient(timeout=9.0)
+
+
+def allow_tts_text(text: str) -> None:
+    clean = (text or "").strip()
+    if clean:
+        RECENT_TTS_TEXTS.append(clean)
+
+
+def is_tts_text_allowed(text: str) -> bool:
+    clean = (text or "").strip()
+    return clean in PERMANENT_TTS_TEXTS or clean in RECENT_TTS_TEXTS
 
 
 @app.middleware("http")
@@ -190,7 +206,34 @@ async def free_translate_single(text: str, src_short: str, tgt_short: str) -> st
     return text
 
 
-async def call_claude_json(clean: str, sys_prompt: str) -> Optional[str]:
+def build_contextual_user_prompt(clean: str) -> str:
+    """Includes the last 3 finalized sentences and any live speaker slide notes for grammatical & pronoun continuity."""
+    parts = []
+    notes = (STATE.get("speaker_notes") or "").strip()
+    if notes:
+        parts.append(f"[KONUŞMACI CANLI SUNUM / SLAYT NOTU (Sadece referans bağlamı)]:\n{notes[:1500]}")
+
+    recent = [
+        item for item in STATE["history"][-3:]
+        if item.get("is_final") and item.get("source")
+    ]
+    if recent:
+        ctx_lines = []
+        for idx, r in enumerate(recent, 1):
+            ctx_lines.append(f"  {idx}. Orijinal: {r.get('source', '')} -> TR: {r.get('tr', '')}")
+        parts.append(
+            "[ÖNCEKİ CÜMLELER (Sadece zamir, özne-yüklem ve anlam bütünlüğü için referans; bunları tekrar çevirme!)]:\n"
+            + "\n".join(ctx_lines)
+        )
+
+    parts.append(
+        "[ŞİMDİ SADECE AŞAĞIDAKİ YENİ CÜMLEYİ 4 DİLE (tr, en, fr, de) EKSİKSİZ ÇEVİR VE SADECE JSON DÖNDÜR]:\n"
+        + clean
+    )
+    return "\n\n".join(parts)
+
+
+async def call_claude_json(user_prompt: str, sys_prompt: str) -> Optional[str]:
     if not STATE["claude_api_key"]:
         return None
     model_id = await resolve_claude_model(STATE["claude_api_key"])
@@ -199,14 +242,21 @@ async def call_claude_json(clean: str, sys_prompt: str) -> Optional[str]:
         headers={
             "x-api-key": STATE["claude_api_key"],
             "anthropic-version": "2023-06-01",
+            "anthropic-beta": "prompt-caching-2024-07-31",
             "content-type": "application/json",
         },
         json={
             "model": model_id,
             "max_tokens": 600,
             "temperature": 0.1,
-            "system": sys_prompt,
-            "messages": [{"role": "user", "content": clean}],
+            "system": [
+                {
+                    "type": "text",
+                    "text": sys_prompt,
+                    "cache_control": {"type": "ephemeral"},
+                }
+            ],
+            "messages": [{"role": "user", "content": user_prompt}],
         },
     )
     if resp.status_code == 200:
@@ -214,13 +264,13 @@ async def call_claude_json(clean: str, sys_prompt: str) -> Optional[str]:
     return None
 
 
-async def call_gemini_json(clean: str, sys_prompt: str) -> Optional[str]:
+async def call_gemini_json(user_prompt: str, sys_prompt: str) -> Optional[str]:
     if not STATE["gemini_api_key"]:
         return None
     url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key={STATE['gemini_api_key']}"
     payload = {
         "system_instruction": {"parts": [{"text": sys_prompt}]},
-        "contents": [{"parts": [{"text": clean}]}],
+        "contents": [{"parts": [{"text": user_prompt}]}],
         "generationConfig": {
             "temperature": 0.1,
             "maxOutputTokens": 600,
@@ -234,7 +284,7 @@ async def call_gemini_json(clean: str, sys_prompt: str) -> Optional[str]:
 
 
 async def translate_quadrilingual(text: str, source_lang: str, is_final: bool = True) -> Dict[str, str]:
-    clean = text.strip()[:600]
+    clean = text.strip()[:700]
     if not clean:
         return {"tr": "", "en": "", "fr": "", "de": ""}
 
@@ -245,15 +295,16 @@ async def translate_quadrilingual(text: str, source_lang: str, is_final: bool = 
     src_short = source_lang.split("-")[0].lower()  # tr | en | fr | de
     session = STATE["session"]
     sys_prompt = build_quadrilingual_system_prompt(session["title"], session["speakers"])
+    user_prompt = build_contextual_user_prompt(clean)
 
     if is_final and (STATE["claude_api_key"] or STATE["gemini_api_key"]):
         try:
             raw_json = None
             pref = STATE["preferred_llm"]
             if pref == "gemini":
-                raw_json = await call_gemini_json(clean, sys_prompt) or await call_claude_json(clean, sys_prompt)
+                raw_json = await call_gemini_json(user_prompt, sys_prompt) or await call_claude_json(user_prompt, sys_prompt)
             else:
-                raw_json = await call_claude_json(clean, sys_prompt) or await call_gemini_json(clean, sys_prompt)
+                raw_json = await call_claude_json(user_prompt, sys_prompt) or await call_gemini_json(user_prompt, sys_prompt)
 
             if raw_json:
                 m = re.search(r"\{.*\}", raw_json, flags=re.DOTALL)
@@ -277,23 +328,104 @@ async def translate_quadrilingual(text: str, source_lang: str, is_final: bool = 
     return apply_quadrilingual_fixes(clean, tr_out, en_out, fr_out, de_out)
 
 
-async def synthesize_tts_bytes(text: str, lang_short: str) -> bytes:
-    use_voice = VOICES.get(lang_short, VOICES["tr"])
-    cache_key = hashlib.md5(f"{use_voice}:{text}".encode("utf-8")).hexdigest()
-    if cache_key in TTS_CACHE:
-        return TTS_CACHE[cache_key]
-
+async def _synthesize_edge_tts(text: str, use_voice: str) -> bytes:
     communicate = edge_tts.Communicate(text=text, voice=use_voice, rate="+8%")
     audio_stream = io.BytesIO()
     async for chunk in communicate.stream():
         if chunk["type"] == "audio":
             audio_stream.write(chunk["data"])
+    return audio_stream.getvalue()
 
-    audio_bytes = audio_stream.getvalue()
-    if len(TTS_CACHE) > 300:
-        TTS_CACHE.clear()
-    TTS_CACHE[cache_key] = audio_bytes
+
+async def _synthesize_openai_tts(text: str) -> bytes:
+    if not STATE.get("openai_api_key"):
+        return b""
+    resp = await HTTP_CLIENT.post(
+        "https://api.openai.com/v1/audio/speech",
+        headers={
+            "Authorization": f"Bearer {STATE['openai_api_key']}",
+            "Content-Type": "application/json",
+        },
+        json={
+            "model": "tts-1",
+            "voice": "nova",
+            "input": text[:500],
+            "speed": 1.06,
+        },
+    )
+    if resp.status_code == 200:
+        return resp.content
+    return b""
+
+
+async def _synthesize_google_fallback_tts(text: str, lang_short: str) -> bytes:
+    resp = await HTTP_CLIENT.get(
+        "https://translate.google.com/translate_tts",
+        params={"ie": "UTF-8", "client": "tw-ob", "tl": lang_short, "q": text[:200]},
+        headers={"User-Agent": "Mozilla/5.0"},
+    )
+    if resp.status_code == 200:
+        return resp.content
+    return b""
+
+
+async def synthesize_tts_bytes(text: str, lang_short: str) -> bytes:
+    """
+    Singleflight TTS synthesis for 250+ hall listeners:
+    If 250 phones request the same sentence simultaneously, only 1 synthesis call runs;
+    the other 249 wait on the per-key lock and get the RAM-cached MP3 immediately.
+    """
+    use_voice = VOICES.get(lang_short, VOICES["tr"])
+    cache_key = hashlib.md5(f"{use_voice}:{text}".encode("utf-8")).hexdigest()
+    if cache_key in TTS_CACHE:
+        return TTS_CACHE[cache_key]
+
+    lock = TTS_INFLIGHT_LOCKS.setdefault(cache_key, asyncio.Lock())
+    async with lock:
+        if cache_key in TTS_CACHE:
+            return TTS_CACHE[cache_key]
+
+        audio_bytes = b""
+        # Tier 1: Microsoft Edge Neural TTS
+        try:
+            audio_bytes = await _synthesize_edge_tts(text, use_voice)
+        except Exception:
+            audio_bytes = b""
+
+        # Tier 2: OpenAI TTS (tts-1) if configured and Edge throttled
+        if not audio_bytes and STATE.get("openai_api_key"):
+            try:
+                audio_bytes = await _synthesize_openai_tts(text)
+            except Exception:
+                audio_bytes = b""
+
+        # Tier 3: Google TTS fallback so 250 listeners never experience silence
+        if not audio_bytes:
+            try:
+                audio_bytes = await _synthesize_google_fallback_tts(text, lang_short)
+            except Exception:
+                audio_bytes = b""
+
+        if audio_bytes:
+            if len(TTS_CACHE) > 500:
+                # Evict oldest half instead of wiping active sentences
+                for k in list(TTS_CACHE.keys())[:250]:
+                    TTS_CACHE.pop(k, None)
+            TTS_CACHE[cache_key] = audio_bytes
+
+    TTS_INFLIGHT_LOCKS.pop(cache_key, None)
     return audio_bytes
+
+
+async def prewarm_tts_for_hall(quad: Dict[str, str], src_lang: str) -> None:
+    """Pre-generates TTS audio into RAM as soon as translation finishes so 250 phones get 0ms cache hits."""
+    src_short = src_lang.split("-")[0].lower()
+    # Always pre-warm Turkish + English + French (most used channels in the hall)
+    targets = [ch for ch in ("tr", "en", "fr", "de") if ch != src_short and quad.get(ch)]
+    await asyncio.gather(
+        *(synthesize_tts_bytes(quad[ch].strip(), ch) for ch in targets),
+        return_exceptions=True,
+    )
 
 
 class ConnectionManager:
@@ -308,15 +440,22 @@ class ConnectionManager:
         if websocket in self.active_connections:
             self.active_connections.remove(websocket)
 
+    async def _send_one(self, conn: WebSocket, message: dict) -> Optional[WebSocket]:
+        try:
+            await asyncio.wait_for(conn.send_json(message), timeout=2.5)
+            return None
+        except Exception:
+            return conn
+
     async def broadcast(self, message: dict):
-        dead = []
-        for conn in self.active_connections:
-            try:
-                await conn.send_json(message)
-            except Exception:
-                dead.append(conn)
-        for d in dead:
-            self.disconnect(d)
+        """Parallel non-blocking broadcast for 250+ concurrent WebSocket clients."""
+        conns = list(self.active_connections)
+        if not conns:
+            return
+        results = await asyncio.gather(*(self._send_one(c, message) for c in conns))
+        for dead in results:
+            if dead is not None:
+                self.disconnect(dead)
 
 
 manager = ConnectionManager()
@@ -343,7 +482,10 @@ async def api_info(request: Request, pin: Optional[str] = Query(None)):
             "claude_model": STATE["claude_model"] or "claude-sonnet-5-5",
             "has_gemini_key": bool(STATE["gemini_api_key"]),
             "has_deepgram_key": bool(STATE["deepgram_api_key"]),
+            "has_openai_key": bool(STATE["openai_api_key"]),
             "deepgram_api_key": STATE["deepgram_api_key"] if authorized else "",
+            "speaker_notes": STATE["speaker_notes"] if authorized else "",
+            "active_listeners": len(manager.active_connections),
             "glossary_count": len(QUADRILINGUAL_TERMS),
             "forbidden_count": len(FORBIDDEN_TR),
             "transcript_count": len(STATE["full_transcript"]),
@@ -384,13 +526,19 @@ async def api_transcript(request: Request, pin: Optional[str] = Query(None)):
 
 
 @router.get("/api/tts")
-async def api_tts(text: str = Query(..., min_length=1, max_length=600), lang: str = Query("tr")):
+async def api_tts(text: str = Query(..., min_length=1, max_length=700), lang: str = Query("tr")):
     clean_text = text.strip()
-    if clean_text not in ALLOWED_TTS_TEXTS:
+    if not is_tts_text_allowed(clean_text):
         return Response(status_code=403, content=b"Forbidden")
     lang_short = lang.split("-")[0].lower()
     audio_bytes = await synthesize_tts_bytes(clean_text, lang_short)
-    return Response(content=audio_bytes, media_type="audio/mpeg")
+    if not audio_bytes:
+        return Response(status_code=503, content=b"TTS unavailable")
+    return Response(
+        content=audio_bytes,
+        media_type="audio/mpeg",
+        headers={"Cache-Control": "public, max-age=3600"},
+    )
 
 
 @router.websocket("/ws")
@@ -409,7 +557,7 @@ async def websocket_endpoint(websocket: WebSocket):
     try:
         while True:
             raw_msg = await websocket.receive_text()
-            if len(raw_msg) > 4096:
+            if len(raw_msg) > 6144:
                 continue
             data = json.loads(raw_msg)
             msg_type = data.get("type")
@@ -433,6 +581,8 @@ async def websocket_endpoint(websocket: WebSocket):
                 if "preferred_llm" in data:
                     STATE["preferred_llm"] = data["preferred_llm"]
                     save_env_key("PREFERRED_LLM", STATE["preferred_llm"])
+                if "speaker_notes" in data:
+                    STATE["speaker_notes"] = (data.get("speaker_notes") or "").strip()[:2000]
                 if not os.environ.get("ANTHROPIC_API_KEY") and "claude_api_key" in data and data["claude_api_key"].strip():
                     STATE["claude_api_key"] = data["claude_api_key"].strip()
                     STATE["claude_model"] = ""
@@ -444,6 +594,9 @@ async def websocket_endpoint(websocket: WebSocket):
                 if not os.environ.get("DEEPGRAM_API_KEY") and "deepgram_api_key" in data and data["deepgram_api_key"].strip():
                     STATE["deepgram_api_key"] = data["deepgram_api_key"].strip()
                     save_env_key("DEEPGRAM_API_KEY", STATE["deepgram_api_key"])
+                if not os.environ.get("OPENAI_API_KEY") and "openai_api_key" in data and data["openai_api_key"].strip():
+                    STATE["openai_api_key"] = data["openai_api_key"].strip()
+                    save_env_key("OPENAI_API_KEY", STATE["openai_api_key"])
 
                 await manager.broadcast(
                     {
@@ -455,11 +608,13 @@ async def websocket_endpoint(websocket: WebSocket):
                         "claude_model": STATE["claude_model"],
                         "has_gemini_key": bool(STATE["gemini_api_key"]),
                         "has_deepgram_key": bool(STATE["deepgram_api_key"]),
+                        "has_openai_key": bool(STATE["openai_api_key"]),
+                        "active_listeners": len(manager.active_connections),
                     }
                 )
 
             elif msg_type == "speech":
-                src_text = data.get("text", "").strip()[:600]
+                src_text = data.get("text", "").strip()[:700]
                 is_final = bool(data.get("is_final", False))
                 src_lang = data.get("source_lang") or STATE["source_lang"]
                 if not src_text:
@@ -485,9 +640,9 @@ async def websocket_endpoint(websocket: WebSocket):
                 if is_final:
                     for _k in ("tr", "en", "fr", "de"):
                         if quad.get(_k):
-                            ALLOWED_TTS_TEXTS.add(quad[_k].strip())
-                    if len(ALLOWED_TTS_TEXTS) > 600:
-                        ALLOWED_TTS_TEXTS.clear()
+                            allow_tts_text(quad[_k])
+                    # Start pre-warming TTS audio in background for 250 hall listeners
+                    asyncio.create_task(prewarm_tts_for_hall(quad, src_lang))
                     STATE["history"].append(payload)
                     if len(STATE["history"]) > 50:
                         STATE["history"] = STATE["history"][-50:]
@@ -501,7 +656,8 @@ async def websocket_endpoint(websocket: WebSocket):
                 idx = int(data.get("index", 0)) % len(DEMO_SPEECHES)
                 sample = DEMO_SPEECHES[idx]
                 for _k in ("tr", "en", "fr", "de"):
-                    ALLOWED_TTS_TEXTS.add(sample[_k].strip())
+                    allow_tts_text(sample[_k])
+                asyncio.create_task(prewarm_tts_for_hall(sample, sample["source_lang"]))
                 payload = {
                     "type": "subtitle",
                     "id": int(time.time() * 1000),

@@ -32,10 +32,11 @@
     .card { background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 16px; }
     .card h2 { font-size: 16px; color: var(--muted); margin-bottom: 12px; }
     label { display: block; font-size: 12px; color: #a7f3d0; margin-bottom: 4px; margin-top: 8px; }
-    select, input[type="text"], input[type="password"] {
+    select, input[type="text"], input[type="password"], textarea {
       width: 100%; padding: 8px 10px; border-radius: 8px; border: 1px solid var(--border);
       background: #09100d; color: var(--text); font-size: 13px;
     }
+    textarea { resize: vertical; min-height: 54px; }
     .controls { display: flex; gap: 8px; margin-top: 12px; flex-wrap: wrap; align-items: center; }
     .status-bar { display: flex; align-items: center; gap: 10px; margin-top: 12px; font-size: 14px; }
     .dot { width: 12px; height: 12px; border-radius: 50%; background: #64748b; flex-shrink: 0; }
@@ -115,10 +116,13 @@
         </div>
       </div>
 
+      <label for="speakerNotes">Canlı Sunum / Slayt Metni Özeti (Konuşmacı slayt verirse buraya yapıştırın — AI bağlam olarak kullanır)</label>
+      <textarea id="speakerNotes" placeholder="İsteğe bağlı: Konuşmacının slayt başlıkları veya ek özel notlarını buraya yapıştırıp 'Kaydet'e basın..."></textarea>
+
       <div class="controls">
-        <button id="saveBtn" class="btn btn-outline" onclick="saveConfig()">Anahtarları Kaydet</button>
+        <button id="saveBtn" class="btn btn-outline" onclick="saveConfig()">Anahtarları & Notu Kaydet</button>
         <select id="prefLlm" style="width:auto;" onchange="saveConfig()">
-          <option value="claude">Öncelik: Claude Sonnet 5.5 (Yedek: Gemini 2.5)</option>
+          <option value="claude">Öncelik: Claude Sonnet 5.5 (Prompt Cache + Yedek: Gemini 2.5)</option>
           <option value="gemini">Öncelik: Gemini 2.5 Flash (Yedek: Claude 5.5)</option>
         </select>
       </div>
@@ -127,6 +131,7 @@
         <span id="modelBadge" class="key-status">Claude...</span>
         <span id="gemBadge" class="key-status">Gemini...</span>
         <span id="dgBadge" class="key-status">Deepgram...</span>
+        <span id="listenerBadge" class="key-status">👥 0 Bağlı Ekran/Kulaklık</span>
       </div>
       <div id="glossaryStats" style="font-size:12px; color:#86efac; margin-top:6px;"></div>
     </div>
@@ -190,6 +195,10 @@
     let isListening = false;
     let demoIdx = 0;
 
+    // Smart sentence buffer to prevent mid-breath sentence splitting
+    let pendingFinalText = '';
+    let pendingFlushTimer = null;
+
     function escHtml(str) {
       return String(str || '')
         .replace(/&/g, '&amp;')
@@ -218,7 +227,7 @@
       });
     }
 
-    function updateBadges(auth, hasClaude, claudeModel, hasGem, hasDg) {
+    function updateBadges(auth, hasClaude, claudeModel, hasGem, hasDg, activeListeners) {
       const pb = document.getElementById('pinBadge');
       pb.textContent = auth ? '🔓 Operatör PIN Aktif' : '🔒 Operatör PIN Girin';
       pb.style.borderColor = auth ? '#22c55e' : '#ef4444';
@@ -232,6 +241,9 @@
       gb.style.color = hasGem ? '#4ade80' : '#cbd5e1';
       const db = document.getElementById('dgBadge');
       db.textContent = hasDg ? '🟢 Deepgram Nova STT' : '⚪ Tarayıcı Mikrofonu';
+      if (typeof activeListeners === 'number') {
+        document.getElementById('listenerBadge').textContent = `👥 ${activeListeners} Bağlı Ekran/Kulaklık`;
+      }
     }
 
     async function init() {
@@ -240,6 +252,9 @@
       const info = await res.json();
       isAuthorized = !!info.authorized;
       deepgramApiKey = info.deepgram_api_key || '';
+      if (info.speaker_notes) {
+        document.getElementById('speakerNotes').value = info.speaker_notes;
+      }
       const sel = document.getElementById('sessionSelect');
       sel.innerHTML = '';
       info.sessions.forEach(s => {
@@ -254,10 +269,10 @@
         document.getElementById('prefLlm').value = info.preferred_llm;
       }
       highlightLangButton(info.source_lang);
-      updateBadges(isAuthorized, info.has_claude_key, info.claude_model, info.has_gemini_key, info.has_deepgram_key);
+      updateBadges(isAuthorized, info.has_claude_key, info.claude_model, info.has_gemini_key, info.has_deepgram_key, info.active_listeners);
       const isLocal = location.hostname === 'localhost' || location.hostname === '127.0.0.1';
       document.getElementById('lanInfo').textContent = `Salon Kulaklık Bağlantısı: ${isLocal ? info.listen_url : (location.origin + BASE + '/dinle')}`;
-      document.getElementById('glossaryStats').textContent = `✓ ${info.glossary_count} Dört Dilli (TR/EN/FR/DE) İklim & Hukuk Terimi + 7 Konuşmacı Özel Brifingi Aktif`;
+      document.getElementById('glossaryStats').textContent = `✓ ${info.glossary_count} Dört Dilli (TR/EN/FR/DE) Terim + 7 Konuşmacı Brifingi + Son 3 Cümle Hafızası + 250 Kişilik Kulaklık Önbelleği Aktif`;
 
       sel.onchange = () => {
         const found = info.sessions.find(x => x.id === sel.value);
@@ -267,7 +282,26 @@
       if (!ws || ws.readyState > 1) connectWS();
     }
 
+    function flushPendingSentence(langFull) {
+      if (pendingFlushTimer) {
+        clearTimeout(pendingFlushTimer);
+        pendingFlushTimer = null;
+      }
+      const textToSend = pendingFinalText.trim();
+      pendingFinalText = '';
+      if (textToSend && ws && ws.readyState === 1) {
+        ws.send(JSON.stringify({
+          type: 'speech',
+          pin: getPin(),
+          text: textToSend,
+          source_lang: langFull || document.getElementById('langSelect').value,
+          is_final: true
+        }));
+      }
+    }
+
     function setFastLang(langCode) {
+      flushPendingSentence(document.getElementById('langSelect').value);
       document.getElementById('langSelect').value = langCode;
       highlightLangButton(langCode);
       saveConfig();
@@ -284,7 +318,7 @@
         if (data.type === 'init') {
           (data.history || []).forEach(renderSubtitle);
         } else if (data.type === 'session_update') {
-          updateBadges(isAuthorized, data.has_claude_key, data.claude_model, data.has_gemini_key, data.has_deepgram_key);
+          updateBadges(isAuthorized, data.has_claude_key, data.claude_model, data.has_gemini_key, data.has_deepgram_key, data.active_listeners);
         } else if (data.type === 'subtitle') {
           renderSubtitle(data);
         } else if (data.type === 'clear') {
@@ -300,13 +334,14 @@
       if (dgVal) deepgramApiKey = dgVal;
       const btn = document.getElementById('saveBtn');
       btn.textContent = '✓ Kaydedildi!';
-      setTimeout(() => { btn.textContent = 'Anahtarları Kaydet'; }, 2000);
+      setTimeout(() => { btn.textContent = 'Anahtarları & Notu Kaydet'; }, 2000);
       ws.send(JSON.stringify({
         type: 'config',
         pin: getPin(),
         session_id: document.getElementById('sessionSelect').value,
         source_lang: document.getElementById('langSelect').value,
         preferred_llm: document.getElementById('prefLlm').value,
+        speaker_notes: document.getElementById('speakerNotes').value.trim(),
         claude_api_key: document.getElementById('claudeKey').value,
         gemini_api_key: document.getElementById('geminiKey').value,
         deepgram_api_key: dgVal
@@ -406,7 +441,7 @@
         'Minamata:2', 'Gaillard:2', 'Fromageau:2', 'Armandoni:2', 'UNOC:2',
         'Belem:2', 'Mutirao:2', 'Caatinga:2', 'TFFF:2', 'NCQG:2', 'CCNUCC:2', 'UNFCCC:2', 'Wissen:2', 'COP30:2', 'COP31:2'
       ].map(k => `keywords=${encodeURIComponent(k)}`).join('&');
-      const dgUrl = `wss://api.deepgram.com/v1/listen?model=nova-2&language=${langShort}&smart_format=true&interim_results=true&endpointing=350&${dgKeywords}`;
+      const dgUrl = `wss://api.deepgram.com/v1/listen?model=nova-2&language=${langShort}&smart_format=true&interim_results=true&endpointing=650&utterance_end_ms=1200&vad_events=true&${dgKeywords}`;
       dgSocket = new WebSocket(dgUrl, ['token', deepgramApiKey]);
 
       let lastInterimSent = 0;
@@ -430,21 +465,31 @@
 
       dgSocket.onmessage = (message) => {
         const received = JSON.parse(message.data);
+        if (received.type === 'UtteranceEnd') {
+          flushPendingSentence(langFull);
+          return;
+        }
         const alt = received.channel && received.channel.alternatives && received.channel.alternatives[0];
         if (!alt || !alt.transcript) return;
         const transcript = alt.transcript.trim();
         if (!transcript) return;
 
-        document.getElementById('heardBox').textContent = `🎙️ Duyulan (${langFull}): "${transcript}"`;
+        const preview = pendingFinalText ? `${pendingFinalText} ${transcript}` : transcript;
+        document.getElementById('heardBox').textContent = `🎙️ Duyulan (${langFull}): "${preview}"`;
 
         if (received.is_final) {
-          ws.send(JSON.stringify({
-            type: 'speech',
-            pin: getPin(),
-            text: transcript,
-            source_lang: langFull,
-            is_final: true
-          }));
+          pendingFinalText = pendingFinalText ? `${pendingFinalText} ${transcript}` : transcript;
+          const wordCount = pendingFinalText.split(/\s+/).filter(Boolean).length;
+          const endsWithPunct = /[.?!:;]$/.test(pendingFinalText);
+
+          // If sentence is complete (>= 5 words or ends with punctuation), flush immediately;
+          // otherwise hold up to 1.3s to merge with the speaker's next breath clause
+          if (wordCount >= 5 || endsWithPunct) {
+            flushPendingSentence(langFull);
+          } else {
+            if (pendingFlushTimer) clearTimeout(pendingFlushTimer);
+            pendingFlushTimer = setTimeout(() => flushPendingSentence(langFull), 1300);
+          }
         } else {
           const now = Date.now();
           if (now - lastInterimSent > 900) {
@@ -452,7 +497,7 @@
             ws.send(JSON.stringify({
               type: 'speech',
               pin: getPin(),
-              text: transcript,
+              text: preview,
               source_lang: langFull,
               is_final: false
             }));
@@ -468,6 +513,7 @@
     }
 
     function stopMic() {
+      flushPendingSentence(document.getElementById('langSelect').value);
       isListening = false;
       if (dgKeepAlive) { clearInterval(dgKeepAlive); dgKeepAlive = null; }
       if (dgRecorder && dgRecorder.state !== 'inactive') dgRecorder.stop();
@@ -486,7 +532,14 @@
         return;
       }
       try {
-        mediaStream = await navigator.mediaDevices.getUserMedia({ audio: true });
+        mediaStream = await navigator.mediaDevices.getUserMedia({
+          audio: {
+            echoCancellation: true,
+            noiseSuppression: true,
+            autoGainControl: true,
+            channelCount: 1
+          }
+        });
         recordedChunks = [];
         sessionRecorder = new MediaRecorder(mediaStream, { mimeType: 'audio/webm' });
         sessionRecorder.addEventListener('dataavailable', (ev) => {

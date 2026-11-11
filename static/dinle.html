@@ -79,11 +79,34 @@
     let audioEnabled = false;
     let audioQueue = [];
     let isPlaying = false;
+    let currentItem = null;
     let allHistory = [];
     const player = new Audio();
 
+    const LANG_LOCALE = { tr: 'tr-TR', en: 'en-US', fr: 'fr-FR', de: 'de-DE' };
+
+    function fallbackBrowserSpeak(item) {
+      if (!item || !('speechSynthesis' in window)) {
+        isPlaying = false;
+        playNext();
+        return;
+      }
+      try {
+        window.speechSynthesis.cancel();
+        const u = new SpeechSynthesisUtterance(item.text);
+        u.lang = LANG_LOCALE[item.lang] || 'tr-TR';
+        u.rate = 1.08;
+        u.onend = () => { isPlaying = false; playNext(); };
+        u.onerror = () => { isPlaying = false; playNext(); };
+        window.speechSynthesis.speak(u);
+      } catch (e) {
+        isPlaying = false;
+        playNext();
+      }
+    }
+
     player.onended = () => { isPlaying = false; playNext(); };
-    player.onerror = () => { isPlaying = false; playNext(); };
+    player.onerror = () => { fallbackBrowserSpeak(currentItem); };
 
     function selectChannel(ch) {
       currentChannel = ch;
@@ -92,6 +115,7 @@
       });
       audioQueue = [];
       player.pause();
+      if ('speechSynthesis' in window) window.speechSynthesis.cancel();
       isPlaying = false;
       renderAll();
     }
@@ -114,12 +138,17 @@
         btn.textContent = '🎧 Sesli Dinle / Start Audio / Écouter / Audio starten';
         audioQueue = [];
         player.pause();
+        if ('speechSynthesis' in window) window.speechSynthesis.cancel();
         isPlaying = false;
       }
     }
 
     function enqueueSpeech(text, lang) {
       if (!audioEnabled || !text) return;
+      // Keep queue bounded so listeners never lag more than 2 sentences behind live stage
+      if (audioQueue.length >= 3) {
+        audioQueue = audioQueue.slice(-2);
+      }
       audioQueue.push({ text, lang });
       playNext();
     }
@@ -127,9 +156,11 @@
     function playNext() {
       if (isPlaying || audioQueue.length === 0 || !audioEnabled) return;
       isPlaying = true;
-      const item = audioQueue.shift();
-      player.src = `${BASE}/api/tts?lang=${encodeURIComponent(item.lang)}&text=${encodeURIComponent(item.text)}`;
-      player.play().catch(() => { isPlaying = false; });
+      currentItem = audioQueue.shift();
+      player.src = `${BASE}/api/tts?lang=${encodeURIComponent(currentItem.lang)}&text=${encodeURIComponent(currentItem.text)}`;
+      // Speed up slightly if another sentence is already waiting in queue
+      player.playbackRate = audioQueue.length >= 1 ? 1.14 : 1.04;
+      player.play().catch(() => { fallbackBrowserSpeak(currentItem); });
     }
 
     function renderAll() {
