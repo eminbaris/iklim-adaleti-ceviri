@@ -92,6 +92,14 @@
       margin-bottom: 6px;
       opacity: 0.9;
     }
+    .lang-prev {
+      font-weight: 600;
+      opacity: 0.52;
+      line-height: 1.2;
+      margin-bottom: 8px;
+      word-break: break-word;
+      display: none;
+    }
     .lang-text {
       font-weight: 800;
       line-height: 1.22;
@@ -147,18 +155,22 @@
   <main>
     <div id="trBox" class="lang-box tr-box">
       <div class="lang-label" style="color:#fde047;">🇹🇷 TÜRKÇE</div>
+      <div class="lang-prev" id="prevTr"></div>
       <div class="lang-text" id="currTr">Simultane çeviri sistemi hazır (TR ↔ EN ↔ FR ↔ DE).</div>
     </div>
     <div id="enBox" class="lang-box en-box">
       <div class="lang-label" style="color:#38bdf8;">🇬🇧 ENGLISH</div>
+      <div class="lang-prev" id="prevEn"></div>
       <div class="lang-text" id="currEn">Simultaneous interpretation system ready (TR ↔ EN ↔ FR ↔ DE).</div>
     </div>
     <div id="frBox" class="lang-box fr-box">
       <div class="lang-label" style="color:#c084fc;">🇫🇷 FRANÇAIS</div>
+      <div class="lang-prev" id="prevFr"></div>
       <div class="lang-text" id="currFr">Système d'interprétation simultanée prêt (TR ↔ EN ↔ FR ↔ DE).</div>
     </div>
     <div id="deBox" class="lang-box de-box">
       <div class="lang-label" style="color:#4ade80;">🇩🇪 DEUTSCH</div>
+      <div class="lang-prev" id="prevDe"></div>
       <div class="lang-text" id="currDe">Simultandolmetschsystem bereit (TR ↔ EN ↔ FR ↔ DE).</div>
     </div>
   </main>
@@ -175,7 +187,14 @@
     const BASE = location.pathname.startsWith('/ceviri') ? '/ceviri' : '';
     const BOX_MAP = { trBox: 'chk-tr', enBox: 'chk-en', frBox: 'chk-fr', deBox: 'chk-de' };
     const TEXT_MAP = { trBox: 'currTr', enBox: 'currEn', frBox: 'currFr', deBox: 'currDe' };
+    const PREV_MAP = { trBox: 'prevTr', enBox: 'prevEn', frBox: 'prevFr', deBox: 'prevDe' };
+    const MIN_DWELL_MS = 2000;
     let fontScale = parseFloat(localStorage.getItem('ekran_scale') || '1.0');
+    let currentItem = null;
+    let prevItem = null;
+    let displayQueue = [];
+    let lastShownAt = 0;
+    let queueTimer = null;
 
     function savePrefs() {
       const state = {};
@@ -199,10 +218,16 @@
       const maxPx = activeCount <= 1 ? 88 : activeCount === 2 ? 64 : 42;
       Object.keys(TEXT_MAP).forEach(b => {
         const el = document.getElementById(TEXT_MAP[b]);
+        const prevEl = document.getElementById(PREV_MAP[b]);
         const len = (el.textContent || '').length;
-        const lenFactor = len > 240 ? 0.74 : len > 160 ? 0.86 : 1.0;
+        const lenFactor = len > 240 ? 0.72 : len > 160 ? 0.84 : 1.0;
         const mult = fontScale * lenFactor;
         el.style.fontSize = `clamp(${(minPx * mult).toFixed(1)}px, ${(baseVw * mult).toFixed(2)}vw, ${(maxPx * mult).toFixed(1)}px)`;
+        if (prevEl) {
+          const showPrev = activeCount <= 2 && prevEl.textContent.trim().length > 0;
+          prevEl.style.display = showPrev ? 'block' : 'none';
+          prevEl.style.fontSize = `clamp(${(minPx * mult * 0.56).toFixed(1)}px, ${(baseVw * mult * 0.56).toFixed(2)}vw, ${(maxPx * mult * 0.56).toFixed(1)}px)`;
+        }
       });
     }
 
@@ -246,12 +271,53 @@
       document.getElementById('sessionSpeakers').textContent = s.speakers;
     }
 
-    function showItem(item) {
+    function renderNow(item) {
+      if (currentItem && (currentItem.tr !== item.tr || currentItem.en !== item.en)) {
+        prevItem = currentItem;
+      }
+      currentItem = item;
+      lastShownAt = Date.now();
+      document.getElementById('prevTr').textContent = (prevItem && prevItem.tr) || '';
+      document.getElementById('prevEn').textContent = (prevItem && prevItem.en) || '';
+      document.getElementById('prevFr').textContent = (prevItem && prevItem.fr) || '';
+      document.getElementById('prevDe').textContent = (prevItem && prevItem.de) || '';
       document.getElementById('currTr').textContent = item.tr || '';
       document.getElementById('currEn').textContent = item.en || '';
       document.getElementById('currFr').textContent = item.fr || '';
       document.getElementById('currDe').textContent = item.de || '';
       applyLayout();
+    }
+
+    function drainQueue() {
+      queueTimer = null;
+      if (displayQueue.length === 0) return;
+      const next = displayQueue.shift();
+      renderNow(next);
+      if (displayQueue.length > 0) {
+        queueTimer = setTimeout(drainQueue, MIN_DWELL_MS);
+      }
+    }
+
+    function showItem(item, immediate = false) {
+      if (immediate) {
+        displayQueue = [];
+        if (queueTimer) { clearTimeout(queueTimer); queueTimer = null; }
+        renderNow(item);
+        return;
+      }
+      const elapsed = Date.now() - lastShownAt;
+      if (displayQueue.length === 0 && !queueTimer && elapsed >= MIN_DWELL_MS) {
+        renderNow(item);
+        return;
+      }
+      displayQueue.push(item);
+      if (displayQueue.length > 3) {
+        displayQueue = displayQueue.slice(-3);
+      }
+      if (!queueTimer) {
+        const wait = Math.max(200, MIN_DWELL_MS - elapsed);
+        queueTimer = setTimeout(drainQueue, wait);
+      }
     }
 
     function connectWS() {
@@ -262,16 +328,20 @@
         if (data.type === 'init') {
           applySession(data.session);
           const hist = data.history || [];
-          if (hist.length > 0) showItem(hist[hist.length - 1]);
+          if (hist.length > 0) showItem(hist[hist.length - 1], true);
         } else if (data.type === 'session_update') {
           applySession(data.session);
         } else if (data.type === 'subtitle') {
-          showItem(data);
+          showItem(data, false);
         } else if (data.type === 'clear') {
-          document.getElementById('currTr').textContent = '';
-          document.getElementById('currEn').textContent = '';
-          document.getElementById('currFr').textContent = '';
-          document.getElementById('currDe').textContent = '';
+          displayQueue = [];
+          if (queueTimer) { clearTimeout(queueTimer); queueTimer = null; }
+          prevItem = null;
+          currentItem = null;
+          ['prevTr', 'prevEn', 'prevFr', 'prevDe', 'currTr', 'currEn', 'currFr', 'currDe'].forEach(id => {
+            document.getElementById(id).textContent = '';
+          });
+          applyLayout();
         }
       };
       ws.onclose = () => setTimeout(connectWS, 1500);

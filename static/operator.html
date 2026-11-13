@@ -493,7 +493,7 @@
         'CIDCE:1', 'Klimabeschluss:1', 'KlimaSeniorinnen:1',
         'UNCLOS:1', 'MARPOL:1', 'Minamata:1', 'COP30:1', 'COP31:1'
       ].map(k => `keywords=${encodeURIComponent(k)}`).join('&');
-      const dgUrl = `wss://api.deepgram.com/v1/listen?model=nova-2&language=${langShort}&smart_format=true&punctuate=true&interim_results=true&endpointing=800&utterance_end_ms=1600&vad_events=true&${dgKeywords}`;
+      const dgUrl = `wss://api.deepgram.com/v1/listen?model=nova-2&language=${langShort}&smart_format=true&punctuate=true&interim_results=true&endpointing=500&utterance_end_ms=1100&vad_events=true&${dgKeywords}`;
       dgSocket = new WebSocket(dgUrl, ['token', deepgramApiKey]);
 
       let lastInterimSent = 0;
@@ -538,13 +538,13 @@
           const sentenceEndCount = (pendingFinalText.match(/[.?!]+(?=\s|$)/g) || []).length;
           const endsWithTerminal = /[.?!]$/.test(pendingFinalText);
 
-          // Wait until full sentence completes (. ? !) or safety cap (22 words / 38 words in 2-sentence mode)
-          const maxWords = targetSentences === 2 ? 38 : 22;
+          // Flush at full sentence (. ? !), 14-word cap (28 in 2-sentence mode), or 1.6s silence
+          const maxWords = targetSentences === 2 ? 28 : 14;
           if ((endsWithTerminal && sentenceEndCount >= targetSentences) || wordCount >= maxWords) {
             flushPendingSentence(langFull);
           } else {
             if (pendingFlushTimer) clearTimeout(pendingFlushTimer);
-            const waitMs = targetSentences === 2 ? 4200 : 2800;
+            const waitMs = targetSentences === 2 ? 2800 : 1600;
             pendingFlushTimer = setTimeout(() => flushPendingSentence(langFull), waitMs);
           }
         } else {
