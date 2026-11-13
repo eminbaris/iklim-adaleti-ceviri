@@ -145,6 +145,10 @@
           <option value="1">Bekleme: Tam Cümle (Noktaya Kadar — Önerilen)</option>
           <option value="2">Bekleme: 2 Cümle Birleştir (Akademik Bağlam)</option>
         </select>
+        <select id="ttsMode" style="width:auto;" onchange="saveConfig()">
+          <option value="openai">🔊 Ses: Doğal AI Tonlamalı (OpenAI — Önerilen)</option>
+          <option value="edge">🔊 Ses: Ücretsiz (Edge TTS)</option>
+        </select>
       </div>
       <div id="llmTestBox" class="llm-test-box"></div>
       <div class="controls" style="margin-top:8px;">
@@ -319,6 +323,9 @@
       if (info.preferred_llm && info.preferred_llm !== 'auto') {
         document.getElementById('prefLlm').value = info.preferred_llm;
       }
+      if (info.tts_mode) {
+        document.getElementById('ttsMode').value = info.tts_mode;
+      }
       highlightLangButton(info.source_lang);
       updateBadges(isAuthorized, info.has_claude_key, info.claude_model, info.has_gemini_key, info.has_deepgram_key, info.has_openai_key, info.active_listeners);
       const isLocal = location.hostname === 'localhost' || location.hostname === '127.0.0.1';
@@ -392,6 +399,7 @@
         session_id: document.getElementById('sessionSelect').value,
         source_lang: document.getElementById('langSelect').value,
         preferred_llm: document.getElementById('prefLlm').value,
+        tts_mode: document.getElementById('ttsMode').value,
         speaker_notes: document.getElementById('speakerNotes').value.trim(),
         claude_api_key: document.getElementById('claudeKey').value,
         gemini_api_key: document.getElementById('geminiKey').value,

@@ -39,9 +39,9 @@ router = APIRouter()
 
 VOICES = {
     "tr": "tr-TR-EmelNeural",
-    "en": "en-US-AriaNeural",
-    "fr": "fr-FR-DeniseNeural",
-    "de": "de-DE-KatjaNeural",
+    "en": "en-US-AvaMultilingualNeural",
+    "fr": "fr-FR-VivienneMultilingualNeural",
+    "de": "de-DE-SeraphinaMultilingualNeural",
 }
 
 _raw_pin = os.environ.get("OPERATOR_PIN", "1092")
@@ -53,6 +53,7 @@ STATE = {
     "source_lang": "tr-TR",
     "operator_pin": _raw_pin,
     "preferred_llm": os.environ.get("PREFERRED_LLM", "auto"),
+    "tts_mode": os.environ.get("TTS_MODE", "openai"),
     "claude_api_key": os.environ.get("ANTHROPIC_API_KEY", ""),
     "claude_model": os.environ.get("ANTHROPIC_MODEL", ""),
     "gemini_api_key": os.environ.get("GEMINI_API_KEY", ""),
@@ -458,7 +459,7 @@ async def translate_quadrilingual(text: str, source_lang: str, is_final: bool = 
 
 
 async def _synthesize_edge_tts(text: str, use_voice: str) -> bytes:
-    communicate = edge_tts.Communicate(text=text, voice=use_voice, rate="+8%")
+    communicate = edge_tts.Communicate(text=text, voice=use_voice, rate="+4%")
     audio_stream = io.BytesIO()
     async for chunk in communicate.stream():
         if chunk["type"] == "audio":
@@ -466,24 +467,42 @@ async def _synthesize_edge_tts(text: str, use_voice: str) -> bytes:
     return audio_stream.getvalue()
 
 
-async def _synthesize_openai_tts(text: str) -> bytes:
+async def _synthesize_openai_tts(text: str, lang_short: str = "tr") -> bytes:
     if not STATE.get("openai_api_key"):
         return b""
+    headers = {
+        "Authorization": f"Bearer {STATE['openai_api_key']}",
+        "Content-Type": "application/json",
+    }
+    lang_names = {"tr": "Turkish", "en": "English", "fr": "French", "de": "German"}
+    lang_label = lang_names.get(lang_short, "Turkish")
+    instructions = (
+        f"Speak in natural, idiomatic {lang_label} like an experienced human simultaneous conference interpreter. "
+        "Use warm, calm, authoritative broadcast intonation, subtle natural pauses at commas, "
+        "clear emphasis on key climate and legal terms, and natural rising intonation on questions. "
+        "Never sound robotic or monotonous."
+    )
     resp = await HTTP_CLIENT.post(
         "https://api.openai.com/v1/audio/speech",
-        headers={
-            "Authorization": f"Bearer {STATE['openai_api_key']}",
-            "Content-Type": "application/json",
-        },
+        headers=headers,
         json={
-            "model": "tts-1",
-            "voice": "nova",
-            "input": text[:500],
-            "speed": 1.06,
+            "model": "gpt-4o-mini-tts",
+            "voice": "coral",
+            "input": text[:650],
+            "instructions": instructions,
+            "speed": 1.02,
         },
     )
     if resp.status_code == 200:
         return resp.content
+    # Fallback to tts-1 if gpt-4o-mini-tts is unavailable on the account
+    resp2 = await HTTP_CLIENT.post(
+        "https://api.openai.com/v1/audio/speech",
+        headers=headers,
+        json={"model": "tts-1", "voice": "nova", "input": text[:650], "speed": 1.04},
+    )
+    if resp2.status_code == 200:
+        return resp2.content
     return b""
 
 
@@ -500,7 +519,9 @@ async def _synthesize_google_fallback_tts(text: str, lang_short: str) -> bytes:
 
 async def synthesize_tts_bytes(text: str, lang_short: str) -> bytes:
     use_voice = VOICES.get(lang_short, VOICES["tr"])
-    cache_key = hashlib.md5(f"{use_voice}:{text}".encode("utf-8")).hexdigest()
+    use_openai_first = (STATE.get("tts_mode", "openai") == "openai") and bool(STATE.get("openai_api_key"))
+    mode_tag = "oai" if use_openai_first else "edge"
+    cache_key = hashlib.md5(f"{mode_tag}:{use_voice}:{text}".encode("utf-8")).hexdigest()
     if cache_key in TTS_CACHE:
         return TTS_CACHE[cache_key]
 
@@ -510,16 +531,26 @@ async def synthesize_tts_bytes(text: str, lang_short: str) -> bytes:
             return TTS_CACHE[cache_key]
 
         audio_bytes = b""
-        try:
-            audio_bytes = await _synthesize_edge_tts(text, use_voice)
-        except Exception:
-            audio_bytes = b""
-
-        if not audio_bytes and STATE.get("openai_api_key"):
+        if use_openai_first:
             try:
-                audio_bytes = await _synthesize_openai_tts(text)
+                audio_bytes = await _synthesize_openai_tts(text, lang_short)
             except Exception:
                 audio_bytes = b""
+            if not audio_bytes:
+                try:
+                    audio_bytes = await _synthesize_edge_tts(text, use_voice)
+                except Exception:
+                    audio_bytes = b""
+        else:
+            try:
+                audio_bytes = await _synthesize_edge_tts(text, use_voice)
+            except Exception:
+                audio_bytes = b""
+            if not audio_bytes and STATE.get("openai_api_key"):
+                try:
+                    audio_bytes = await _synthesize_openai_tts(text, lang_short)
+                except Exception:
+                    audio_bytes = b""
 
         if not audio_bytes:
             try:
@@ -595,6 +626,7 @@ async def api_info(request: Request, pin: Optional[str] = Query(None)):
             "current_session": STATE["session"],
             "source_lang": STATE["source_lang"],
             "preferred_llm": STATE["preferred_llm"],
+            "tts_mode": STATE["tts_mode"],
             "has_claude_key": bool(STATE["claude_api_key"]),
             "claude_model": STATE["claude_model"] or "claude-sonnet-4-20250514",
             "has_gemini_key": bool(STATE["gemini_api_key"]),
@@ -725,6 +757,9 @@ async def websocket_endpoint(websocket: WebSocket):
                 if "preferred_llm" in data:
                     STATE["preferred_llm"] = data["preferred_llm"]
                     save_env_key("PREFERRED_LLM", STATE["preferred_llm"])
+                if "tts_mode" in data:
+                    STATE["tts_mode"] = data["tts_mode"]
+                    save_env_key("TTS_MODE", STATE["tts_mode"])
                 if "speaker_notes" in data:
                     STATE["speaker_notes"] = (data.get("speaker_notes") or "").strip()[:2000]
                 if not os.environ.get("ANTHROPIC_API_KEY") and "claude_api_key" in data and data["claude_api_key"].strip():
