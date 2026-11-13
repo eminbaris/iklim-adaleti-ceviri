@@ -56,6 +56,7 @@ STATE = {
     "claude_api_key": os.environ.get("ANTHROPIC_API_KEY", ""),
     "claude_model": os.environ.get("ANTHROPIC_MODEL", ""),
     "gemini_api_key": os.environ.get("GEMINI_API_KEY", ""),
+    "gemini_model": os.environ.get("GEMINI_MODEL", ""),
     "deepgram_api_key": os.environ.get("DEEPGRAM_API_KEY", ""),
     "openai_api_key": os.environ.get("OPENAI_API_KEY", ""),
     "speaker_notes": "",
@@ -235,6 +236,38 @@ def build_contextual_user_prompt(clean: str) -> str:
     return "\n\n".join(parts)
 
 
+async def resolve_gemini_model(api_key: str) -> str:
+    if STATE["gemini_model"]:
+        return STATE["gemini_model"]
+    try:
+        resp = await HTTP_CLIENT.get(
+            f"https://generativelanguage.googleapis.com/v1beta/models?key={api_key}"
+        )
+        if resp.status_code == 200:
+            candidates = []
+            for m in resp.json().get("models", []):
+                methods = m.get("supportedGenerationMethods") or []
+                if "generateContent" not in methods:
+                    continue
+                name = m.get("name", "").replace("models/", "")
+                low = name.lower()
+                if any(bad in low for bad in ("embedding", "tts", "image", "audio", "robotics", "computer-use")):
+                    continue
+                if "flash" in low and "lite" not in low:
+                    candidates.append(name)
+            if candidates:
+                # Prefer highest gemini-3* or gemini-2.5* flash, avoiding -exp/-preview if stable exists
+                candidates.sort(key=lambda s: ("exp" in s or "preview" in s, s), reverse=False)
+                # Put newest version first among stable flash models
+                stable = [c for c in candidates if "exp" not in c and "preview" not in c]
+                chosen = sorted(stable, reverse=True)[0] if stable else sorted(candidates, reverse=True)[0]
+                STATE["gemini_model"] = chosen
+                return chosen
+    except Exception:
+        pass
+    return "gemini-3.0-flash"
+
+
 async def call_claude_json(user_prompt: str, sys_prompt: str) -> Tuple[Optional[str], str]:
     if not STATE["claude_api_key"]:
         return None, "Claude API key eksik"
@@ -251,7 +284,6 @@ async def call_claude_json(user_prompt: str, sys_prompt: str) -> Tuple[Optional[
             json={
                 "model": model_id,
                 "max_tokens": 1100,
-                "temperature": 0.1,
                 "system": [
                     {
                         "type": "text",
@@ -276,7 +308,8 @@ async def call_claude_json(user_prompt: str, sys_prompt: str) -> Tuple[Optional[
 async def call_gemini_json(user_prompt: str, sys_prompt: str) -> Tuple[Optional[str], str]:
     if not STATE["gemini_api_key"]:
         return None, "Gemini API key eksik"
-    url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key={STATE['gemini_api_key']}"
+    model_id = await resolve_gemini_model(STATE["gemini_api_key"])
+    url = f"https://generativelanguage.googleapis.com/v1beta/models/{model_id}:generateContent?key={STATE['gemini_api_key']}"
     payload = {
         "system_instruction": {"parts": [{"text": sys_prompt}]},
         "contents": [{"parts": [{"text": user_prompt}]}],
@@ -289,9 +322,14 @@ async def call_gemini_json(user_prompt: str, sys_prompt: str) -> Tuple[Optional[
     }
     try:
         resp = await HTTP_CLIENT.post(url, json=payload)
+        if resp.status_code == 400 and "thinking" in resp.text.lower():
+            payload["generationConfig"].pop("thinkingConfig", None)
+            resp = await HTTP_CLIENT.post(url, json=payload)
         if resp.status_code == 200:
             return resp.json()["candidates"][0]["content"]["parts"][0]["text"].strip(), ""
-        err = f"Gemini HTTP {resp.status_code}: {resp.text[:180]}"
+        if resp.status_code == 404:
+            STATE["gemini_model"] = ""
+        err = f"Gemini ({model_id}) HTTP {resp.status_code}: {resp.text[:180]}"
         print(err)
         return None, err
     except Exception as e:
@@ -537,7 +575,7 @@ async def api_test_llm(request: Request, pin: Optional[str] = Query(None)):
     return JSONResponse(
         {
             "claude": {"ok": bool(c_raw), "ms": c_ms, "model": STATE["claude_model"], "error": c_err, "sample": (c_raw or "")[:160]},
-            "gemini": {"ok": bool(g_raw), "ms": g_ms, "error": g_err, "sample": (g_raw or "")[:160]},
+            "gemini": {"ok": bool(g_raw), "ms": g_ms, "model": STATE["gemini_model"], "error": g_err, "sample": (g_raw or "")[:160]},
         }
     )
 
@@ -638,7 +676,9 @@ async def websocket_endpoint(websocket: WebSocket):
                     await resolve_claude_model(STATE["claude_api_key"])
                 if not os.environ.get("GEMINI_API_KEY") and "gemini_api_key" in data and data["gemini_api_key"].strip():
                     STATE["gemini_api_key"] = data["gemini_api_key"].strip()
+                    STATE["gemini_model"] = ""
                     save_env_key("GEMINI_API_KEY", STATE["gemini_api_key"])
+                    await resolve_gemini_model(STATE["gemini_api_key"])
                 if not os.environ.get("DEEPGRAM_API_KEY") and "deepgram_api_key" in data and data["deepgram_api_key"].strip():
                     STATE["deepgram_api_key"] = data["deepgram_api_key"].strip()
                     save_env_key("DEEPGRAM_API_KEY", STATE["deepgram_api_key"])
