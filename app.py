@@ -251,7 +251,7 @@ async def resolve_gemini_model(api_key: str) -> str:
                     continue
                 name = m.get("name", "").replace("models/", "")
                 low = name.lower()
-                if any(bad in low for bad in ("embedding", "tts", "image", "audio", "robotics", "computer-use", "omni", "customtools")):
+                if any(bad in low for bad in ("embedding", "tts", "image", "audio", "robotics", "computer-use", "omni", "customtools", "thinking", "deep-research")):
                     continue
                 if "flash" in low and "lite" not in low:
                     candidates.append(name)
@@ -311,6 +311,7 @@ async def call_gemini_json(user_prompt: str, sys_prompt: str) -> Tuple[Optional[
         return None, "Gemini API key eksik"
     model_id = await resolve_gemini_model(STATE["gemini_api_key"])
     url = f"https://generativelanguage.googleapis.com/v1beta/models/{model_id}:generateContent?key={STATE['gemini_api_key']}"
+    thinking_cfg = {"thinkingLevel": "MINIMAL"} if "gemini-3" in model_id.lower() else {"thinkingBudget": 0}
     payload = {
         "system_instruction": {"parts": [{"text": sys_prompt}]},
         "contents": [{"parts": [{"text": user_prompt}]}],
@@ -318,7 +319,7 @@ async def call_gemini_json(user_prompt: str, sys_prompt: str) -> Tuple[Optional[
             "temperature": 0.1,
             "maxOutputTokens": 1100,
             "responseMimeType": "application/json",
-            "thinkingConfig": {"thinkingBudget": 0},
+            "thinkingConfig": thinking_cfg,
         },
     }
     try:
@@ -334,7 +335,7 @@ async def call_gemini_json(user_prompt: str, sys_prompt: str) -> Tuple[Optional[
         print(err)
         return None, err
     except Exception as e:
-        err = f"Gemini Exception: {type(e).__name__}: {str(e)[:150]}"
+        err = f"Gemini ({model_id}) Exception: {type(e).__name__}: {str(e)[:150]}"
         print(err)
         return None, err
 
