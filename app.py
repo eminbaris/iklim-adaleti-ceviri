@@ -652,20 +652,37 @@ async def api_test_llm(request: Request, pin: Optional[str] = Query(None)):
         return JSONResponse({"ok": False, "error": "Operatör PIN gerekli"}, status_code=403)
     sys_prompt = build_quadrilingual_system_prompt(STATE["session"]["title"], STATE["session"]["speakers"])
     user_prompt = build_contextual_user_prompt("The real test of climate leadership is delivery, not declarations.")
-    t0 = time.perf_counter()
-    c_raw, c_err = await call_claude_json(user_prompt, sys_prompt)
-    c_ms = int((time.perf_counter() - t0) * 1000)
-    t1 = time.perf_counter()
-    o_raw, o_err = await call_openai_json(user_prompt, sys_prompt)
-    o_ms = int((time.perf_counter() - t1) * 1000)
-    t2 = time.perf_counter()
-    g_raw, g_err = await call_gemini_json(user_prompt, sys_prompt)
-    g_ms = int((time.perf_counter() - t2) * 1000)
+
+    async def _timed(coro):
+        t = time.perf_counter()
+        res = await coro
+        return res, int((time.perf_counter() - t) * 1000)
+
+    async def _test_tts():
+        if not STATE.get("openai_api_key"):
+            return False, "OpenAI API key eksik"
+        try:
+            audio = await _synthesize_openai_tts("Merhaba, ses testi.", "tr")
+            return bool(audio and len(audio) > 500), ("" if audio else "Ses üretilemedi (kota/anahtar kontrol edin)")
+        except Exception as e:
+            return False, f"{type(e).__name__}: {str(e)[:120]}"
+
+    (c_res, c_ms), (o_res, o_ms), (g_res, g_ms), (tts_res, tts_ms) = await asyncio.gather(
+        _timed(call_claude_json(user_prompt, sys_prompt)),
+        _timed(call_openai_json(user_prompt, sys_prompt)),
+        _timed(call_gemini_json(user_prompt, sys_prompt)),
+        _timed(_test_tts()),
+    )
+    c_raw, c_err = c_res
+    o_raw, o_err = o_res
+    g_raw, g_err = g_res
+    tts_ok, tts_err = tts_res
     return JSONResponse(
         {
             "claude": {"ok": bool(c_raw), "ms": c_ms, "model": STATE["claude_model"], "error": c_err, "sample": (c_raw or "")[:160]},
             "openai": {"ok": bool(o_raw), "ms": o_ms, "model": os.environ.get("OPENAI_TRANSLATE_MODEL", "gpt-4o-mini"), "error": o_err, "sample": (o_raw or "")[:160]},
             "gemini": {"ok": bool(g_raw), "ms": g_ms, "model": STATE["gemini_model"], "error": g_err, "sample": (g_raw or "")[:160]},
+            "tts": {"ok": tts_ok, "ms": tts_ms, "error": tts_err},
         }
     )
 
