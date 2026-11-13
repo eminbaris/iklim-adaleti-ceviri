@@ -559,8 +559,8 @@ async def synthesize_tts_bytes(text: str, lang_short: str) -> bytes:
                 audio_bytes = b""
 
         if audio_bytes:
-            if len(TTS_CACHE) > 500:
-                for k in list(TTS_CACHE.keys())[:250]:
+            if len(TTS_CACHE) > 800:
+                for k in list(TTS_CACHE.keys())[:300]:
                     TTS_CACHE.pop(k, None)
             TTS_CACHE[cache_key] = audio_bytes
 
@@ -589,9 +589,9 @@ class ConnectionManager:
         if websocket in self.active_connections:
             self.active_connections.remove(websocket)
 
-    async def _send_one(self, conn: WebSocket, message: dict) -> Optional[WebSocket]:
+    async def _send_one(self, conn: WebSocket, payload_text: str) -> Optional[WebSocket]:
         try:
-            await asyncio.wait_for(conn.send_json(message), timeout=2.5)
+            await asyncio.wait_for(conn.send_text(payload_text), timeout=2.5)
             return None
         except Exception:
             return conn
@@ -600,7 +600,8 @@ class ConnectionManager:
         conns = list(self.active_connections)
         if not conns:
             return
-        results = await asyncio.gather(*(self._send_one(c, message) for c in conns))
+        payload_text = json.dumps(message, ensure_ascii=False)
+        results = await asyncio.gather(*(self._send_one(c, payload_text) for c in conns))
         for dead in results:
             if dead is not None:
                 self.disconnect(dead)
