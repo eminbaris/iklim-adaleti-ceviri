@@ -25,7 +25,7 @@
     .btn-primary { background: var(--accent); color: #052e16; }
     .btn-warn { background: var(--warn); color: #1c1917; }
     .btn-danger { background: var(--danger); color: #fff; }
-    .btn-outline { background: var(--card); color: #Vol; border: 1px solid var(--border); color: var(--text); }
+    .btn-outline { background: var(--card); border: 1px solid var(--border); color: var(--text); }
     .btn-lang.active { background: var(--warn); color: #1c1917; border-color: var(--warn); }
     .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 16px; }
     @media (max-width: 800px) { .grid { grid-template-columns: 1fr; } }
@@ -67,6 +67,16 @@
       border-radius: 6px;
       font-size: 11px;
       font-weight: 700;
+    }
+    .llm-test-box {
+      margin-top: 8px;
+      padding: 8px 10px;
+      border-radius: 8px;
+      background: #09100d;
+      border: 1px solid var(--border);
+      font-size: 12px;
+      color: #cbd5e1;
+      display: none;
     }
   </style>
 </head>
@@ -125,11 +135,17 @@
 
       <div class="controls">
         <button id="saveBtn" class="btn btn-outline" onclick="saveConfig()">Anahtarları & Notu Kaydet</button>
+        <button id="testLlmBtn" class="btn btn-outline" onclick="testLlm()">🧪 Claude & Gemini Test Et</button>
         <select id="prefLlm" style="width:auto;" onchange="saveConfig()">
-          <option value="claude">Öncelik: Claude Sonnet 5.5 (Prompt Cache + Yedek: Gemini 2.5)</option>
-          <option value="gemini">Öncelik: Gemini 2.5 Flash (Yedek: Claude 5.5)</option>
+          <option value="claude">Öncelik: Claude Sonnet (Prompt Cache + Yedek: Gemini 2.5)</option>
+          <option value="gemini">Öncelik: Gemini 2.5 Flash (Yedek: Claude)</option>
+        </select>
+        <select id="sentenceMode" style="width:auto;">
+          <option value="1">Bekleme: Tam Cümle (Noktaya Kadar — Önerilen)</option>
+          <option value="2">Bekleme: 2 Cümle Birleştir (Akademik Bağlam)</option>
         </select>
       </div>
+      <div id="llmTestBox" class="llm-test-box"></div>
       <div class="controls" style="margin-top:8px;">
         <span id="pinBadge" class="key-status">🔒 PIN Bekleniyor</span>
         <span id="modelBadge" class="key-status">Claude...</span>
@@ -238,7 +254,7 @@
       pb.style.color = auth ? '#4ade80' : '#fca5a5';
 
       const mb = document.getElementById('modelBadge');
-      mb.textContent = hasClaude ? `🟢 Claude: ${claudeModel || 'claude-sonnet-5-5'}` : '⚪ Claude Yok';
+      mb.textContent = hasClaude ? `🟢 Claude: ${claudeModel || 'sonnet'}` : '⚪ Claude Yok';
       const gb = document.getElementById('gemBadge');
       gb.textContent = hasGem ? '🟢 Gemini 2.5 Flash (Aktif)' : '⚪ Gemini 2.5 (Girilmedi)';
       gb.style.borderColor = hasGem ? '#22c55e' : '#64748b';
@@ -251,6 +267,22 @@
       ob.style.color = hasOai ? '#4ade80' : '#cbd5e1';
       if (typeof activeListeners === 'number') {
         document.getElementById('listenerBadge').textContent = `👥 ${activeListeners} Bağlı Ekran/Kulaklık`;
+      }
+    }
+
+    async function testLlm() {
+      if (!isAuthorized) { alert('Önce Operatör PIN kutusuna şifrenizi girin.'); return; }
+      const box = document.getElementById('llmTestBox');
+      box.style.display = 'block';
+      box.textContent = '⏳ Claude ve Gemini canlı test ediliyor...';
+      try {
+        const res = await fetch(`${BASE}/api/test-llm?pin=${encodeURIComponent(getPin())}`);
+        const d = await res.json();
+        const cTxt = d.claude.ok ? `🟢 Claude OK (${d.claude.ms} ms, ${d.claude.model})` : `🔴 Claude HATA: ${d.claude.error}`;
+        const gTxt = d.gemini.ok ? `🟢 Gemini OK (${d.gemini.ms} ms)` : `🔴 Gemini HATA: ${d.gemini.error}`;
+        box.innerHTML = `${escHtml(cTxt)}<br>${escHtml(gTxt)}`;
+      } catch (e) {
+        box.textContent = 'Test hatası: ' + e.message;
       }
     }
 
@@ -280,7 +312,7 @@
       updateBadges(isAuthorized, info.has_claude_key, info.claude_model, info.has_gemini_key, info.has_deepgram_key, info.has_openai_key, info.active_listeners);
       const isLocal = location.hostname === 'localhost' || location.hostname === '127.0.0.1';
       document.getElementById('lanInfo').textContent = `Salon Kulaklık Bağlantısı: ${isLocal ? info.listen_url : (location.origin + BASE + '/dinle')}`;
-      document.getElementById('glossaryStats').textContent = `✓ ${info.glossary_count} Dört Dilli (TR/EN/FR/DE) Terim + 7 Konuşmacı Brifingi + Son 3 Cümle Hafızası + 250 Kişilik Kulaklık Önbelleği Aktif`;
+      document.getElementById('glossaryStats').textContent = `✓ ${info.glossary_count} Dört Dilli Terim + 7 Konuşmacı Brifingi + Tam Cümle Kilidi + 250 Kişilik Önbellek Aktif`;
 
       sel.onchange = () => {
         const found = info.sessions.find(x => x.id === sel.value);
@@ -406,12 +438,14 @@
     function renderSubtitle(item) {
       const feed = document.getElementById('feed');
       let existing = document.getElementById('sub-interim');
+      const eng = item.engine ? ` • Motor: ${escHtml(item.engine)}` : '';
+      const errNote = (item.engine === 'GTX Yedek' && item.llm_error) ? ` ⚠️ (${escHtml(item.llm_error)})` : '';
       const html = `
         <div class="tr">🇹🇷 ${escHtml(item.tr)}</div>
         <div class="en">🇬🇧 ${escHtml(item.en)}</div>
         <div class="fr">🇫🇷 ${escHtml(item.fr)}</div>
         <div class="de">🇩🇪 ${escHtml(item.de)}</div>
-        <div class="meta">${escHtml(item.timestamp)} • Kaynak: ${escHtml(item.source_lang)} • ${escHtml(item.latency_ms)} ms</div>
+        <div class="meta">${escHtml(item.timestamp)} • Kaynak: ${escHtml(item.source_lang)} • ${escHtml(item.latency_ms)} ms${eng}${errNote}</div>
       `;
       if (!item.is_final) {
         if (!existing) {
@@ -427,6 +461,7 @@
       if (existing) existing.remove();
       const div = document.createElement('div');
       div.className = 'msg';
+      if (item.engine === 'GTX Yedek') div.style.borderLeftColor = '#ef4444';
       div.innerHTML = html;
       feed.prepend(div);
     }
@@ -441,16 +476,13 @@
 
       const langFull = document.getElementById('langSelect').value;
       const langShort = langFull.split('-')[0];
+      // Only rare, unambiguous proper nouns at light :1 boost so normal words never get hijacked
       const dgKeywords = [
-        'Prieur:2', 'CIDCE:2', 'Vassallo:2', 'Brouwer:2', 'Mekouar:2', 'Bastin:2', 'Limoges:2', 'Montpellier:2',
-        'Schrijer:2', 'Policastro:2', 'Szczecin:2', 'Vernadsky:2', 'Noosphere:2', 'Biosphere:2',
-        'Bundesverfassungsgericht:2', 'Grundgesetz:2', 'Klimabeschluss:2', 'KlimaSeniorinnen:2',
-        'Aarhus:2', 'Escazu:2', 'ITLOS:2', 'CEDH:2', 'CIJ:2', 'TIDM:2', 'CJUE:2', 'PNUE:2',
-        'MARPOL:2', 'MEPC:2', 'CNUDM:2', 'UNCLOS:2', 'EEXI:2', 'SEEMP:2', 'FuelEU:2', 'REMPEC:2', 'CDMO:2',
-        'Minamata:2', 'Gaillard:2', 'Fromageau:2', 'Armandoni:2', 'UNOC:2',
-        'Belem:2', 'Mutirao:2', 'Caatinga:2', 'TFFF:2', 'NCQG:2', 'CCNUCC:2', 'UNFCCC:2', 'Wissen:2', 'COP30:2', 'COP31:2'
+        'Prieur:1', 'Vassallo:1', 'Brouwer:1', 'Schrijer:1', 'Policastro:1',
+        'CIDCE:1', 'Klimabeschluss:1', 'KlimaSeniorinnen:1',
+        'UNCLOS:1', 'MARPOL:1', 'Minamata:1', 'COP30:1', 'COP31:1'
       ].map(k => `keywords=${encodeURIComponent(k)}`).join('&');
-      const dgUrl = `wss://api.deepgram.com/v1/listen?model=nova-2&language=${langShort}&smart_format=true&interim_results=true&endpointing=650&utterance_end_ms=1200&vad_events=true&${dgKeywords}`;
+      const dgUrl = `wss://api.deepgram.com/v1/listen?model=nova-2&language=${langShort}&smart_format=true&punctuate=true&interim_results=true&endpointing=800&utterance_end_ms=1600&vad_events=true&${dgKeywords}`;
       dgSocket = new WebSocket(dgUrl, ['token', deepgramApiKey]);
 
       let lastInterimSent = 0;
@@ -475,7 +507,9 @@
       dgSocket.onmessage = (message) => {
         const received = JSON.parse(message.data);
         if (received.type === 'UtteranceEnd') {
-          flushPendingSentence(langFull);
+          if (pendingFinalText.trim().split(/\s+/).length >= 3) {
+            flushPendingSentence(langFull);
+          }
           return;
         }
         const alt = received.channel && received.channel.alternatives && received.channel.alternatives[0];
@@ -489,17 +523,22 @@
         if (received.is_final) {
           pendingFinalText = pendingFinalText ? `${pendingFinalText} ${transcript}` : transcript;
           const wordCount = pendingFinalText.split(/\s+/).filter(Boolean).length;
-          const endsWithPunct = /[.?!:;]$/.test(pendingFinalText);
+          const targetSentences = parseInt(document.getElementById('sentenceMode').value || '1', 10);
+          const sentenceEndCount = (pendingFinalText.match(/[.?!]+(?=\s|$)/g) || []).length;
+          const endsWithTerminal = /[.?!]$/.test(pendingFinalText);
 
-          if (wordCount >= 5 || endsWithPunct) {
+          // Wait until full sentence completes (. ? !) or safety cap (22 words / 38 words in 2-sentence mode)
+          const maxWords = targetSentences === 2 ? 38 : 22;
+          if ((endsWithTerminal && sentenceEndCount >= targetSentences) || wordCount >= maxWords) {
             flushPendingSentence(langFull);
           } else {
             if (pendingFlushTimer) clearTimeout(pendingFlushTimer);
-            pendingFlushTimer = setTimeout(() => flushPendingSentence(langFull), 1300);
+            const waitMs = targetSentences === 2 ? 4200 : 2800;
+            pendingFlushTimer = setTimeout(() => flushPendingSentence(langFull), waitMs);
           }
         } else {
           const now = Date.now();
-          if (now - lastInterimSent > 900) {
+          if (now - lastInterimSent > 1200) {
             lastInterimSent = now;
             ws.send(JSON.stringify({
               type: 'speech',

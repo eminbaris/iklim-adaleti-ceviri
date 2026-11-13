@@ -9,7 +9,7 @@ import re
 import socket
 import time
 from collections import deque
-from typing import Deque, Dict, List, Optional, Set
+from typing import Deque, Dict, List, Optional, Set, Tuple
 
 import edge_tts
 import httpx
@@ -59,6 +59,8 @@ STATE = {
     "deepgram_api_key": os.environ.get("DEEPGRAM_API_KEY", ""),
     "openai_api_key": os.environ.get("OPENAI_API_KEY", ""),
     "speaker_notes": "",
+    "last_llm_engine": "",
+    "last_llm_error": "",
     "history": [],
     "full_transcript": [],
 }
@@ -78,7 +80,7 @@ for _demo in DEMO_SPEECHES:
 RECENT_TTS_TEXTS: Deque[str] = deque(maxlen=1200)
 TTS_CACHE: Dict[str, bytes] = {}
 TTS_INFLIGHT_LOCKS: Dict[str, asyncio.Lock] = {}
-HTTP_CLIENT = httpx.AsyncClient(timeout=9.0)
+HTTP_CLIENT = httpx.AsyncClient(timeout=20.0)
 
 
 def allow_tts_text(text: str) -> None:
@@ -227,70 +229,94 @@ def build_contextual_user_prompt(clean: str) -> str:
         )
 
     parts.append(
-        "[ŞİMDİ SADECE AŞAĞIDAKİ YENİ CÜMLEYİ 4 DİLE (tr, en, fr, de) EKSİKSİZ ÇEVİR VE SADECE JSON DÖNDÜR]:\n"
+        "[ŞİMDİ SADECE AŞAĞIDAKİ YENİ CÜMLEYİ 4 DİLE (tr, en, fr, de) EKSİKSİZ, DOĞAL VE AKADEMİK OLARAK ÇEVİR VE SADECE GEÇERLİ JSON DÖNDÜR]:\n"
         + clean
     )
     return "\n\n".join(parts)
 
 
-async def call_claude_json(user_prompt: str, sys_prompt: str) -> Optional[str]:
+async def call_claude_json(user_prompt: str, sys_prompt: str) -> Tuple[Optional[str], str]:
     if not STATE["claude_api_key"]:
-        return None
+        return None, "Claude API key eksik"
     model_id = await resolve_claude_model(STATE["claude_api_key"])
-    resp = await HTTP_CLIENT.post(
-        "https://api.anthropic.com/v1/messages",
-        headers={
-            "x-api-key": STATE["claude_api_key"],
-            "anthropic-version": "2023-06-01",
-            "anthropic-beta": "prompt-caching-2024-07-31",
-            "content-type": "application/json",
-        },
-        json={
-            "model": model_id,
-            "max_tokens": 600,
-            "temperature": 0.1,
-            "system": [
-                {
-                    "type": "text",
-                    "text": sys_prompt,
-                    "cache_control": {"type": "ephemeral"},
-                }
-            ],
-            "messages": [{"role": "user", "content": user_prompt}],
-        },
-    )
-    if resp.status_code == 200:
-        return resp.json()["content"][0]["text"].strip()
-    return None
+    try:
+        resp = await HTTP_CLIENT.post(
+            "https://api.anthropic.com/v1/messages",
+            headers={
+                "x-api-key": STATE["claude_api_key"],
+                "anthropic-version": "2023-06-01",
+                "anthropic-beta": "prompt-caching-2024-07-31",
+                "content-type": "application/json",
+            },
+            json={
+                "model": model_id,
+                "max_tokens": 1100,
+                "temperature": 0.1,
+                "system": [
+                    {
+                        "type": "text",
+                        "text": sys_prompt,
+                        "cache_control": {"type": "ephemeral"},
+                    }
+                ],
+                "messages": [{"role": "user", "content": user_prompt}],
+            },
+        )
+        if resp.status_code == 200:
+            return resp.json()["content"][0]["text"].strip(), ""
+        err = f"Claude HTTP {resp.status_code}: {resp.text[:180]}"
+        print(err)
+        return None, err
+    except Exception as e:
+        err = f"Claude Exception: {type(e).__name__}: {str(e)[:150]}"
+        print(err)
+        return None, err
 
 
-async def call_gemini_json(user_prompt: str, sys_prompt: str) -> Optional[str]:
+async def call_gemini_json(user_prompt: str, sys_prompt: str) -> Tuple[Optional[str], str]:
     if not STATE["gemini_api_key"]:
-        return None
+        return None, "Gemini API key eksik"
     url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key={STATE['gemini_api_key']}"
     payload = {
         "system_instruction": {"parts": [{"text": sys_prompt}]},
         "contents": [{"parts": [{"text": user_prompt}]}],
         "generationConfig": {
             "temperature": 0.1,
-            "maxOutputTokens": 600,
+            "maxOutputTokens": 1100,
             "responseMimeType": "application/json",
+            "thinkingConfig": {"thinkingBudget": 0},
         },
     }
-    resp = await HTTP_CLIENT.post(url, json=payload)
-    if resp.status_code == 200:
-        return resp.json()["candidates"][0]["content"]["parts"][0]["text"].strip()
-    return None
+    try:
+        resp = await HTTP_CLIENT.post(url, json=payload)
+        if resp.status_code == 200:
+            return resp.json()["candidates"][0]["content"]["parts"][0]["text"].strip(), ""
+        err = f"Gemini HTTP {resp.status_code}: {resp.text[:180]}"
+        print(err)
+        return None, err
+    except Exception as e:
+        err = f"Gemini Exception: {type(e).__name__}: {str(e)[:150]}"
+        print(err)
+        return None, err
 
 
-async def translate_quadrilingual(text: str, source_lang: str, is_final: bool = True) -> Dict[str, str]:
-    clean = text.strip()[:700]
+def parse_llm_json(raw_json: str) -> Optional[dict]:
+    if not raw_json:
+        return None
+    cleaned = re.sub(r"^```(?:json)?\s*|\s*```$", "", raw_json.strip(), flags=re.IGNORECASE)
+    m = re.search(r"\{.*\}", cleaned, flags=re.DOTALL)
+    candidate = m.group(0) if m else cleaned
+    return json.loads(candidate)
+
+
+async def translate_quadrilingual(text: str, source_lang: str, is_final: bool = True) -> Tuple[Dict[str, str], str]:
+    clean = text.strip()[:900]
     if not clean:
-        return {"tr": "", "en": "", "fr": "", "de": ""}
+        return {"tr": "", "en": "", "fr": "", "de": ""}, "empty"
 
     for item in DEMO_SPEECHES:
         if item["source"].lower() == clean.lower():
-            return {"tr": item["tr"], "en": item["en"], "fr": item["fr"], "de": item["de"]}
+            return {"tr": item["tr"], "en": item["en"], "fr": item["fr"], "de": item["de"]}, "Demo"
 
     src_short = source_lang.split("-")[0].lower()  # tr | en | fr | de
     session = STATE["session"]
@@ -298,26 +324,34 @@ async def translate_quadrilingual(text: str, source_lang: str, is_final: bool = 
     user_prompt = build_contextual_user_prompt(clean)
 
     if is_final and (STATE["claude_api_key"] or STATE["gemini_api_key"]):
-        try:
-            raw_json = None
-            pref = STATE["preferred_llm"]
-            if pref == "gemini":
-                raw_json = await call_gemini_json(user_prompt, sys_prompt) or await call_claude_json(user_prompt, sys_prompt)
-            else:
-                raw_json = await call_claude_json(user_prompt, sys_prompt) or await call_gemini_json(user_prompt, sys_prompt)
+        errors = []
+        pref = STATE["preferred_llm"]
+        order = [("Gemini 2.5", call_gemini_json), ("Claude", call_claude_json)] if pref == "gemini" else [("Claude", call_claude_json), ("Gemini 2.5", call_gemini_json)]
 
-            if raw_json:
-                m = re.search(r"\{.*\}", raw_json, flags=re.DOTALL)
-                parsed = json.loads(m.group(0) if m else raw_json)
-                return apply_quadrilingual_fixes(
-                    clean,
-                    parsed.get("tr", clean),
-                    parsed.get("en", clean),
-                    parsed.get("fr", clean),
-                    parsed.get("de", clean),
-                )
-        except Exception:
-            pass
+        for engine_name, fn in order:
+            try:
+                raw_json, err_msg = await fn(user_prompt, sys_prompt)
+                if err_msg:
+                    errors.append(err_msg)
+                if raw_json:
+                    parsed = parse_llm_json(raw_json)
+                    if parsed and all(k in parsed for k in ("tr", "en", "fr", "de")):
+                        STATE["last_llm_engine"] = engine_name
+                        STATE["last_llm_error"] = " | ".join(errors)
+                        fixed = apply_quadrilingual_fixes(
+                            clean,
+                            parsed.get("tr", clean),
+                            parsed.get("en", clean),
+                            parsed.get("fr", clean),
+                            parsed.get("de", clean),
+                        )
+                        return fixed, engine_name
+                    else:
+                        errors.append(f"{engine_name} JSON parse eksik: {raw_json[:100]}")
+            except Exception as e:
+                errors.append(f"{engine_name} ParseErr: {str(e)[:100]}")
+
+        STATE["last_llm_error"] = " | ".join(errors)
 
     tr_out, en_out, fr_out, de_out = await asyncio.gather(
         free_translate_single(clean, src_short, "tr"),
@@ -325,7 +359,10 @@ async def translate_quadrilingual(text: str, source_lang: str, is_final: bool = 
         free_translate_single(clean, src_short, "fr"),
         free_translate_single(clean, src_short, "de"),
     )
-    return apply_quadrilingual_fixes(clean, tr_out, en_out, fr_out, de_out)
+    engine_label = "Interim" if not is_final else "GTX Yedek"
+    if is_final:
+        STATE["last_llm_engine"] = engine_label
+    return apply_quadrilingual_fixes(clean, tr_out, en_out, fr_out, de_out), engine_label
 
 
 async def _synthesize_edge_tts(text: str, use_voice: str) -> bytes:
@@ -370,11 +407,6 @@ async def _synthesize_google_fallback_tts(text: str, lang_short: str) -> bytes:
 
 
 async def synthesize_tts_bytes(text: str, lang_short: str) -> bytes:
-    """
-    Singleflight TTS synthesis for 250+ hall listeners:
-    If 250 phones request the same sentence simultaneously, only 1 synthesis call runs;
-    the other 249 wait on the per-key lock and get the RAM-cached MP3 immediately.
-    """
     use_voice = VOICES.get(lang_short, VOICES["tr"])
     cache_key = hashlib.md5(f"{use_voice}:{text}".encode("utf-8")).hexdigest()
     if cache_key in TTS_CACHE:
@@ -386,20 +418,17 @@ async def synthesize_tts_bytes(text: str, lang_short: str) -> bytes:
             return TTS_CACHE[cache_key]
 
         audio_bytes = b""
-        # Tier 1: Microsoft Edge Neural TTS
         try:
             audio_bytes = await _synthesize_edge_tts(text, use_voice)
         except Exception:
             audio_bytes = b""
 
-        # Tier 2: OpenAI TTS (tts-1) if configured and Edge throttled
         if not audio_bytes and STATE.get("openai_api_key"):
             try:
                 audio_bytes = await _synthesize_openai_tts(text)
             except Exception:
                 audio_bytes = b""
 
-        # Tier 3: Google TTS fallback so 250 listeners never experience silence
         if not audio_bytes:
             try:
                 audio_bytes = await _synthesize_google_fallback_tts(text, lang_short)
@@ -408,7 +437,6 @@ async def synthesize_tts_bytes(text: str, lang_short: str) -> bytes:
 
         if audio_bytes:
             if len(TTS_CACHE) > 500:
-                # Evict oldest half instead of wiping active sentences
                 for k in list(TTS_CACHE.keys())[:250]:
                     TTS_CACHE.pop(k, None)
             TTS_CACHE[cache_key] = audio_bytes
@@ -418,9 +446,7 @@ async def synthesize_tts_bytes(text: str, lang_short: str) -> bytes:
 
 
 async def prewarm_tts_for_hall(quad: Dict[str, str], src_lang: str) -> None:
-    """Pre-generates TTS audio into RAM as soon as translation finishes so 250 phones get 0ms cache hits."""
     src_short = src_lang.split("-")[0].lower()
-    # Always pre-warm Turkish + English + French (most used channels in the hall)
     targets = [ch for ch in ("tr", "en", "fr", "de") if ch != src_short and quad.get(ch)]
     await asyncio.gather(
         *(synthesize_tts_bytes(quad[ch].strip(), ch) for ch in targets),
@@ -448,7 +474,6 @@ class ConnectionManager:
             return conn
 
     async def broadcast(self, message: dict):
-        """Parallel non-blocking broadcast for 250+ concurrent WebSocket clients."""
         conns = list(self.active_connections)
         if not conns:
             return
@@ -479,17 +504,40 @@ async def api_info(request: Request, pin: Optional[str] = Query(None)):
             "source_lang": STATE["source_lang"],
             "preferred_llm": STATE["preferred_llm"],
             "has_claude_key": bool(STATE["claude_api_key"]),
-            "claude_model": STATE["claude_model"] or "claude-sonnet-5-5",
+            "claude_model": STATE["claude_model"] or "claude-sonnet-4-20250514",
             "has_gemini_key": bool(STATE["gemini_api_key"]),
             "has_deepgram_key": bool(STATE["deepgram_api_key"]),
             "has_openai_key": bool(STATE["openai_api_key"]),
             "deepgram_api_key": STATE["deepgram_api_key"] if authorized else "",
             "speaker_notes": STATE["speaker_notes"] if authorized else "",
+            "last_llm_engine": STATE["last_llm_engine"] if authorized else "",
+            "last_llm_error": STATE["last_llm_error"] if authorized else "",
             "active_listeners": len(manager.active_connections),
             "glossary_count": len(QUADRILINGUAL_TERMS),
             "forbidden_count": len(FORBIDDEN_TR),
             "transcript_count": len(STATE["full_transcript"]),
             "history": STATE["history"][-15:],
+        }
+    )
+
+
+@router.get("/api/test-llm")
+async def api_test_llm(request: Request, pin: Optional[str] = Query(None)):
+    client_ip = get_client_ip(request.headers, request.client.host if request.client else "")
+    if not verify_operator_pin(pin, client_ip):
+        return JSONResponse({"ok": False, "error": "Operatör PIN gerekli"}, status_code=403)
+    sys_prompt = build_quadrilingual_system_prompt(STATE["session"]["title"], STATE["session"]["speakers"])
+    user_prompt = build_contextual_user_prompt("The real test of climate leadership is delivery, not declarations.")
+    t0 = time.perf_counter()
+    c_raw, c_err = await call_claude_json(user_prompt, sys_prompt)
+    c_ms = int((time.perf_counter() - t0) * 1000)
+    t1 = time.perf_counter()
+    g_raw, g_err = await call_gemini_json(user_prompt, sys_prompt)
+    g_ms = int((time.perf_counter() - t1) * 1000)
+    return JSONResponse(
+        {
+            "claude": {"ok": bool(c_raw), "ms": c_ms, "model": STATE["claude_model"], "error": c_err, "sample": (c_raw or "")[:160]},
+            "gemini": {"ok": bool(g_raw), "ms": g_ms, "error": g_err, "sample": (g_raw or "")[:160]},
         }
     )
 
@@ -509,7 +557,7 @@ async def api_transcript(request: Request, pin: Optional[str] = Query(None)):
     ]
     items = STATE["full_transcript"] or STATE["history"]
     for idx, item in enumerate(items, 1):
-        lines.append(f"[{idx}] Saat: {item.get('timestamp', '')} | Kaynak Dil: {item.get('source_lang', '')} | Oturum: {item.get('session_title', STATE['session']['title'])}")
+        lines.append(f"[{idx}] Saat: {item.get('timestamp', '')} | Kaynak Dil: {item.get('source_lang', '')} | Motor: {item.get('engine', '')} | Oturum: {item.get('session_title', STATE['session']['title'])}")
         lines.append(f"  🎙️ Orijinal: {item.get('source', '')}")
         lines.append(f"  🇹🇷 TR: {item.get('tr', '')}")
         lines.append(f"  🇬🇧 EN: {item.get('en', '')}")
@@ -614,13 +662,13 @@ async def websocket_endpoint(websocket: WebSocket):
                 )
 
             elif msg_type == "speech":
-                src_text = data.get("text", "").strip()[:700]
+                src_text = data.get("text", "").strip()[:900]
                 is_final = bool(data.get("is_final", False))
                 src_lang = data.get("source_lang") or STATE["source_lang"]
                 if not src_text:
                     continue
                 t0 = time.perf_counter()
-                quad = await translate_quadrilingual(src_text, src_lang, is_final=is_final)
+                quad, engine_name = await translate_quadrilingual(src_text, src_lang, is_final=is_final)
                 latency_ms = int((time.perf_counter() - t0) * 1000)
 
                 payload = {
@@ -633,6 +681,8 @@ async def websocket_endpoint(websocket: WebSocket):
                     "en": quad["en"],
                     "fr": quad["fr"],
                     "de": quad["de"],
+                    "engine": engine_name,
+                    "llm_error": STATE["last_llm_error"] if is_final else "",
                     "is_final": is_final,
                     "latency_ms": latency_ms,
                     "timestamp": time.strftime("%H:%M:%S"),
@@ -641,7 +691,6 @@ async def websocket_endpoint(websocket: WebSocket):
                     for _k in ("tr", "en", "fr", "de"):
                         if quad.get(_k):
                             allow_tts_text(quad[_k])
-                    # Start pre-warming TTS audio in background for 250 hall listeners
                     asyncio.create_task(prewarm_tts_for_hall(quad, src_lang))
                     STATE["history"].append(payload)
                     if len(STATE["history"]) > 50:
@@ -668,6 +717,8 @@ async def websocket_endpoint(websocket: WebSocket):
                     "en": sample["en"],
                     "fr": sample["fr"],
                     "de": sample["de"],
+                    "engine": "Demo",
+                    "llm_error": "",
                     "is_final": True,
                     "latency_ms": 220,
                     "timestamp": time.strftime("%H:%M:%S"),
