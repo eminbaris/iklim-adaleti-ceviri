@@ -13,7 +13,7 @@
       display: flex;
       flex-direction: column;
       justify-content: space-between;
-      padding: 22px 40px;
+      padding: 16px 34px;
       overflow: hidden;
     }
     header {
@@ -21,67 +21,86 @@
       justify-content: space-between;
       align-items: center;
       border-bottom: 2px solid #15803d;
-      padding-bottom: 10px;
+      padding-bottom: 8px;
+      gap: 14px;
     }
     .forum-tag {
       color: #4ade80;
-      font-size: 16px;
+      font-size: 14px;
       font-weight: 700;
       letter-spacing: 1px;
       text-transform: uppercase;
     }
     .session-title {
-      font-size: 22px;
+      font-size: 20px;
       font-weight: 800;
       color: #ffffff;
       margin-top: 2px;
     }
     .speakers {
-      font-size: 15px;
+      font-size: 14px;
       color: #94a3b8;
       margin-top: 2px;
     }
     .toggles {
       display: flex;
+      align-items: center;
       gap: 10px;
       font-size: 13px;
       color: #cbd5e1;
       background: #111827;
       padding: 6px 12px;
       border-radius: 8px;
+      flex-shrink: 0;
     }
     .toggles label { cursor: pointer; display: flex; align-items: center; gap: 4px; }
+    .size-btn {
+      background: #1f2937;
+      color: #f8fafc;
+      border: 1px solid #374151;
+      border-radius: 6px;
+      padding: 3px 9px;
+      font-size: 13px;
+      font-weight: 800;
+      cursor: pointer;
+    }
+    .size-btn:hover { background: #374151; }
     main {
       flex: 1;
       display: flex;
       flex-direction: column;
       justify-content: center;
-      gap: 12px;
-      padding: 10px 0;
+      gap: 16px;
+      padding: 12px 0;
       overflow: hidden;
     }
     .lang-box {
-      padding: 14px 20px;
-      border-radius: 10px;
-      background: rgba(255, 255, 255, 0.04);
-      border-left: 8px solid #64748b;
+      padding: 20px 28px;
+      border-radius: 14px;
+      background: rgba(255, 255, 255, 0.05);
+      border-left: 10px solid #64748b;
     }
-    .lang-box.tr-box { border-left-color: #eab308; background: rgba(234, 179, 8, 0.08); }
-    .lang-box.en-box { border-left-color: #38bdf8; background: rgba(56, 189, 248, 0.08); }
-    .lang-box.fr-box { border-left-color: #c084fc; background: rgba(192, 132, 252, 0.08); }
-    .lang-box.de-box { border-left-color: #4ade80; background: rgba(74, 222, 128, 0.08); }
+    .lang-box.tr-box { border-left-color: #eab308; background: rgba(234, 179, 8, 0.09); }
+    .lang-box.en-box { border-left-color: #38bdf8; background: rgba(56, 189, 248, 0.09); }
+    .lang-box.fr-box { border-left-color: #c084fc; background: rgba(192, 132, 252, 0.09); }
+    .lang-box.de-box { border-left-color: #4ade80; background: rgba(74, 222, 128, 0.09); }
     .lang-label {
-      font-size: 13px;
+      font-size: 16px;
       font-weight: 800;
-      letter-spacing: 1px;
+      letter-spacing: 1.2px;
       text-transform: uppercase;
-      margin-bottom: 4px;
-      opacity: 0.85;
+      margin-bottom: 6px;
+      opacity: 0.9;
     }
-    .tr-box .lang-text { font-size: 30px; font-weight: 800; color: #fef08a; line-height: 1.24; }
-    .en-box .lang-text { font-size: 27px; font-weight: 700; color: #7dd3fc; line-height: 1.24; }
-    .fr-box .lang-text { font-size: 27px; font-weight: 700; color: #e9d5ff; line-height: 1.24; }
-    .de-box .lang-text { font-size: 27px; font-weight: 700; color: #86efac; line-height: 1.24; }
+    .lang-text {
+      font-weight: 800;
+      line-height: 1.22;
+      word-break: break-word;
+    }
+    .tr-box .lang-text { color: #fef08a; }
+    .en-box .lang-text { color: #7dd3fc; }
+    .fr-box .lang-text { color: #e9d5ff; }
+    .de-box .lang-text { color: #86efac; }
     footer {
       display: flex;
       justify-content: space-between;
@@ -115,10 +134,13 @@
       <div class="speakers" id="sessionSpeakers">Markus Wissen, Jenny Simon, Ali Yalçın Göymen</div>
     </div>
     <div class="toggles">
-      <label><input type="checkbox" checked onchange="toggleBox('trBox', this.checked)"> 🇹🇷 TR</label>
-      <label><input type="checkbox" checked onchange="toggleBox('enBox', this.checked)"> 🇬🇧 EN</label>
-      <label><input type="checkbox" checked onchange="toggleBox('frBox', this.checked)"> 🇫🇷 FR</label>
-      <label><input type="checkbox" checked onchange="toggleBox('deBox', this.checked)"> 🇩🇪 DE</label>
+      <label><input type="checkbox" id="chk-tr" checked onchange="onToggleLang('trBox', this.checked)"> 🇹🇷 TR</label>
+      <label><input type="checkbox" id="chk-en" checked onchange="onToggleLang('enBox', this.checked)"> 🇬🇧 EN</label>
+      <label><input type="checkbox" id="chk-fr" onchange="onToggleLang('frBox', this.checked)"> 🇫🇷 FR</label>
+      <label><input type="checkbox" id="chk-de" onchange="onToggleLang('deBox', this.checked)"> 🇩🇪 DE</label>
+      <span style="color:#475569;">|</span>
+      <button class="size-btn" onclick="changeScale(-0.1)" title="Yazıyı Küçült">A-</button>
+      <button class="size-btn" onclick="changeScale(0.1)" title="Yazıyı Büyüt">A+</button>
     </div>
   </header>
 
@@ -151,10 +173,63 @@
 
   <script>
     const BASE = location.pathname.startsWith('/ceviri') ? '/ceviri' : '';
+    const BOX_MAP = { trBox: 'chk-tr', enBox: 'chk-en', frBox: 'chk-fr', deBox: 'chk-de' };
+    const TEXT_MAP = { trBox: 'currTr', enBox: 'currEn', frBox: 'currFr', deBox: 'currDe' };
+    let fontScale = parseFloat(localStorage.getItem('ekran_scale') || '1.0');
 
-    function toggleBox(id, show) {
-      document.getElementById(id).style.display = show ? 'block' : 'none';
+    function savePrefs() {
+      const state = {};
+      Object.keys(BOX_MAP).forEach(b => {
+        state[b] = document.getElementById(BOX_MAP[b]).checked;
+      });
+      localStorage.setItem('ekran_langs', JSON.stringify(state));
+      localStorage.setItem('ekran_scale', String(fontScale.toFixed(2)));
     }
+
+    function applyLayout() {
+      let activeCount = 0;
+      Object.keys(BOX_MAP).forEach(b => {
+        const show = document.getElementById(BOX_MAP[b]).checked;
+        document.getElementById(b).style.display = show ? 'block' : 'none';
+        if (show) activeCount++;
+      });
+      // Base font size scales aggressively when fewer languages are shown
+      const baseVw = activeCount <= 1 ? 5.6 : activeCount === 2 ? 4.1 : activeCount === 3 ? 3.0 : 2.4;
+      const minPx = activeCount <= 1 ? 46 : activeCount === 2 ? 36 : 24;
+      const maxPx = activeCount <= 1 ? 88 : activeCount === 2 ? 64 : 42;
+      Object.keys(TEXT_MAP).forEach(b => {
+        const el = document.getElementById(TEXT_MAP[b]);
+        const len = (el.textContent || '').length;
+        const lenFactor = len > 240 ? 0.74 : len > 160 ? 0.86 : 1.0;
+        const mult = fontScale * lenFactor;
+        el.style.fontSize = `clamp(${(minPx * mult).toFixed(1)}px, ${(baseVw * mult).toFixed(2)}vw, ${(maxPx * mult).toFixed(1)}px)`;
+      });
+    }
+
+    function onToggleLang() {
+      savePrefs();
+      applyLayout();
+    }
+
+    function changeScale(delta) {
+      fontScale = Math.max(0.6, Math.min(1.8, fontScale + delta));
+      savePrefs();
+      applyLayout();
+    }
+
+    (function initPrefs() {
+      try {
+        const saved = JSON.parse(localStorage.getItem('ekran_langs') || 'null');
+        if (saved) {
+          Object.keys(BOX_MAP).forEach(b => {
+            if (typeof saved[b] === 'boolean') {
+              document.getElementById(BOX_MAP[b]).checked = saved[b];
+            }
+          });
+        }
+      } catch (e) {}
+      applyLayout();
+    })();
 
     async function loadInfo() {
       const res = await fetch(`${BASE}/api/info`);
@@ -176,6 +251,7 @@
       document.getElementById('currEn').textContent = item.en || '';
       document.getElementById('currFr').textContent = item.fr || '';
       document.getElementById('currDe').textContent = item.de || '';
+      applyLayout();
     }
 
     function connectWS() {

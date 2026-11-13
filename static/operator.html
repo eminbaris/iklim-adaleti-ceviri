@@ -137,8 +137,8 @@
         <button id="saveBtn" class="btn btn-outline" onclick="saveConfig()">Anahtarları & Notu Kaydet</button>
         <button id="testLlmBtn" class="btn btn-outline" onclick="testLlm()">🧪 Claude & Gemini Test Et</button>
         <select id="prefLlm" style="width:auto;" onchange="saveConfig()">
-          <option value="claude">Öncelik: Claude Sonnet (Prompt Cache + Yedek: Gemini 2.5)</option>
-          <option value="gemini">Öncelik: Gemini 2.5 Flash (Yedek: Claude)</option>
+          <option value="claude">Öncelik: Claude Sonnet (Prompt Cache + Yedek: Gemini Flash)</option>
+          <option value="gemini">Öncelik: Gemini Flash (Yedek: Claude Sonnet)</option>
         </select>
         <select id="sentenceMode" style="width:auto;">
           <option value="1">Bekleme: Tam Cümle (Noktaya Kadar — Önerilen)</option>
@@ -162,6 +162,15 @@
       <p style="font-size:12px; color:#cbd5e1; line-height:1.4;">
         <b>Soru-Cevap İpucu:</b> İzleyici Türkçe soru sorarken soldan <b>🇹🇷 TÜRKÇE</b>, yabancı konuk cevaplarken onun diline tıklayın; mikrofon kapanmadan ve ses kaydı bölünmeden anında geçiş yapar.
       </p>
+      <div style="margin-top:8px; display:flex; gap:8px; align-items:center;">
+        <select id="micDeviceSelect" style="flex:1;" title="Ses Girişi / Mikser (Behringer X32 vb.)">
+          <option value="">🎙️ Varsayılan Sistem Mikrofonu</option>
+        </select>
+        <button class="btn btn-outline" onclick="refreshMicDevices()" title="Ses cihazlarını yenile">🔄</button>
+      </div>
+      <div style="height:6px; background:#0b1f15; border-radius:4px; overflow:hidden; margin-top:6px; border:1px solid #1e4d35;">
+        <div id="micMeterBar" style="height:100%; width:0%; background:linear-gradient(90deg, #22c55e, #eab308); transition:width 60ms linear;"></div>
+      </div>
       <div class="controls">
         <button id="micBtn" class="btn btn-primary" onclick="toggleMic()">🎙️ Canlı Çeviriyi & Ses Kaydını Başlat</button>
         <button class="btn btn-warn" onclick="sendDemo()">⚡ 4 Dilli Örnek Gönder</button>
@@ -558,9 +567,58 @@
       };
     }
 
+    let audioCtx = null, meterRaf = null;
+
+    async function refreshMicDevices() {
+      if (!navigator.mediaDevices || !navigator.mediaDevices.enumerateDevices) return;
+      try {
+        const devs = await navigator.mediaDevices.enumerateDevices();
+        const inputs = devs.filter(d => d.kind === 'audioinput');
+        const sel = document.getElementById('micDeviceSelect');
+        const prev = sel.value || localStorage.getItem('cop31_mic_id') || '';
+        sel.innerHTML = '<option value="">🎙️ Varsayılan Sistem Mikrofonu</option>';
+        inputs.forEach((d, idx) => {
+          const opt = document.createElement('option');
+          opt.value = d.deviceId;
+          opt.textContent = d.label || `Ses Girişi ${idx + 1}`;
+          sel.appendChild(opt);
+        });
+        if (prev && [...sel.options].some(o => o.value === prev)) sel.value = prev;
+      } catch (e) {}
+    }
+
+    function startMeter(stream) {
+      try {
+        const AC = window.AudioContext || window.webkitAudioContext;
+        if (!AC) return;
+        audioCtx = new AC();
+        const src = audioCtx.createMediaStreamSource(stream);
+        const analyser = audioCtx.createAnalyser();
+        analyser.fftSize = 256;
+        src.connect(analyser);
+        const buf = new Uint8Array(analyser.frequencyBinCount);
+        const bar = document.getElementById('micMeterBar');
+        const tick = () => {
+          if (!isListening) return;
+          analyser.getByteTimeDomainData(buf);
+          let peak = 0;
+          for (let i = 0; i < buf.length; i++) {
+            const v = Math.abs(buf[i] - 128) / 128;
+            if (v > peak) peak = v;
+          }
+          bar.style.width = Math.min(100, Math.round(peak * 180)) + '%';
+          meterRaf = requestAnimationFrame(tick);
+        };
+        meterRaf = requestAnimationFrame(tick);
+      } catch (e) {}
+    }
+
     function stopMic() {
       flushPendingSentence(document.getElementById('langSelect').value);
       isListening = false;
+      if (meterRaf) { cancelAnimationFrame(meterRaf); meterRaf = null; }
+      if (audioCtx) { audioCtx.close().catch(() => {}); audioCtx = null; }
+      document.getElementById('micMeterBar').style.width = '0%';
       if (dgKeepAlive) { clearInterval(dgKeepAlive); dgKeepAlive = null; }
       if (dgRecorder && dgRecorder.state !== 'inactive') dgRecorder.stop();
       if (sessionRecorder && sessionRecorder.state !== 'inactive') sessionRecorder.stop();
@@ -578,14 +636,20 @@
         return;
       }
       try {
-        mediaStream = await navigator.mediaDevices.getUserMedia({
-          audio: {
-            echoCancellation: true,
-            noiseSuppression: true,
-            autoGainControl: true,
-            channelCount: 1
-          }
-        });
+        const sel = document.getElementById('micDeviceSelect');
+        const chosenId = sel.value;
+        const chosenLabel = (sel.options[sel.selectedIndex]?.textContent || '').toLowerCase();
+        if (chosenId) localStorage.setItem('cop31_mic_id', chosenId);
+        const isMixer = /x32|behringer|usb|line|mixer|interface|focusrite|scarlett/.test(chosenLabel);
+        const audioCfg = {
+          echoCancellation: !isMixer,
+          noiseSuppression: !isMixer,
+          autoGainControl: !isMixer,
+          channelCount: 1
+        };
+        if (chosenId) audioCfg.deviceId = { exact: chosenId };
+        mediaStream = await navigator.mediaDevices.getUserMedia({ audio: audioCfg });
+        refreshMicDevices();
         recordedChunks = [];
         sessionRecorder = new MediaRecorder(mediaStream, { mimeType: 'audio/webm' });
         sessionRecorder.addEventListener('dataavailable', (ev) => {
@@ -598,6 +662,7 @@
         sessionRecorder.start(1000);
 
         isListening = true;
+        startMeter(mediaStream);
         document.getElementById('micBtn').textContent = '⏹️ Canlı Çeviriyi Durdur';
         document.getElementById('micBtn').className = 'btn btn-danger';
         connectDeepgramSocket();
@@ -614,6 +679,7 @@
       }
     }
 
+    refreshMicDevices();
     init();
   </script>
 </body>
