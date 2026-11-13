@@ -251,16 +251,17 @@ async def resolve_gemini_model(api_key: str) -> str:
                     continue
                 name = m.get("name", "").replace("models/", "")
                 low = name.lower()
-                if any(bad in low for bad in ("embedding", "tts", "image", "audio", "robotics", "computer-use")):
+                if any(bad in low for bad in ("embedding", "tts", "image", "audio", "robotics", "computer-use", "omni", "customtools")):
                     continue
                 if "flash" in low and "lite" not in low:
                     candidates.append(name)
             if candidates:
-                # Prefer highest gemini-3* or gemini-2.5* flash, avoiding -exp/-preview if stable exists
-                candidates.sort(key=lambda s: ("exp" in s or "preview" in s, s), reverse=False)
-                # Put newest version first among stable flash models
                 stable = [c for c in candidates if "exp" not in c and "preview" not in c]
-                chosen = sorted(stable, reverse=True)[0] if stable else sorted(candidates, reverse=True)[0]
+                pool = stable if stable else candidates
+                def _ver_key(name: str):
+                    nums = [int(x) for x in re.findall(r"\d+", name)]
+                    return (1 if name.startswith("gemini-3") else 0, nums, name)
+                chosen = sorted(pool, key=_ver_key, reverse=True)[0]
                 STATE["gemini_model"] = chosen
                 return chosen
     except Exception:
