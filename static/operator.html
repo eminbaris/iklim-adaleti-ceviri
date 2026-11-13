@@ -135,10 +135,11 @@
 
       <div class="controls">
         <button id="saveBtn" class="btn btn-outline" onclick="saveConfig()">Anahtarları & Notu Kaydet</button>
-        <button id="testLlmBtn" class="btn btn-outline" onclick="testLlm()">🧪 Claude & Gemini Test Et</button>
+        <button id="testLlmBtn" class="btn btn-outline" onclick="testLlm()">🧪 Claude, OpenAI & Gemini Test Et</button>
         <select id="prefLlm" style="width:auto;" onchange="saveConfig()">
-          <option value="claude">Öncelik: Claude Sonnet (Prompt Cache + Yedek: Gemini Flash)</option>
-          <option value="gemini">Öncelik: Gemini Flash (Yedek: Claude Sonnet)</option>
+          <option value="claude">Öncelik: Claude Sonnet (Yedek: OpenAI + Gemini)</option>
+          <option value="openai">Öncelik: OpenAI GPT-4o-mini (Yedek: Claude + Gemini)</option>
+          <option value="gemini">Öncelik: Gemini Flash (Yedek: OpenAI + Claude)</option>
         </select>
         <select id="sentenceMode" style="width:auto;">
           <option value="1">Bekleme: Tam Cümle (Noktaya Kadar — Önerilen)</option>
@@ -283,13 +284,14 @@
       if (!isAuthorized) { alert('Önce Operatör PIN kutusuna şifrenizi girin.'); return; }
       const box = document.getElementById('llmTestBox');
       box.style.display = 'block';
-      box.textContent = '⏳ Claude ve Gemini canlı test ediliyor...';
+      box.textContent = '⏳ Claude, OpenAI ve Gemini canlı test ediliyor...';
       try {
         const res = await fetch(`${BASE}/api/test-llm?pin=${encodeURIComponent(getPin())}`);
         const d = await res.json();
         const cTxt = d.claude.ok ? `🟢 Claude OK (${d.claude.ms} ms, ${d.claude.model})` : `🔴 Claude HATA: ${d.claude.error}`;
-        const gTxt = d.gemini.ok ? `🟢 Gemini OK (${d.gemini.ms} ms)` : `🔴 Gemini HATA: ${d.gemini.error}`;
-        box.innerHTML = `${escHtml(cTxt)}<br>${escHtml(gTxt)}`;
+        const oTxt = d.openai.ok ? `🟢 OpenAI OK (${d.openai.ms} ms, ${d.openai.model})` : `🔴 OpenAI HATA: ${d.openai.error}`;
+        const gTxt = d.gemini.ok ? `🟢 Gemini OK (${d.gemini.ms} ms, ${d.gemini.model || 'flash'})` : `🔴 Gemini HATA: ${d.gemini.error}`;
+        box.innerHTML = `${escHtml(cTxt)}<br>${escHtml(oTxt)}<br>${escHtml(gTxt)}`;
       } catch (e) {
         box.textContent = 'Test hatası: ' + e.message;
       }

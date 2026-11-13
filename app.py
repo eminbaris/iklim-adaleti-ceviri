@@ -354,6 +354,39 @@ async def call_gemini_json(user_prompt: str, sys_prompt: str) -> Tuple[Optional[
     return None, last_err
 
 
+async def call_openai_json(user_prompt: str, sys_prompt: str) -> Tuple[Optional[str], str]:
+    if not STATE["openai_api_key"]:
+        return None, "OpenAI API key eksik"
+    model_id = os.environ.get("OPENAI_TRANSLATE_MODEL", "gpt-4o-mini")
+    try:
+        resp = await HTTP_CLIENT.post(
+            "https://api.openai.com/v1/chat/completions",
+            headers={
+                "Authorization": f"Bearer {STATE['openai_api_key']}",
+                "Content-Type": "application/json",
+            },
+            json={
+                "model": model_id,
+                "temperature": 0.1,
+                "max_tokens": 1100,
+                "response_format": {"type": "json_object"},
+                "messages": [
+                    {"role": "system", "content": sys_prompt},
+                    {"role": "user", "content": user_prompt},
+                ],
+            },
+        )
+        if resp.status_code == 200:
+            return resp.json()["choices"][0]["message"]["content"].strip(), ""
+        err = f"OpenAI ({model_id}) HTTP {resp.status_code}: {resp.text[:180]}"
+        print(err)
+        return None, err
+    except Exception as e:
+        err = f"OpenAI ({model_id}) Exception: {type(e).__name__}: {str(e)[:150]}"
+        print(err)
+        return None, err
+
+
 def parse_llm_json(raw_json: str) -> Optional[dict]:
     if not raw_json:
         return None
@@ -377,10 +410,15 @@ async def translate_quadrilingual(text: str, source_lang: str, is_final: bool = 
     sys_prompt = build_quadrilingual_system_prompt(session["title"], session["speakers"])
     user_prompt = build_contextual_user_prompt(clean)
 
-    if is_final and (STATE["claude_api_key"] or STATE["gemini_api_key"]):
+    if is_final and (STATE["claude_api_key"] or STATE["openai_api_key"] or STATE["gemini_api_key"]):
         errors = []
         pref = STATE["preferred_llm"]
-        order = [("Gemini 2.5", call_gemini_json), ("Claude", call_claude_json)] if pref == "gemini" else [("Claude", call_claude_json), ("Gemini 2.5", call_gemini_json)]
+        if pref == "gemini":
+            order = [("Gemini", call_gemini_json), ("OpenAI", call_openai_json), ("Claude", call_claude_json)]
+        elif pref == "openai":
+            order = [("OpenAI", call_openai_json), ("Claude", call_claude_json), ("Gemini", call_gemini_json)]
+        else:
+            order = [("Claude", call_claude_json), ("OpenAI", call_openai_json), ("Gemini", call_gemini_json)]
 
         for engine_name, fn in order:
             try:
@@ -586,11 +624,15 @@ async def api_test_llm(request: Request, pin: Optional[str] = Query(None)):
     c_raw, c_err = await call_claude_json(user_prompt, sys_prompt)
     c_ms = int((time.perf_counter() - t0) * 1000)
     t1 = time.perf_counter()
+    o_raw, o_err = await call_openai_json(user_prompt, sys_prompt)
+    o_ms = int((time.perf_counter() - t1) * 1000)
+    t2 = time.perf_counter()
     g_raw, g_err = await call_gemini_json(user_prompt, sys_prompt)
-    g_ms = int((time.perf_counter() - t1) * 1000)
+    g_ms = int((time.perf_counter() - t2) * 1000)
     return JSONResponse(
         {
             "claude": {"ok": bool(c_raw), "ms": c_ms, "model": STATE["claude_model"], "error": c_err, "sample": (c_raw or "")[:160]},
+            "openai": {"ok": bool(o_raw), "ms": o_ms, "model": os.environ.get("OPENAI_TRANSLATE_MODEL", "gpt-4o-mini"), "error": o_err, "sample": (o_raw or "")[:160]},
             "gemini": {"ok": bool(g_raw), "ms": g_ms, "model": STATE["gemini_model"], "error": g_err, "sample": (g_raw or "")[:160]},
         }
     )
