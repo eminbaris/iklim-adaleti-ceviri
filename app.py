@@ -57,6 +57,7 @@ STATE = {
     "claude_model": os.environ.get("ANTHROPIC_MODEL", ""),
     "gemini_api_key": os.environ.get("GEMINI_API_KEY", ""),
     "gemini_model": os.environ.get("GEMINI_MODEL", ""),
+    "gemini_models": [],
     "deepgram_api_key": os.environ.get("DEEPGRAM_API_KEY", ""),
     "openai_api_key": os.environ.get("OPENAI_API_KEY", ""),
     "speaker_notes": "",
@@ -236,9 +237,12 @@ def build_contextual_user_prompt(clean: str) -> str:
     return "\n\n".join(parts)
 
 
-async def resolve_gemini_model(api_key: str) -> str:
+async def resolve_gemini_models(api_key: str) -> List[str]:
+    if STATE["gemini_models"]:
+        return STATE["gemini_models"]
     if STATE["gemini_model"]:
-        return STATE["gemini_model"]
+        STATE["gemini_models"] = [STATE["gemini_model"]]
+        return STATE["gemini_models"]
     try:
         resp = await HTTP_CLIENT.get(
             f"https://generativelanguage.googleapis.com/v1beta/models?key={api_key}"
@@ -261,12 +265,18 @@ async def resolve_gemini_model(api_key: str) -> str:
                 def _ver_key(name: str):
                     nums = [int(x) for x in re.findall(r"\d+", name)]
                     return (1 if name.startswith("gemini-3") else 0, nums, name)
-                chosen = sorted(pool, key=_ver_key, reverse=True)[0]
-                STATE["gemini_model"] = chosen
-                return chosen
+                ordered = sorted(pool, key=_ver_key, reverse=True)
+                STATE["gemini_models"] = ordered[:3]
+                STATE["gemini_model"] = ordered[0]
+                return STATE["gemini_models"]
     except Exception:
         pass
-    return "gemini-3.0-flash"
+    return ["gemini-3.8-flash", "gemini-3.0-flash"]
+
+
+async def resolve_gemini_model(api_key: str) -> str:
+    models = await resolve_gemini_models(api_key)
+    return models[0]
 
 
 async def call_claude_json(user_prompt: str, sys_prompt: str) -> Tuple[Optional[str], str]:
@@ -309,35 +319,39 @@ async def call_claude_json(user_prompt: str, sys_prompt: str) -> Tuple[Optional[
 async def call_gemini_json(user_prompt: str, sys_prompt: str) -> Tuple[Optional[str], str]:
     if not STATE["gemini_api_key"]:
         return None, "Gemini API key eksik"
-    model_id = await resolve_gemini_model(STATE["gemini_api_key"])
-    url = f"https://generativelanguage.googleapis.com/v1beta/models/{model_id}:generateContent?key={STATE['gemini_api_key']}"
-    thinking_cfg = {"thinkingLevel": "MINIMAL"} if "gemini-3" in model_id.lower() else {"thinkingBudget": 0}
-    payload = {
-        "system_instruction": {"parts": [{"text": sys_prompt}]},
-        "contents": [{"parts": [{"text": user_prompt}]}],
-        "generationConfig": {
-            "temperature": 0.1,
-            "maxOutputTokens": 1100,
-            "responseMimeType": "application/json",
-            "thinkingConfig": thinking_cfg,
-        },
-    }
-    try:
-        resp = await HTTP_CLIENT.post(url, json=payload)
-        if resp.status_code == 400 and "thinking" in resp.text.lower():
-            payload["generationConfig"].pop("thinkingConfig", None)
+    models = await resolve_gemini_models(STATE["gemini_api_key"])
+    last_err = ""
+    for model_id in models[:2]:
+        url = f"https://generativelanguage.googleapis.com/v1beta/models/{model_id}:generateContent?key={STATE['gemini_api_key']}"
+        thinking_cfg = {"thinkingLevel": "MINIMAL"} if "gemini-3" in model_id.lower() else {"thinkingBudget": 0}
+        payload = {
+            "system_instruction": {"parts": [{"text": sys_prompt}]},
+            "contents": [{"parts": [{"text": user_prompt}]}],
+            "generationConfig": {
+                "temperature": 0.1,
+                "maxOutputTokens": 1100,
+                "responseMimeType": "application/json",
+                "thinkingConfig": thinking_cfg,
+            },
+        }
+        try:
             resp = await HTTP_CLIENT.post(url, json=payload)
-        if resp.status_code == 200:
-            return resp.json()["candidates"][0]["content"]["parts"][0]["text"].strip(), ""
-        if resp.status_code == 404:
-            STATE["gemini_model"] = ""
-        err = f"Gemini ({model_id}) HTTP {resp.status_code}: {resp.text[:180]}"
-        print(err)
-        return None, err
-    except Exception as e:
-        err = f"Gemini ({model_id}) Exception: {type(e).__name__}: {str(e)[:150]}"
-        print(err)
-        return None, err
+            if resp.status_code == 400 and "thinking" in resp.text.lower():
+                payload["generationConfig"].pop("thinkingConfig", None)
+                resp = await HTTP_CLIENT.post(url, json=payload)
+            if resp.status_code == 200:
+                STATE["gemini_model"] = model_id
+                return resp.json()["candidates"][0]["content"]["parts"][0]["text"].strip(), ""
+            last_err = f"Gemini ({model_id}) HTTP {resp.status_code}: {resp.text[:180]}"
+            print(last_err)
+            if resp.status_code in (404, 429, 503):
+                continue
+            return None, last_err
+        except Exception as e:
+            last_err = f"Gemini ({model_id}) Exception: {type(e).__name__}: {str(e)[:150]}"
+            print(last_err)
+            continue
+    return None, last_err
 
 
 def parse_llm_json(raw_json: str) -> Optional[dict]:
@@ -679,6 +693,7 @@ async def websocket_endpoint(websocket: WebSocket):
                 if not os.environ.get("GEMINI_API_KEY") and "gemini_api_key" in data and data["gemini_api_key"].strip():
                     STATE["gemini_api_key"] = data["gemini_api_key"].strip()
                     STATE["gemini_model"] = ""
+                    STATE["gemini_models"] = []
                     save_env_key("GEMINI_API_KEY", STATE["gemini_api_key"])
                     await resolve_gemini_model(STATE["gemini_api_key"])
                 if not os.environ.get("DEEPGRAM_API_KEY") and "deepgram_api_key" in data and data["deepgram_api_key"].strip():
