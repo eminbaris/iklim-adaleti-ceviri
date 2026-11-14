@@ -13,6 +13,8 @@ from typing import Deque, Dict, List, Optional, Set, Tuple
 
 import edge_tts
 import httpx
+import qrcode
+import qrcode.image.svg
 from dotenv import load_dotenv
 from fastapi import APIRouter, FastAPI, Query, Request, WebSocket, WebSocketDisconnect
 from fastapi.responses import HTMLResponse, JSONResponse, Response
@@ -905,6 +907,28 @@ async def screen_page():
 async def listen_page():
     with open(os.path.join(os.path.dirname(__file__), "static", "dinle.html"), encoding="utf-8") as f:
         return f.read()
+
+
+@router.get("/qr", response_class=HTMLResponse)
+async def qr_page():
+    with open(os.path.join(os.path.dirname(__file__), "static", "qr.html"), encoding="utf-8") as f:
+        return f.read()
+
+
+@router.get("/api/qr-svg")
+async def api_qr_svg(request: Request, target: str = Query("dinle"), base_prefix: str = Query("")):
+    page = "ekran" if target == "ekran" else "dinle"
+    proto = request.headers.get("x-forwarded-proto") or request.url.scheme or "https"
+    host = request.headers.get("x-forwarded-host") or request.headers.get("host") or f"{get_lan_ip()}:8000"
+    prefix = "/ceviri" if base_prefix == "/ceviri" else ""
+    url_text = f"{proto}://{host}{prefix}/{page}"
+    qr = qrcode.QRCode(version=None, error_correction=qrcode.constants.ERROR_CORRECT_M, box_size=12, border=2)
+    qr.add_data(url_text)
+    qr.make(fit=True)
+    img = qr.make_image(image_factory=qrcode.image.svg.SvgPathImage)
+    buf = io.BytesIO()
+    img.save(buf)
+    return Response(content=buf.getvalue(), media_type="image/svg+xml", headers={"Cache-Control": "no-store"})
 
 
 @app.get("/ceviri", response_class=HTMLResponse)

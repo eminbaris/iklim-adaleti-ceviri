@@ -89,6 +89,7 @@
     <div class="links">
       <a id="screenLink" href="/ekran" target="_blank" class="btn btn-warn">🖥️ Sahne Projeksiyon Ekranı (/ekran)</a>
       <a id="listenLink" href="/dinle" target="_blank" class="btn btn-outline">🎧 4 Kanallı Telefon Kulaklık Ekranı (/dinle)</a>
+      <a id="qrLink" href="/qr" target="_blank" class="btn btn-primary">🖨️ QR Poster Yazdır (/qr)</a>
     </div>
   </header>
 
@@ -212,6 +213,7 @@
     const BASE = location.pathname.startsWith('/ceviri') ? '/ceviri' : '';
     document.getElementById('screenLink').href = `${BASE}/ekran`;
     document.getElementById('listenLink').href = `${BASE}/dinle`;
+    document.getElementById('qrLink').href = `${BASE}/qr`;
 
     const savedPin = localStorage.getItem('cop31_pin') || '';
     if (savedPin) {
