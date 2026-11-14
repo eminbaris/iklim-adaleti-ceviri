@@ -67,6 +67,15 @@
     <button id="ch-de" class="ch-btn" onclick="selectChannel('de')">🇩🇪 Deutsch<br><small>Kanal 4</small></button>
   </div>
 
+  <div style="background:#451a03; border:1px solid #f59e0b; color:#fef3c7; padding:10px 12px; border-radius:10px; font-size:12px; line-height:1.45; margin-bottom:10px;">
+    <div style="font-weight:800; color:#fbbf24; margin-bottom:4px;">⚠️ KULAKLIK ZORUNLUDUR / HEADPHONES REQUIRED</div>
+    <div>Salonda ses karışmaması için lütfen hoparlör yerine kulaklık kullanın.</div>
+    <label style="display:flex; align-items:center; gap:8px; margin-top:8px; font-weight:700; color:#fff; cursor:pointer;">
+      <input type="checkbox" id="headphoneChk" style="width:18px; height:18px; accent-color:#22c55e;">
+      <span>🎧 Kulaklığımı taktım / Headphones connected</span>
+    </label>
+  </div>
+
   <button id="audioBtn" class="audio-btn" onclick="toggleAudio()">
     🎧 Sesli Dinle / Start Audio / Écouter / Audio starten
   </button>
@@ -121,6 +130,13 @@
     }
 
     function toggleAudio() {
+      if (!audioEnabled) {
+        const chk = document.getElementById('headphoneChk');
+        if (chk && !chk.checked) {
+          alert('⚠️ Lütfen önce kulaklığınızı takıp "Kulaklığımı taktım" kutusunu işaretleyin.\n\nPlease wear headphones and check the box first.');
+          return;
+        }
+      }
       audioEnabled = !audioEnabled;
       const btn = document.getElementById('audioBtn');
       if (audioEnabled) {
