@@ -312,7 +312,11 @@ async def call_claude_json(user_prompt: str, sys_prompt: str) -> Tuple[Optional[
             },
         )
         if resp.status_code == 200:
-            return resp.json()["content"][0]["text"].strip(), ""
+            blocks = resp.json().get("content", [])
+            txt = "".join(b.get("text", "") for b in blocks if isinstance(b, dict) and b.get("type") == "text").strip()
+            if txt:
+                return txt, ""
+            return None, "Claude boş içerik döndürdü"
         err = f"Claude HTTP {resp.status_code}: {resp.text[:180]}"
         print(err)
         return None, err
