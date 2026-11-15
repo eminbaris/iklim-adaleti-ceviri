@@ -143,7 +143,8 @@
           <option value="gemini">Öncelik: Gemini Flash (Yedek: OpenAI + Claude)</option>
         </select>
         <select id="sentenceMode" style="width:auto;">
-          <option value="1">Bekleme: Tam Cümle (Noktaya Kadar — Önerilen)</option>
+          <option value="fast">⚡ Hızlı Simultane (Doğal Akış — Önerilen)</option>
+          <option value="1">Bekleme: Tam Cümle (Noktaya Kadar)</option>
           <option value="2">Bekleme: 2 Cümle Birleştir (Akademik Bağlam)</option>
         </select>
         <select id="ttsMode" style="width:auto;" onchange="saveConfig()">
@@ -489,6 +490,7 @@
     }
 
     function connectDeepgramSocket() {
+      stopBrowserSpeechFallback();
       if (dgKeepAlive) { clearInterval(dgKeepAlive); dgKeepAlive = null; }
       if (dgRecorder && dgRecorder.state !== 'inactive') dgRecorder.stop();
       if (dgSocket) {
@@ -498,17 +500,24 @@
 
       const langFull = document.getElementById('langSelect').value;
       const langShort = langFull.split('-')[0];
+      document.getElementById('statusText').textContent = `Deepgram'a bağlanılıyor (${langFull})...`;
       // Only rare, unambiguous proper nouns at light :1 boost so normal words never get hijacked
       const dgKeywords = [
         'Prieur:1', 'Vassallo:1', 'Brouwer:1', 'Schrijer:1', 'Policastro:1',
         'CIDCE:1', 'Klimabeschluss:1', 'KlimaSeniorinnen:1',
-        'UNCLOS:1', 'MARPOL:1', 'Minamata:1', 'COP30:1', 'COP31:1'
+        'UNCLOS:1', 'MARPOL:1', 'Minamata:1', 'COP30:1', 'COP31:1', 'Antalya:1'
       ].map(k => `keywords=${encodeURIComponent(k)}`).join('&');
-      const dgUrl = `wss://api.deepgram.com/v1/listen?model=nova-2&language=${langShort}&smart_format=true&punctuate=true&interim_results=true&endpointing=500&utterance_end_ms=1100&vad_events=true&${dgKeywords}`;
+      const dgUrl = `wss://api.deepgram.com/v1/listen?model=nova-2&language=${langShort}&smart_format=true&punctuate=true&interim_results=true&endpointing=600&utterance_end_ms=1150&vad_events=true&${dgKeywords}`;
+      let opened = false;
       dgSocket = new WebSocket(dgUrl, ['token', deepgramApiKey]);
 
-      let lastInterimSent = 0;
+      dgSocket.onerror = () => {
+        document.getElementById('statusText').textContent = '⚠️ Deepgram bağlantı hatası — yeniden deneniyor...';
+      };
+
       dgSocket.onopen = () => {
+        opened = true;
+        window._dgFailCount = 0;
         if (!isListening || !mediaStream) return;
         dgRecorder = new MediaRecorder(mediaStream, { mimeType: 'audio/webm' });
         dgRecorder.addEventListener('dataavailable', (event) => {
@@ -545,39 +554,87 @@
         if (received.is_final) {
           pendingFinalText = pendingFinalText ? `${pendingFinalText} ${transcript}` : transcript;
           const wordCount = pendingFinalText.split(/\s+/).filter(Boolean).length;
-          const targetSentences = parseInt(document.getElementById('sentenceMode').value || '1', 10);
+          const mode = document.getElementById('sentenceMode').value || 'fast';
           const sentenceEndCount = (pendingFinalText.match(/[.?!]+(?=\s|$)/g) || []).length;
           const endsWithTerminal = /[.?!]$/.test(pendingFinalText);
+          const endsWithClause = /[,;:]$/.test(pendingFinalText);
 
-          // Flush at full sentence (. ? !), 14-word cap (28 in 2-sentence mode), or 1.6s silence
-          const maxWords = targetSentences === 2 ? 28 : 14;
-          if ((endsWithTerminal && sentenceEndCount >= targetSentences) || wordCount >= maxWords) {
+          if (mode === 'fast') {
+            if (endsWithTerminal || (endsWithClause && wordCount >= 8) || wordCount >= 16) {
+              flushPendingSentence(langFull);
+            } else {
+              if (pendingFlushTimer) clearTimeout(pendingFlushTimer);
+              pendingFlushTimer = setTimeout(() => flushPendingSentence(langFull), 1200);
+            }
+          } else {
+            const targetSentences = parseInt(mode, 10) || 1;
+            const maxWords = targetSentences === 2 ? 28 : 16;
+            if ((endsWithTerminal && sentenceEndCount >= targetSentences) || wordCount >= maxWords) {
+              flushPendingSentence(langFull);
+            } else {
+              if (pendingFlushTimer) clearTimeout(pendingFlushTimer);
+              const waitMs = targetSentences === 2 ? 2800 : 1600;
+              pendingFlushTimer = setTimeout(() => flushPendingSentence(langFull), waitMs);
+            }
+          }
+        }
+      };
+
+      dgSocket.onclose = (ev) => {
+        if (!isListening) return;
+        if (!opened) {
+          window._dgFailCount = (window._dgFailCount || 0) + 1;
+          document.getElementById('statusText').textContent = `⚠️ Deepgram kapandı (kod ${ev.code}) — yeniden deneniyor...`;
+          if (window._dgFailCount >= 3) {
+            startBrowserSpeechFallback(langFull);
+            return;
+          }
+        }
+        setTimeout(connectDeepgramSocket, 400);
+      };
+    }
+
+    let browserRec = null;
+    function stopBrowserSpeechFallback() {
+      if (browserRec) {
+        try { browserRec.onend = null; browserRec.stop(); } catch (e) {}
+        browserRec = null;
+      }
+    }
+
+    function startBrowserSpeechFallback(langFull) {
+      stopBrowserSpeechFallback();
+      const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+      if (!SR) {
+        document.getElementById('statusText').textContent = '🔴 Deepgram bağlanamadı ve tarayıcı ses tanıma desteklenmiyor.';
+        return;
+      }
+      browserRec = new SR();
+      browserRec.lang = langFull;
+      browserRec.continuous = true;
+      browserRec.interimResults = true;
+      document.getElementById('statusDot').className = 'dot live';
+      document.getElementById('statusText').textContent = `🟡 Tarayıcı Yedek Ses Tanıma Aktif (${langFull})...`;
+      browserRec.onresult = (event) => {
+        let interim = '';
+        for (let i = event.resultIndex; i < event.results.length; i++) {
+          const txt = event.results[i][0].transcript.trim();
+          if (!txt) continue;
+          if (event.results[i].isFinal) {
+            pendingFinalText = pendingFinalText ? `${pendingFinalText} ${txt}` : txt;
             flushPendingSentence(langFull);
           } else {
-            if (pendingFlushTimer) clearTimeout(pendingFlushTimer);
-            const waitMs = targetSentences === 2 ? 2800 : 1600;
-            pendingFlushTimer = setTimeout(() => flushPendingSentence(langFull), waitMs);
-          }
-        } else {
-          const now = Date.now();
-          if (now - lastInterimSent > 1200) {
-            lastInterimSent = now;
-            ws.send(JSON.stringify({
-              type: 'speech',
-              pin: getPin(),
-              text: preview,
-              source_lang: langFull,
-              is_final: false
-            }));
+            interim += txt + ' ';
           }
         }
+        const preview = (pendingFinalText ? pendingFinalText + ' ' : '') + interim.trim();
+        if (preview) document.getElementById('heardBox').textContent = `🎙️ Duyulan (${langFull}): "${preview}"`;
       };
-
-      dgSocket.onclose = () => {
-        if (isListening) {
-          setTimeout(connectDeepgramSocket, 300);
-        }
+      browserRec.onerror = () => {};
+      browserRec.onend = () => {
+        if (isListening) startBrowserSpeechFallback(document.getElementById('langSelect').value);
       };
+      try { browserRec.start(); } catch (e) {}
     }
 
     let audioCtx = null, meterRaf = null;
@@ -629,6 +686,7 @@
     function stopMic() {
       flushPendingSentence(document.getElementById('langSelect').value);
       isListening = false;
+      stopBrowserSpeechFallback();
       if (meterRaf) { cancelAnimationFrame(meterRaf); meterRaf = null; }
       if (audioCtx) { audioCtx.close().catch(() => {}); audioCtx = null; }
       document.getElementById('micMeterBar').style.width = '0%';

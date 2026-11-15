@@ -310,9 +310,14 @@ async def call_claude_json(user_prompt: str, sys_prompt: str) -> Tuple[Optional[
                 ],
                 "messages": [{"role": "user", "content": user_prompt}],
             },
+            timeout=10.0,
         )
         if resp.status_code == 200:
-            return resp.json()["content"][0]["text"].strip(), ""
+            blocks = resp.json().get("content", [])
+            txt = "".join(b.get("text", "") for b in blocks if isinstance(b, dict) and b.get("type") == "text").strip()
+            if txt:
+                return txt, ""
+            return None, "Claude boş içerik döndürdü"
         err = f"Claude HTTP {resp.status_code}: {resp.text[:180]}"
         print(err)
         return None, err
@@ -381,6 +386,7 @@ async def call_openai_json(user_prompt: str, sys_prompt: str) -> Tuple[Optional[
                     {"role": "user", "content": user_prompt},
                 ],
             },
+            timeout=10.0,
         )
         if resp.status_code == 200:
             return resp.json()["choices"][0]["message"]["content"].strip(), ""
@@ -753,6 +759,60 @@ async def websocket_endpoint(websocket: WebSocket):
             "history": STATE["history"][-10:],
         }
     )
+    speech_queue: asyncio.Queue = asyncio.Queue(maxsize=24)
+
+    async def _speech_worker():
+        while True:
+            src_text, src_lang = await speech_queue.get()
+            try:
+                # Coalesce any queued fragments in the same language so lag never accumulates
+                merged_parts = [src_text]
+                while not speech_queue.empty() and len(merged_parts) < 3:
+                    nxt_text, nxt_lang = speech_queue.get_nowait()
+                    if nxt_lang == src_lang and sum(len(p) for p in merged_parts) + len(nxt_text) <= 450:
+                        merged_parts.append(nxt_text)
+                    else:
+                        # Process current merged batch first, then re-handle different-lang item directly
+                        await _translate_and_send(" ".join(merged_parts), src_lang)
+                        merged_parts = [nxt_text]
+                        src_lang = nxt_lang
+                await _translate_and_send(" ".join(merged_parts), src_lang)
+            except Exception as e:
+                print(f"Speech worker error: {e}")
+
+    async def _translate_and_send(txt: str, lang_code: str):
+        t0 = time.perf_counter()
+        quad, engine_name = await translate_quadrilingual(txt, lang_code, is_final=True)
+        latency_ms = int((time.perf_counter() - t0) * 1000)
+        payload = {
+            "type": "subtitle",
+            "id": int(time.time() * 1000),
+            "session_title": STATE["session"]["title"],
+            "source_lang": lang_code,
+            "source": txt,
+            "tr": quad["tr"],
+            "en": quad["en"],
+            "fr": quad["fr"],
+            "de": quad["de"],
+            "engine": engine_name,
+            "llm_error": STATE["last_llm_error"],
+            "is_final": True,
+            "latency_ms": latency_ms,
+            "timestamp": time.strftime("%H:%M:%S"),
+        }
+        for _k in ("tr", "en", "fr", "de"):
+            if quad.get(_k):
+                allow_tts_text(quad[_k])
+        asyncio.create_task(prewarm_tts_for_hall(quad, lang_code))
+        STATE["history"].append(payload)
+        if len(STATE["history"]) > 50:
+            STATE["history"] = STATE["history"][-50:]
+        STATE["full_transcript"].append(payload)
+        if len(STATE["full_transcript"]) > 5000:
+            STATE["full_transcript"] = STATE["full_transcript"][-5000:]
+        asyncio.create_task(manager.broadcast(payload))
+
+    worker_task = asyncio.create_task(_speech_worker())
     try:
         while True:
             raw_msg = await websocket.receive_text()
@@ -822,41 +882,14 @@ async def websocket_endpoint(websocket: WebSocket):
                 src_text = data.get("text", "").strip()[:900]
                 is_final = bool(data.get("is_final", False))
                 src_lang = data.get("source_lang") or STATE["source_lang"]
-                if not src_text:
+                if not src_text or not is_final:
                     continue
-                t0 = time.perf_counter()
-                quad, engine_name = await translate_quadrilingual(src_text, src_lang, is_final=is_final)
-                latency_ms = int((time.perf_counter() - t0) * 1000)
-
-                payload = {
-                    "type": "subtitle",
-                    "id": int(time.time() * 1000),
-                    "session_title": STATE["session"]["title"],
-                    "source_lang": src_lang,
-                    "source": src_text,
-                    "tr": quad["tr"],
-                    "en": quad["en"],
-                    "fr": quad["fr"],
-                    "de": quad["de"],
-                    "engine": engine_name,
-                    "llm_error": STATE["last_llm_error"] if is_final else "",
-                    "is_final": is_final,
-                    "latency_ms": latency_ms,
-                    "timestamp": time.strftime("%H:%M:%S"),
-                }
-                if is_final:
-                    for _k in ("tr", "en", "fr", "de"):
-                        if quad.get(_k):
-                            allow_tts_text(quad[_k])
-                    asyncio.create_task(prewarm_tts_for_hall(quad, src_lang))
-                    STATE["history"].append(payload)
-                    if len(STATE["history"]) > 50:
-                        STATE["history"] = STATE["history"][-50:]
-                    STATE["full_transcript"].append(payload)
-                    if len(STATE["full_transcript"]) > 5000:
-                        STATE["full_transcript"] = STATE["full_transcript"][-5000:]
-
-                asyncio.create_task(manager.broadcast(payload))
+                if speech_queue.full():
+                    try:
+                        speech_queue.get_nowait()
+                    except asyncio.QueueEmpty:
+                        pass
+                await speech_queue.put((src_text, src_lang))
 
             elif msg_type == "demo":
                 idx = int(data.get("index", 0)) % len(DEMO_SPEECHES)
@@ -889,8 +922,10 @@ async def websocket_endpoint(websocket: WebSocket):
                 await manager.broadcast({"type": "clear"})
 
     except WebSocketDisconnect:
+        worker_task.cancel()
         manager.disconnect(websocket)
     except Exception:
+        worker_task.cancel()
         manager.disconnect(websocket)
 
 
