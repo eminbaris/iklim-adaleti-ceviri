@@ -188,7 +188,7 @@
     const BOX_MAP = { trBox: 'chk-tr', enBox: 'chk-en', frBox: 'chk-fr', deBox: 'chk-de' };
     const TEXT_MAP = { trBox: 'currTr', enBox: 'currEn', frBox: 'currFr', deBox: 'currDe' };
     const PREV_MAP = { trBox: 'prevTr', enBox: 'prevEn', frBox: 'prevFr', deBox: 'prevDe' };
-    const MIN_DWELL_MS = 1100;
+    const MIN_DWELL_MS = 2000;
     let fontScale = parseFloat(localStorage.getItem('ekran_scale') || '1.0');
     let currentItem = null;
     let prevItem = null;
@@ -311,8 +311,8 @@
         return;
       }
       displayQueue.push(item);
-      if (displayQueue.length > 2) {
-        displayQueue = displayQueue.slice(-2);
+      if (displayQueue.length > 3) {
+        displayQueue = displayQueue.slice(-3);
       }
       if (!queueTimer) {
         const wait = Math.max(200, MIN_DWELL_MS - elapsed);

@@ -161,9 +161,9 @@
 
     function enqueueSpeech(text, lang) {
       if (!audioEnabled || !text) return;
-      // Keep at most 1 queued clip so listeners stay tightly synced with live speech
-      if (audioQueue.length >= 1) {
-        audioQueue = audioQueue.slice(-1);
+      // Keep queue bounded so listeners never lag more than 2 sentences behind live stage
+      if (audioQueue.length >= 3) {
+        audioQueue = audioQueue.slice(-2);
       }
       audioQueue.push({ text, lang });
       playNext();
@@ -174,7 +174,8 @@
       isPlaying = true;
       currentItem = audioQueue.shift();
       player.src = `${BASE}/api/tts?lang=${encodeURIComponent(currentItem.lang)}&text=${encodeURIComponent(currentItem.text)}`;
-      player.playbackRate = audioQueue.length >= 1 ? 1.16 : 1.06;
+      // Speed up slightly if another sentence is already waiting in queue
+      player.playbackRate = audioQueue.length >= 1 ? 1.14 : 1.04;
       player.play().catch(() => { fallbackBrowserSpeak(currentItem); });
     }
 
