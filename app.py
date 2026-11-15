@@ -82,10 +82,13 @@ for _demo in DEMO_SPEECHES:
     for _k in ("tr", "en", "fr", "de"):
         PERMANENT_TTS_TEXTS.add(_demo[_k].strip())
 
-RECENT_TTS_TEXTS: Deque[str] = deque(maxlen=1200)
+RECENT_TTS_TEXTS: Deque[str] = deque(maxlen=2500)
 TTS_CACHE: Dict[str, bytes] = {}
 TTS_INFLIGHT_LOCKS: Dict[str, asyncio.Lock] = {}
-HTTP_CLIENT = httpx.AsyncClient(timeout=20.0)
+HTTP_CLIENT = httpx.AsyncClient(
+    timeout=20.0,
+    limits=httpx.Limits(max_connections=200, max_keepalive_connections=50),
+)
 
 
 def allow_tts_text(text: str) -> None:
@@ -561,7 +564,7 @@ async def synthesize_tts_bytes(text: str, lang_short: str) -> bytes:
                 audio_bytes = b""
 
         if audio_bytes:
-            if len(TTS_CACHE) > 800:
+            if len(TTS_CACHE) > 1200:
                 for k in list(TTS_CACHE.keys())[:300]:
                     TTS_CACHE.pop(k, None)
             TTS_CACHE[cache_key] = audio_bytes
@@ -593,7 +596,7 @@ class ConnectionManager:
 
     async def _send_one(self, conn: WebSocket, payload_text: str) -> Optional[WebSocket]:
         try:
-            await asyncio.wait_for(conn.send_text(payload_text), timeout=2.5)
+            await asyncio.wait_for(conn.send_text(payload_text), timeout=1.5)
             return None
         except Exception:
             return conn
@@ -853,7 +856,7 @@ async def websocket_endpoint(websocket: WebSocket):
                     if len(STATE["full_transcript"]) > 5000:
                         STATE["full_transcript"] = STATE["full_transcript"][-5000:]
 
-                await manager.broadcast(payload)
+                asyncio.create_task(manager.broadcast(payload))
 
             elif msg_type == "demo":
                 idx = int(data.get("index", 0)) % len(DEMO_SPEECHES)
@@ -879,7 +882,7 @@ async def websocket_endpoint(websocket: WebSocket):
                 }
                 STATE["history"].append(payload)
                 STATE["full_transcript"].append(payload)
-                await manager.broadcast(payload)
+                asyncio.create_task(manager.broadcast(payload))
 
             elif msg_type == "clear":
                 STATE["history"].clear()

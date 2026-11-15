@@ -226,7 +226,7 @@
           document.getElementById('stream').innerHTML = '';
         }
       };
-      ws.onclose = () => setTimeout(connectWS, 1500);
+      ws.onclose = () => setTimeout(connectWS, 1000 + Math.floor(Math.random() * 2500));
     }
 
     connectWS();
