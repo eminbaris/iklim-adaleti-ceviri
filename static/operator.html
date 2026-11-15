@@ -143,7 +143,8 @@
           <option value="gemini">Öncelik: Gemini Flash (Yedek: OpenAI + Claude)</option>
         </select>
         <select id="sentenceMode" style="width:auto;">
-          <option value="1">Bekleme: Tam Cümle (Noktaya Kadar — Önerilen)</option>
+          <option value="fast">⚡ Hızlı Simultane (Doğal Akış — Önerilen)</option>
+          <option value="1">Bekleme: Tam Cümle (Noktaya Kadar)</option>
           <option value="2">Bekleme: 2 Cümle Birleştir (Akademik Bağlam)</option>
         </select>
         <select id="ttsMode" style="width:auto;" onchange="saveConfig()">
@@ -504,7 +505,7 @@
         'CIDCE:1', 'Klimabeschluss:1', 'KlimaSeniorinnen:1',
         'UNCLOS:1', 'MARPOL:1', 'Minamata:1', 'COP30:1', 'COP31:1'
       ].map(k => `keywords=${encodeURIComponent(k)}`).join('&');
-      const dgUrl = `wss://api.deepgram.com/v1/listen?model=nova-2&language=${langShort}&smart_format=true&punctuate=true&interim_results=true&endpointing=500&utterance_end_ms=1100&vad_events=true&${dgKeywords}`;
+      const dgUrl = `wss://api.deepgram.com/v1/listen?model=nova-2&language=${langShort}&smart_format=true&punctuate=true&interim_results=true&endpointing=400&utterance_end_ms=950&vad_events=true&${dgKeywords}`;
       dgSocket = new WebSocket(dgUrl, ['token', deepgramApiKey]);
 
       let lastInterimSent = 0;
@@ -545,30 +546,28 @@
         if (received.is_final) {
           pendingFinalText = pendingFinalText ? `${pendingFinalText} ${transcript}` : transcript;
           const wordCount = pendingFinalText.split(/\s+/).filter(Boolean).length;
-          const targetSentences = parseInt(document.getElementById('sentenceMode').value || '1', 10);
+          const mode = document.getElementById('sentenceMode').value || 'fast';
           const sentenceEndCount = (pendingFinalText.match(/[.?!]+(?=\s|$)/g) || []).length;
           const endsWithTerminal = /[.?!]$/.test(pendingFinalText);
+          const endsWithClause = /[,;:]$/.test(pendingFinalText);
 
-          // Flush at full sentence (. ? !), 14-word cap (28 in 2-sentence mode), or 1.6s silence
-          const maxWords = targetSentences === 2 ? 28 : 14;
-          if ((endsWithTerminal && sentenceEndCount >= targetSentences) || wordCount >= maxWords) {
-            flushPendingSentence(langFull);
+          if (mode === 'fast') {
+            if (endsWithTerminal || (endsWithClause && wordCount >= 9) || wordCount >= 16) {
+              flushPendingSentence(langFull);
+            } else {
+              if (pendingFlushTimer) clearTimeout(pendingFlushTimer);
+              pendingFlushTimer = setTimeout(() => flushPendingSentence(langFull), 1150);
+            }
           } else {
-            if (pendingFlushTimer) clearTimeout(pendingFlushTimer);
-            const waitMs = targetSentences === 2 ? 2800 : 1600;
-            pendingFlushTimer = setTimeout(() => flushPendingSentence(langFull), waitMs);
-          }
-        } else {
-          const now = Date.now();
-          if (now - lastInterimSent > 1200) {
-            lastInterimSent = now;
-            ws.send(JSON.stringify({
-              type: 'speech',
-              pin: getPin(),
-              text: preview,
-              source_lang: langFull,
-              is_final: false
-            }));
+            const targetSentences = parseInt(mode, 10) || 1;
+            const maxWords = targetSentences === 2 ? 28 : 16;
+            if ((endsWithTerminal && sentenceEndCount >= targetSentences) || wordCount >= maxWords) {
+              flushPendingSentence(langFull);
+            } else {
+              if (pendingFlushTimer) clearTimeout(pendingFlushTimer);
+              const waitMs = targetSentences === 2 ? 2600 : 1500;
+              pendingFlushTimer = setTimeout(() => flushPendingSentence(langFull), waitMs);
+            }
           }
         }
       };

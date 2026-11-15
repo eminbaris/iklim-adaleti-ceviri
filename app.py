@@ -495,7 +495,7 @@ async def _synthesize_openai_tts(text: str, lang_short: str = "tr") -> bytes:
             "voice": "coral",
             "input": text[:650],
             "instructions": instructions,
-            "speed": 1.02,
+            "speed": 1.08,
         },
     )
     if resp.status_code == 200:
@@ -822,41 +822,42 @@ async def websocket_endpoint(websocket: WebSocket):
                 src_text = data.get("text", "").strip()[:900]
                 is_final = bool(data.get("is_final", False))
                 src_lang = data.get("source_lang") or STATE["source_lang"]
-                if not src_text:
+                if not src_text or not is_final:
                     continue
-                t0 = time.perf_counter()
-                quad, engine_name = await translate_quadrilingual(src_text, src_lang, is_final=is_final)
-                latency_ms = int((time.perf_counter() - t0) * 1000)
 
-                payload = {
-                    "type": "subtitle",
-                    "id": int(time.time() * 1000),
-                    "session_title": STATE["session"]["title"],
-                    "source_lang": src_lang,
-                    "source": src_text,
-                    "tr": quad["tr"],
-                    "en": quad["en"],
-                    "fr": quad["fr"],
-                    "de": quad["de"],
-                    "engine": engine_name,
-                    "llm_error": STATE["last_llm_error"] if is_final else "",
-                    "is_final": is_final,
-                    "latency_ms": latency_ms,
-                    "timestamp": time.strftime("%H:%M:%S"),
-                }
-                if is_final:
+                async def _handle_final_speech(txt: str, lang_code: str):
+                    t0 = time.perf_counter()
+                    quad, engine_name = await translate_quadrilingual(txt, lang_code, is_final=True)
+                    latency_ms = int((time.perf_counter() - t0) * 1000)
+                    payload = {
+                        "type": "subtitle",
+                        "id": int(time.time() * 1000),
+                        "session_title": STATE["session"]["title"],
+                        "source_lang": lang_code,
+                        "source": txt,
+                        "tr": quad["tr"],
+                        "en": quad["en"],
+                        "fr": quad["fr"],
+                        "de": quad["de"],
+                        "engine": engine_name,
+                        "llm_error": STATE["last_llm_error"],
+                        "is_final": True,
+                        "latency_ms": latency_ms,
+                        "timestamp": time.strftime("%H:%M:%S"),
+                    }
                     for _k in ("tr", "en", "fr", "de"):
                         if quad.get(_k):
                             allow_tts_text(quad[_k])
-                    asyncio.create_task(prewarm_tts_for_hall(quad, src_lang))
+                    asyncio.create_task(prewarm_tts_for_hall(quad, lang_code))
                     STATE["history"].append(payload)
                     if len(STATE["history"]) > 50:
                         STATE["history"] = STATE["history"][-50:]
                     STATE["full_transcript"].append(payload)
                     if len(STATE["full_transcript"]) > 5000:
                         STATE["full_transcript"] = STATE["full_transcript"][-5000:]
+                    asyncio.create_task(manager.broadcast(payload))
 
-                asyncio.create_task(manager.broadcast(payload))
+                asyncio.create_task(_handle_final_speech(src_text, src_lang))
 
             elif msg_type == "demo":
                 idx = int(data.get("index", 0)) % len(DEMO_SPEECHES)
