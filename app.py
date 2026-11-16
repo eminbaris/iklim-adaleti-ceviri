@@ -46,9 +46,9 @@ VOICES = {
     "de": "de-DE-SeraphinaMultilingualNeural",
 }
 
-_raw_pin = os.environ.get("OPERATOR_PIN", "1092")
-if _raw_pin in ("", "cop31"):
-    _raw_pin = "1092"
+_raw_pin = os.environ.get("OPERATOR_PIN", "Makas1092")
+if _raw_pin in ("", "cop31", "1092"):
+    _raw_pin = "Makas1092"
 
 STATE = {
     "session": SESSIONS[0],
