@@ -692,6 +692,7 @@ DEMO_SPEECHES = [
         "en": "The financialisation of nature, fictitious capital, green hydrogen extractivism, and the imperial mode of living deepen unequal North-South relationships and destroy the global commons.",
         "fr": "La financiarisation de la nature, le capital fictif, l'extractivisme de l'hydrogène vert et le mode de vie impérial approfondissent les relations Nord-Sud inégales et détruisent les biens communs mondiaux.",
         "de": "Die Finanzialisierung der Natur, das fiktive Kapital, der Extraktivismus von grünem Wasserstoff und die imperiale Lebensweise vertiefen ungleiche Nord-Süd-Beziehungen und zerstören die globalen Gemeingüter.",
+        "th": "การทำให้ธรรมชาติเป็นสินค้าทางการเงิน ทุนสมมติ การสกัดไฮโดรเจนสีเขียว และวิถีชีวิตแบบจักรวรรดิ ล้วนทำให้ความสัมพันธ์เหนือ-ใต้ที่ไม่เท่าเทียมลึกซึ้งยิ่งขึ้น และทำลายทรัพยากรส่วนรวมของโลก",
     },
     {
         "source_lang": "fr-FR",
@@ -730,9 +731,9 @@ def build_quadrilingual_system_prompt(session_title: str = "", speakers: str = "
         f"Konuşmacılar: {speakers}\n\n"
         f"{SPEAKER_BRIEFS}\n\n"
         "GÖREVİN:\n"
-        "Sana gelen konuşma metni TÜRKÇE, İNGİLİZCE, FRANSIZCA veya ALMANCA olabilir.\n"
-        "Metni aynı anda her 4 dile (tr, en, fr, de) çevirerek SADECE geçerli bir JSON nesnesi döndür:\n"
-        '{"tr": "Türkçe metin", "en": "English text", "fr": "Texte français", "de": "Deutscher Text"}\n\n'
+        "Sana gelen konuşma metni TÜRKÇE, İNGİLİZCE, FRANSIZCA, ALMANCA veya TAYCA (ภาษาไทย) olabilir.\n"
+        "Metni aynı anda 5 dile (tr, en, fr, de, th) çevirerek SADECE geçerli bir JSON nesnesi döndür:\n"
+        '{"tr": "Türkçe metin", "en": "English text", "fr": "Texte français", "de": "Deutscher Text", "th": "ข้อความภาษาไทย"}\n\n'
         "KRİTİK DOĞRULUK VE ÖZEL İSİM KURALLARI:\n"
         "1. Kişi, köy, ilçe, şehir, kurum, sendika ve hareket isimlerini (ör. Gümüşhacıköy, İkizdere, Akbelen, Kazdağları, Dikili, Büyüknohutçu, Kibar, Lokumcu, Tosun, Çiftçi-Sen, İDEF, MAB, CIDCE, La Via Campesina, Prieur, Wissen, Policastro, Schrijer) ASLA kelime anlamına göre başka dile çevirme (ör. 'Yumuşacık/Soft', 'Büyük/Big', 'Kibar/Polite' gibi çeviriler KESİNLİKLE YASAKTIR); özel isim olarak koru.\n"
         "2. Ses tanımadan (STT) kaynaklanan bariz fonetik hataları bağlama göre sessizce düzelt (ör. 'Kopa / KOP' -> 'COP / COP31', 'lavia kampanyası' -> 'La Via Campesina', 'Büyük Nohutya' -> 'Büyüknohutçu', 'Yumuşacık / Gümüşacık' -> 'Gümüşhacıköy').\n"

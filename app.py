@@ -44,11 +44,42 @@ VOICES = {
     "en": "en-US-AvaMultilingualNeural",
     "fr": "fr-FR-VivienneMultilingualNeural",
     "de": "de-DE-SeraphinaMultilingualNeural",
+    "th": "th-TH-PremwadeeNeural",
 }
 
 _raw_pin = os.environ.get("OPERATOR_PIN", "Makas1092")
 if _raw_pin in ("", "cop31", "1092"):
     _raw_pin = "Makas1092"
+
+TRANSCRIPT_DIR = os.path.join(BASE_DIR, "kayitlar")
+
+
+def append_transcript_disk(payload: dict) -> None:
+    try:
+        os.makedirs(TRANSCRIPT_DIR, exist_ok=True)
+        path = os.path.join(TRANSCRIPT_DIR, f"COP31_Live_{time.strftime('%Y-%m-%d')}.jsonl")
+        with open(path, "a", encoding="utf-8") as f:
+            f.write(json.dumps(payload, ensure_ascii=False) + "\n")
+    except Exception:
+        pass
+
+
+def load_today_transcript_disk() -> List[dict]:
+    items: List[dict] = []
+    try:
+        path = os.path.join(TRANSCRIPT_DIR, f"COP31_Live_{time.strftime('%Y-%m-%d')}.jsonl")
+        if os.path.exists(path):
+            with open(path, "r", encoding="utf-8") as f:
+                for ln in f:
+                    ln = ln.strip()
+                    if ln:
+                        items.append(json.loads(ln))
+    except Exception:
+        pass
+    return items[-5000:]
+
+
+_disk_items = load_today_transcript_disk()
 
 STATE = {
     "session": SESSIONS[0],
@@ -64,10 +95,11 @@ STATE = {
     "deepgram_api_key": os.environ.get("DEEPGRAM_API_KEY", ""),
     "openai_api_key": os.environ.get("OPENAI_API_KEY", ""),
     "speaker_notes": "",
+    "thai_active": False,
     "last_llm_engine": "",
     "last_llm_error": "",
-    "history": [],
-    "full_transcript": [],
+    "history": _disk_items[-50:],
+    "full_transcript": _disk_items,
 }
 
 # Security: Brute-force lockout & bounded TTS whitelist for 250+ hall listeners
@@ -77,10 +109,12 @@ PERMANENT_TTS_TEXTS: Set[str] = {
     "English simultaneous audio channel active.",
     "Canal audio simultané français actif.",
     "Deutscher Simultanaudiokanal aktiv.",
+    "เปิดใช้งานช่องเสียงล่ามภาษาไทยแล้ว",
 }
 for _demo in DEMO_SPEECHES:
-    for _k in ("tr", "en", "fr", "de"):
-        PERMANENT_TTS_TEXTS.add(_demo[_k].strip())
+    for _k in ("tr", "en", "fr", "de", "th"):
+        if _demo.get(_k):
+            PERMANENT_TTS_TEXTS.add(_demo[_k].strip())
 
 RECENT_TTS_TEXTS: Deque[str] = deque(maxlen=2500)
 TTS_CACHE: Dict[str, bytes] = {}
@@ -182,7 +216,7 @@ def get_lan_ip() -> str:
         return "127.0.0.1"
 
 
-def apply_quadrilingual_fixes(source_text: str, tr_text: str, en_text: str, fr_text: str, de_text: str) -> Dict[str, str]:
+def apply_quadrilingual_fixes(source_text: str, tr_text: str, en_text: str, fr_text: str, de_text: str, th_text: str = "") -> Dict[str, str]:
     src_low = source_text.lower()
 
     for bad, good in FORBIDDEN_TR:
@@ -198,7 +232,7 @@ def apply_quadrilingual_fixes(source_text: str, tr_text: str, en_text: str, fr_t
                 en_text = re.sub(r"\b(ban on going back|prohibition of regression)\b", "principle of non-regression", en_text, flags=re.IGNORECASE)
                 fr_text = re.sub(r"\b(interdiction de reculer|interdiction de régression)\b", "principe de non-régression", fr_text, flags=re.IGNORECASE)
 
-    return {"tr": tr_text, "en": en_text, "fr": fr_text, "de": de_text}
+    return {"tr": tr_text, "en": en_text, "fr": fr_text, "de": de_text, "th": th_text}
 
 
 async def free_translate_single(text: str, src_short: str, tgt_short: str) -> str:
@@ -237,7 +271,7 @@ def build_contextual_user_prompt(clean: str) -> str:
         )
 
     parts.append(
-        "[ŞİMDİ SADECE AŞAĞIDAKİ YENİ CÜMLEYİ 4 DİLE (tr, en, fr, de) EKSİKSİZ, DOĞAL VE AKADEMİK OLARAK ÇEVİR VE SADECE GEÇERLİ JSON DÖNDÜR]:\n"
+        "[ŞİMDİ SADECE AŞAĞIDAKİ YENİ CÜMLEYİ 5 DİLE (tr, en, fr, de, th) EKSİKSİZ, DOĞAL VE AKADEMİK OLARAK ÇEVİR VE SADECE GEÇERLİ JSON DÖNDÜR]:\n"
         + clean
     )
     return "\n\n".join(parts)
@@ -411,13 +445,19 @@ def parse_llm_json(raw_json: str) -> Optional[dict]:
 async def translate_quadrilingual(text: str, source_lang: str, is_final: bool = True) -> Tuple[Dict[str, str], str]:
     clean = text.strip()[:900]
     if not clean:
-        return {"tr": "", "en": "", "fr": "", "de": ""}, "empty"
+        return {"tr": "", "en": "", "fr": "", "de": "", "th": ""}, "empty"
 
     for item in DEMO_SPEECHES:
         if item["source"].lower() == clean.lower():
-            return {"tr": item["tr"], "en": item["en"], "fr": item["fr"], "de": item["de"]}, "Demo"
+            return {
+                "tr": item["tr"],
+                "en": item["en"],
+                "fr": item["fr"],
+                "de": item["de"],
+                "th": item.get("th", ""),
+            }, "Demo"
 
-    src_short = source_lang.split("-")[0].lower()  # tr | en | fr | de
+    src_short = source_lang.split("-")[0].lower()  # tr | en | fr | de | th
     session = STATE["session"]
     sys_prompt = build_quadrilingual_system_prompt(session["title"], session["speakers"])
     user_prompt = build_contextual_user_prompt(clean)
@@ -442,12 +482,16 @@ async def translate_quadrilingual(text: str, source_lang: str, is_final: bool = 
                     if parsed and all(k in parsed for k in ("tr", "en", "fr", "de")):
                         STATE["last_llm_engine"] = engine_name
                         STATE["last_llm_error"] = " | ".join(errors)
+                        th_val = (parsed.get("th") or "").strip()
+                        if not th_val and (STATE.get("thai_active") or src_short == "th"):
+                            th_val = clean if src_short == "th" else await free_translate_single(clean, src_short, "th")
                         fixed = apply_quadrilingual_fixes(
                             clean,
                             parsed.get("tr", clean),
                             parsed.get("en", clean),
                             parsed.get("fr", clean),
                             parsed.get("de", clean),
+                            th_val,
                         )
                         return fixed, engine_name
                     else:
@@ -457,20 +501,21 @@ async def translate_quadrilingual(text: str, source_lang: str, is_final: bool = 
 
         STATE["last_llm_error"] = " | ".join(errors)
 
-    tr_out, en_out, fr_out, de_out = await asyncio.gather(
+    tr_out, en_out, fr_out, de_out, th_out = await asyncio.gather(
         free_translate_single(clean, src_short, "tr"),
         free_translate_single(clean, src_short, "en"),
         free_translate_single(clean, src_short, "fr"),
         free_translate_single(clean, src_short, "de"),
+        free_translate_single(clean, src_short, "th"),
     )
     engine_label = "Interim" if not is_final else "GTX Yedek"
     if is_final:
         STATE["last_llm_engine"] = engine_label
-    return apply_quadrilingual_fixes(clean, tr_out, en_out, fr_out, de_out), engine_label
+    return apply_quadrilingual_fixes(clean, tr_out, en_out, fr_out, de_out, th_out), engine_label
 
 
 async def _synthesize_edge_tts(text: str, use_voice: str) -> bytes:
-    communicate = edge_tts.Communicate(text=text, voice=use_voice, rate="+4%")
+    communicate = edge_tts.Communicate(text=text, voice=use_voice, rate="+10%")
     audio_stream = io.BytesIO()
     async for chunk in communicate.stream():
         if chunk["type"] == "audio":
@@ -485,35 +530,15 @@ async def _synthesize_openai_tts(text: str, lang_short: str = "tr") -> bytes:
         "Authorization": f"Bearer {STATE['openai_api_key']}",
         "Content-Type": "application/json",
     }
-    lang_names = {"tr": "Turkish", "en": "English", "fr": "French", "de": "German"}
-    lang_label = lang_names.get(lang_short, "Turkish")
-    instructions = (
-        f"Speak in natural, idiomatic {lang_label} like an experienced human simultaneous conference interpreter. "
-        "Use warm, calm, authoritative broadcast intonation, subtle natural pauses at commas, "
-        "clear emphasis on key climate and legal terms, and natural rising intonation on questions. "
-        "Never sound robotic or monotonous."
-    )
+    # Fast tts-1 model (~0.4-0.8s latency) instead of slow gpt-4o-mini-tts + long instructions
     resp = await HTTP_CLIENT.post(
         "https://api.openai.com/v1/audio/speech",
         headers=headers,
-        json={
-            "model": "gpt-4o-mini-tts",
-            "voice": "coral",
-            "input": text[:650],
-            "instructions": instructions,
-            "speed": 1.02,
-        },
+        json={"model": "tts-1", "voice": "nova", "input": text[:650], "speed": 1.10},
+        timeout=8.0,
     )
     if resp.status_code == 200:
         return resp.content
-    # Fallback to tts-1 if gpt-4o-mini-tts is unavailable on the account
-    resp2 = await HTTP_CLIENT.post(
-        "https://api.openai.com/v1/audio/speech",
-        headers=headers,
-        json={"model": "tts-1", "voice": "nova", "input": text[:650], "speed": 1.04},
-    )
-    if resp2.status_code == 200:
-        return resp2.content
     return b""
 
 
@@ -581,7 +606,8 @@ async def synthesize_tts_bytes(text: str, lang_short: str) -> bytes:
 
 async def prewarm_tts_for_hall(quad: Dict[str, str], src_lang: str) -> None:
     src_short = src_lang.split("-")[0].lower()
-    targets = [ch for ch in ("tr", "en", "fr", "de") if ch != src_short and quad.get(ch)]
+    channels = ("tr", "en", "fr", "de", "th") if STATE.get("thai_active") else ("tr", "en", "fr", "de")
+    targets = [ch for ch in channels if ch != src_short and quad.get(ch)]
     await asyncio.gather(
         *(synthesize_tts_bytes(quad[ch].strip(), ch) for ch in targets),
         return_exceptions=True,
@@ -720,6 +746,8 @@ async def api_transcript(request: Request, pin: Optional[str] = Query(None)):
         lines.append(f"  🇬🇧 EN: {item.get('en', '')}")
         lines.append(f"  🇫🇷 FR: {item.get('fr', '')}")
         lines.append(f"  🇩🇪 DE: {item.get('de', '')}")
+        if item.get("th"):
+            lines.append(f"  🇹🇭 TH: {item.get('th', '')}")
         lines.append("-" * 70)
     content = "\n".join(lines).encode("utf-8")
     filename = f"COP31_Simultane_Tutanak_{time.strftime('%Y-%m-%d_%H-%M')}.txt"
@@ -794,13 +822,14 @@ async def websocket_endpoint(websocket: WebSocket):
             "en": quad["en"],
             "fr": quad["fr"],
             "de": quad["de"],
+            "th": quad.get("th", ""),
             "engine": engine_name,
             "llm_error": STATE["last_llm_error"],
             "is_final": True,
             "latency_ms": latency_ms,
             "timestamp": time.strftime("%H:%M:%S"),
         }
-        for _k in ("tr", "en", "fr", "de"):
+        for _k in ("tr", "en", "fr", "de", "th"):
             if quad.get(_k):
                 allow_tts_text(quad[_k])
         asyncio.create_task(prewarm_tts_for_hall(quad, lang_code))
@@ -810,6 +839,7 @@ async def websocket_endpoint(websocket: WebSocket):
         STATE["full_transcript"].append(payload)
         if len(STATE["full_transcript"]) > 5000:
             STATE["full_transcript"] = STATE["full_transcript"][-5000:]
+        append_transcript_disk(payload)
         asyncio.create_task(manager.broadcast(payload))
 
     worker_task = asyncio.create_task(_speech_worker())
@@ -820,6 +850,10 @@ async def websocket_endpoint(websocket: WebSocket):
                 continue
             data = json.loads(raw_msg)
             msg_type = data.get("type")
+
+            if msg_type == "thai_listener":
+                STATE["thai_active"] = True
+                continue
 
             if msg_type in ("config", "speech", "demo", "clear"):
                 if not verify_operator_pin(data.get("pin", ""), client_ip):

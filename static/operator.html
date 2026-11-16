@@ -100,11 +100,12 @@
       <select id="sessionSelect"></select>
 
       <label>Şu An Konuşan Kişi (Kürsü veya Soru-Cevap) Hangi Dilde Konuşuyor?</label>
-      <div style="display:grid; grid-template-columns:1fr 1fr 1fr 1fr; gap:6px; margin-top:4px;">
+      <div style="display:grid; grid-template-columns:repeat(5, 1fr); gap:6px; margin-top:4px;">
         <button type="button" id="btn-tr-TR" class="btn btn-outline btn-lang active" style="justify-content:center; text-align:center;" onclick="setFastLang('tr-TR')">🇹🇷 TÜRKÇE<br><small>→ EN/FR/DE</small></button>
         <button type="button" id="btn-en-US" class="btn btn-outline btn-lang" style="justify-content:center; text-align:center;" onclick="setFastLang('en-US')">🇬🇧 İNGİLİZCE<br><small>→ TR/FR/DE</small></button>
         <button type="button" id="btn-fr-FR" class="btn btn-outline btn-lang" style="justify-content:center; text-align:center;" onclick="setFastLang('fr-FR')">🇫🇷 FRANSIZCA<br><small>→ TR/EN/DE</small></button>
         <button type="button" id="btn-de-DE" class="btn btn-outline btn-lang" style="justify-content:center; text-align:center;" onclick="setFastLang('de-DE')">🇩🇪 ALMANCA<br><small>→ TR/EN/FR</small></button>
+        <button type="button" id="btn-th-TH" class="btn btn-outline btn-lang" style="justify-content:center; text-align:center;" onclick="setFastLang('th-TH')">🇹🇭 TAYCA<br><small>→ TR/EN/FR/DE</small></button>
       </div>
       <input type="hidden" id="langSelect" value="tr-TR" />
 
@@ -259,7 +260,7 @@
     }
 
     function highlightLangButton(code) {
-      ['tr-TR', 'en-US', 'fr-FR', 'de-DE'].forEach(c => {
+      ['tr-TR', 'en-US', 'fr-FR', 'de-DE', 'th-TH'].forEach(c => {
         const el = document.getElementById('btn-' + c);
         if (el) el.className = c === code ? 'btn btn-outline btn-lang active' : 'btn btn-outline btn-lang';
       });
@@ -508,7 +509,8 @@
         'CIDCE:1', 'Klimabeschluss:1', 'KlimaSeniorinnen:1',
         'UNCLOS:1', 'MARPOL:1', 'Minamata:1', 'COP30:1', 'COP31:1', 'Antalya:1'
       ].map(k => `keywords=${encodeURIComponent(k)}`).join('&');
-      const dgUrl = `wss://api.deepgram.com/v1/listen?model=nova-2&language=${langShort}&smart_format=true&punctuate=true&interim_results=true&endpointing=600&utterance_end_ms=1150&vad_events=true&${dgKeywords}`;
+      const kwSuffix = langShort === 'th' ? '' : `&${dgKeywords}`;
+      const dgUrl = `wss://api.deepgram.com/v1/listen?model=nova-2&language=${langShort}&smart_format=true&punctuate=true&interim_results=true&endpointing=600&utterance_end_ms=1150&vad_events=true${kwSuffix}`;
       let opened = false;
       dgSocket = new WebSocket(dgUrl, ['token', deepgramApiKey]);
 
@@ -538,8 +540,10 @@
 
       dgSocket.onmessage = (message) => {
         const received = JSON.parse(message.data);
+        const isThai = langFull.startsWith('th');
         if (received.type === 'UtteranceEnd') {
-          if (pendingFinalText.trim().split(/\s+/).length >= 3) {
+          const readyLen = isThai ? (pendingFinalText.trim().length >= 10) : (pendingFinalText.trim().split(/\s+/).length >= 3);
+          if (readyLen) {
             flushPendingSentence(langFull);
           }
           return;
@@ -553,8 +557,8 @@
         document.getElementById('heardBox').textContent = `🎙️ Duyulan (${langFull}): "${preview}"`;
 
         if (received.is_final) {
-          pendingFinalText = pendingFinalText ? `${pendingFinalText} ${transcript}` : transcript;
-          const wordCount = pendingFinalText.split(/\s+/).filter(Boolean).length;
+          pendingFinalText = pendingFinalText ? (isThai ? `${pendingFinalText}${transcript}` : `${pendingFinalText} ${transcript}`) : transcript;
+          const wordCount = isThai ? Math.ceil(pendingFinalText.length / 4) : pendingFinalText.split(/\s+/).filter(Boolean).length;
           const mode = document.getElementById('sentenceMode').value || 'fast';
           const sentenceEndCount = (pendingFinalText.match(/[.?!]+(?=\s|$)/g) || []).length;
           const endsWithTerminal = /[.?!]$/.test(pendingFinalText);

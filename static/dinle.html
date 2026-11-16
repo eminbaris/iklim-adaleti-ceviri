@@ -60,11 +60,12 @@
     <div class="title" id="sessionTitle">4-Channel Simultaneous Interpretation</div>
   </div>
 
-  <div class="channels">
+  <div class="channels" style="grid-template-columns: repeat(5, 1fr);">
     <button id="ch-tr" class="ch-btn active" onclick="selectChannel('tr')">🇹🇷 Türkçe<br><small>Kanal 1</small></button>
     <button id="ch-en" class="ch-btn" onclick="selectChannel('en')">🇬🇧 English<br><small>Channel 2</small></button>
     <button id="ch-fr" class="ch-btn" onclick="selectChannel('fr')">🇫🇷 Français<br><small>Canal 3</small></button>
     <button id="ch-de" class="ch-btn" onclick="selectChannel('de')">🇩🇪 Deutsch<br><small>Kanal 4</small></button>
+    <button id="ch-th" class="ch-btn" onclick="selectChannel('th')">🇹🇭 ไทย<br><small>Ch 5</small></button>
   </div>
 
   <div style="background:#451a03; border:1px solid #f59e0b; color:#fef3c7; padding:10px 12px; border-radius:10px; font-size:12px; line-height:1.45; margin-bottom:10px;">
@@ -84,15 +85,79 @@
 
   <script>
     const BASE = location.pathname.startsWith('/ceviri') ? '/ceviri' : '';
-    let currentChannel = 'tr'; // tr | en | fr | de
+    let currentChannel = 'tr'; // tr | en | fr | de | th
     let audioEnabled = false;
     let audioQueue = [];
     let isPlaying = false;
     let currentItem = null;
+    let currentBlobUrl = null;
     let allHistory = [];
+    let ws = null;
+    let wakeLock = null;
+    let keepAliveCtx = null;
     const player = new Audio();
+    player.setAttribute('playsinline', '');
 
-    const LANG_LOCALE = { tr: 'tr-TR', en: 'en-US', fr: 'fr-FR', de: 'de-DE' };
+    const LANG_LOCALE = { tr: 'tr-TR', en: 'en-US', fr: 'fr-FR', de: 'de-DE', th: 'th-TH' };
+
+    async function requestWakeLock() {
+      try {
+        if ('wakeLock' in navigator && audioEnabled) {
+          wakeLock = await navigator.wakeLock.request('screen');
+        }
+      } catch (e) {}
+    }
+
+    function releaseWakeLock() {
+      try {
+        if (wakeLock) { wakeLock.release(); wakeLock = null; }
+      } catch (e) {}
+    }
+
+    function startKeepAlive() {
+      try {
+        const AC = window.AudioContext || window.webkitAudioContext;
+        if (AC && !keepAliveCtx) {
+          keepAliveCtx = new AC();
+          const osc = keepAliveCtx.createOscillator();
+          const gain = keepAliveCtx.createGain();
+          gain.gain.value = 0.00001; // inaudible keep-alive so mobile OS keeps audio & WS alive on lock screen
+          osc.connect(gain);
+          gain.connect(keepAliveCtx.destination);
+          osc.start();
+        }
+        if (keepAliveCtx && keepAliveCtx.state === 'suspended') {
+          keepAliveCtx.resume().catch(() => {});
+        }
+      } catch (e) {}
+      try {
+        if ('mediaSession' in navigator) {
+          navigator.mediaSession.metadata = new MediaMetadata({
+            title: 'COP31 Live Interpretation',
+            artist: currentChannel.toUpperCase() + ' Channel',
+            album: 'Iklim Adaleti Forumu',
+          });
+          navigator.mediaSession.setActionHandler('play', () => { if (!audioEnabled) toggleAudio(); });
+          navigator.mediaSession.setActionHandler('pause', () => { if (audioEnabled) toggleAudio(); });
+        }
+      } catch (e) {}
+    }
+
+    function stopKeepAlive() {
+      try {
+        if (keepAliveCtx) { keepAliveCtx.close(); keepAliveCtx = null; }
+      } catch (e) {}
+    }
+
+    document.addEventListener('visibilitychange', () => {
+      if (!document.hidden) {
+        if (audioEnabled) {
+          requestWakeLock();
+          if (keepAliveCtx && keepAliveCtx.state === 'suspended') keepAliveCtx.resume().catch(() => {});
+        }
+        if (!ws || ws.readyState > 1) connectWS();
+      }
+    });
 
     function fallbackBrowserSpeak(item) {
       if (!item || !('speechSynthesis' in window)) {
@@ -104,7 +169,7 @@
         window.speechSynthesis.cancel();
         const u = new SpeechSynthesisUtterance(item.text);
         u.lang = LANG_LOCALE[item.lang] || 'tr-TR';
-        u.rate = 1.08;
+        u.rate = 1.12;
         u.onend = () => { isPlaying = false; playNext(); };
         u.onerror = () => { isPlaying = false; playNext(); };
         window.speechSynthesis.speak(u);
@@ -114,16 +179,28 @@
       }
     }
 
-    player.onended = () => { isPlaying = false; playNext(); };
-    player.onerror = () => { fallbackBrowserSpeak(currentItem); };
+    function releaseCurrentBlob() {
+      if (currentBlobUrl) {
+        URL.revokeObjectURL(currentBlobUrl);
+        currentBlobUrl = null;
+      }
+    }
+
+    player.onended = () => { releaseCurrentBlob(); isPlaying = false; playNext(); };
+    player.onerror = () => { releaseCurrentBlob(); fallbackBrowserSpeak(currentItem); };
 
     function selectChannel(ch) {
       currentChannel = ch;
-      ['tr', 'en', 'fr', 'de'].forEach(c => {
+      ['tr', 'en', 'fr', 'de', 'th'].forEach(c => {
         document.getElementById('ch-' + c).className = c === ch ? 'ch-btn active' : 'ch-btn';
       });
+      if (ch === 'th' && ws && ws.readyState === 1) {
+        ws.send(JSON.stringify({ type: 'thai_listener' }));
+      }
+      audioQueue.forEach(it => { if (it.blobUrl) URL.revokeObjectURL(it.blobUrl); });
       audioQueue = [];
       player.pause();
+      releaseCurrentBlob();
       if ('speechSynthesis' in window) window.speechSynthesis.cancel();
       isPlaying = false;
       renderAll();
@@ -142,40 +219,66 @@
       if (audioEnabled) {
         btn.className = 'audio-btn active';
         btn.textContent = '⏹️ Sesi Kapat / Stop Audio / Arrêter / Stopp';
+        requestWakeLock();
+        startKeepAlive();
         const greet = {
           tr: 'Türkçe simultane ses kanalı aktif.',
           en: 'English simultaneous audio channel active.',
           fr: 'Canal audio simultané français actif.',
-          de: 'Deutscher Simultanaudiokanal aktiv.'
+          de: 'Deutscher Simultanaudiokanal aktiv.',
+          th: 'เปิดใช้งานช่องเสียงล่ามภาษาไทยแล้ว'
         }[currentChannel];
         enqueueSpeech(greet, currentChannel);
       } else {
         btn.className = 'audio-btn';
         btn.textContent = '🎧 Sesli Dinle / Start Audio / Écouter / Audio starten';
+        audioQueue.forEach(it => { if (it.blobUrl) URL.revokeObjectURL(it.blobUrl); });
         audioQueue = [];
         player.pause();
+        releaseCurrentBlob();
+        releaseWakeLock();
+        stopKeepAlive();
         if ('speechSynthesis' in window) window.speechSynthesis.cancel();
         isPlaying = false;
       }
     }
 
+    function prefetchAudio(item) {
+      const url = `${BASE}/api/tts?lang=${encodeURIComponent(item.lang)}&text=${encodeURIComponent(item.text)}`;
+      item.url = url;
+      item.readyPromise = fetch(url)
+        .then(r => r.ok ? r.blob() : null)
+        .then(blob => {
+          if (blob && blob.size > 0) item.blobUrl = URL.createObjectURL(blob);
+        })
+        .catch(() => {});
+    }
+
     function enqueueSpeech(text, lang) {
       if (!audioEnabled || !text) return;
-      // Keep at most 1 queued clip so listeners stay synced with live speech
-      if (audioQueue.length >= 1) {
-        audioQueue = audioQueue.slice(-1);
+      // Keep up to 3 queued clips and prefetch audio so there is zero gap between sentences
+      while (audioQueue.length >= 3) {
+        const dropped = audioQueue.shift();
+        if (dropped && dropped.blobUrl) URL.revokeObjectURL(dropped.blobUrl);
       }
-      audioQueue.push({ text, lang });
+      const item = { text, lang, blobUrl: null, url: '', readyPromise: null };
+      prefetchAudio(item);
+      audioQueue.push(item);
       playNext();
     }
 
-    function playNext() {
+    async function playNext() {
       if (isPlaying || audioQueue.length === 0 || !audioEnabled) return;
       isPlaying = true;
       currentItem = audioQueue.shift();
-      player.src = `${BASE}/api/tts?lang=${encodeURIComponent(currentItem.lang)}&text=${encodeURIComponent(currentItem.text)}`;
-      player.playbackRate = audioQueue.length >= 1 ? 1.15 : 1.05;
-      player.play().catch(() => { fallbackBrowserSpeak(currentItem); });
+      if (currentItem.readyPromise && !currentItem.blobUrl) {
+        await Promise.race([currentItem.readyPromise, new Promise(r => setTimeout(r, 900))]);
+      }
+      if (!audioEnabled) { isPlaying = false; return; }
+      currentBlobUrl = currentItem.blobUrl || null;
+      player.src = currentBlobUrl || currentItem.url;
+      player.playbackRate = audioQueue.length >= 2 ? 1.24 : audioQueue.length === 1 ? 1.16 : 1.06;
+      player.play().catch(() => { releaseCurrentBlob(); fallbackBrowserSpeak(currentItem); });
     }
 
     function renderAll() {
@@ -208,8 +311,14 @@
     }
 
     function connectWS() {
+      if (ws && (ws.readyState === 0 || ws.readyState === 1)) return;
       const proto = location.protocol === 'https:' ? 'wss:' : 'ws:';
-      const ws = new WebSocket(`${proto}//${location.host}${BASE}/ws`);
+      ws = new WebSocket(`${proto}//${location.host}${BASE}/ws`);
+      ws.onopen = () => {
+        if (currentChannel === 'th') {
+          ws.send(JSON.stringify({ type: 'thai_listener' }));
+        }
+      };
       ws.onmessage = (ev) => {
         const data = JSON.parse(ev.data);
         if (data.type === 'init') {
@@ -225,7 +334,10 @@
           document.getElementById('stream').innerHTML = '';
         }
       };
-      ws.onclose = () => setTimeout(connectWS, 1000 + Math.floor(Math.random() * 2500));
+      ws.onclose = () => {
+        ws = null;
+        setTimeout(connectWS, 1000 + Math.floor(Math.random() * 2000));
+      };
     }
 
     connectWS();
