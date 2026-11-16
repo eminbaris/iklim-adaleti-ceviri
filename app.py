@@ -51,7 +51,7 @@ _raw_pin = os.environ.get("OPERATOR_PIN", "Makas1092")
 if _raw_pin in ("", "cop31", "1092"):
     _raw_pin = "Makas1092"
 
-TRANSCRIPT_DIR = os.path.join(BASE_DIR, "kayitlar")
+TRANSCRIPT_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "kayitlar")
 
 
 def append_transcript_disk(payload: dict) -> None:
