@@ -122,7 +122,7 @@ def verify_operator_pin(pin: Optional[str], ip: str) -> bool:
     now = time.time()
     attempts = [t for t in FAILED_PIN_BY_IP.get(ip, []) if now - t < 600]
     FAILED_PIN_BY_IP[ip] = attempts
-    if len(attempts) >= 5:
+    if len(attempts) >= 25:
         return False
     candidate = (pin or "").strip()
     if not candidate:

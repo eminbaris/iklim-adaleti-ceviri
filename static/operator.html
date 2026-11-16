@@ -252,8 +252,9 @@
     function onPinChange() {
       const val = getPin();
       localStorage.setItem('cop31_pin', val);
+      clearTimeout(window._pinTimer);
       if (val.length >= 4 || val.length === 0) {
-        init();
+        window._pinTimer = setTimeout(() => init(), 650);
       }
     }
 
