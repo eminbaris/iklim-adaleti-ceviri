@@ -96,6 +96,7 @@ STATE = {
     "openai_api_key": os.environ.get("OPENAI_API_KEY", ""),
     "speaker_notes": "",
     "thai_active": False,
+    "openai_quota_until": 0.0,
     "last_llm_engine": "",
     "last_llm_error": "",
     "history": _disk_items[-50:],
@@ -402,6 +403,8 @@ async def call_gemini_json(user_prompt: str, sys_prompt: str) -> Tuple[Optional[
 async def call_openai_json(user_prompt: str, sys_prompt: str) -> Tuple[Optional[str], str]:
     if not STATE["openai_api_key"]:
         return None, "OpenAI API key eksik"
+    if time.time() < STATE.get("openai_quota_until", 0.0):
+        return None, "OpenAI kredisi tükendi (30 dk otomatik atlanıyor)"
     model_id = os.environ.get("OPENAI_TRANSLATE_MODEL", "gpt-4o-mini")
     try:
         resp = await HTTP_CLIENT.post(
@@ -425,6 +428,8 @@ async def call_openai_json(user_prompt: str, sys_prompt: str) -> Tuple[Optional[
         if resp.status_code == 200:
             return resp.json()["choices"][0]["message"]["content"].strip(), ""
         err = f"OpenAI ({model_id}) HTTP {resp.status_code}: {resp.text[:180]}"
+        if resp.status_code in (401, 402, 429) and any(k in resp.text.lower() for k in ("credit", "quota", "billing", "exceeded")):
+            STATE["openai_quota_until"] = time.time() + 1800
         print(err)
         return None, err
     except Exception as e:
@@ -524,7 +529,7 @@ async def _synthesize_edge_tts(text: str, use_voice: str) -> bytes:
 
 
 async def _synthesize_openai_tts(text: str, lang_short: str = "tr") -> bytes:
-    if not STATE.get("openai_api_key"):
+    if not STATE.get("openai_api_key") or time.time() < STATE.get("openai_quota_until", 0.0):
         return b""
     headers = {
         "Authorization": f"Bearer {STATE['openai_api_key']}",
@@ -539,6 +544,8 @@ async def _synthesize_openai_tts(text: str, lang_short: str = "tr") -> bytes:
     )
     if resp.status_code == 200:
         return resp.content
+    if resp.status_code in (401, 402, 429) and any(k in resp.text.lower() for k in ("credit", "quota", "billing", "exceeded")):
+        STATE["openai_quota_until"] = time.time() + 1800
     return b""
 
 
