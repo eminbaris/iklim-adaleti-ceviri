@@ -47,9 +47,9 @@ VOICES = {
     "th": "th-TH-PremwadeeNeural",
 }
 
-_raw_pin = os.environ.get("OPERATOR_PIN", "Makas1092")
-if _raw_pin in ("", "cop31", "1092"):
-    _raw_pin = "Makas1092"
+_raw_pin = os.environ.get("OPERATOR_PIN", "330629")
+if _raw_pin in ("", "cop31", "1092", "Makas1092"):
+    _raw_pin = "330629"
 
 TRANSCRIPT_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "kayitlar")
 
